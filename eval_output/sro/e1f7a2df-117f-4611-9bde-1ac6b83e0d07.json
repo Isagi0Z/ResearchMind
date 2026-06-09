@@ -1,0 +1,1795 @@
+{
+  "meta": {
+    "sro_id": "e1f7a2df-117f-4611-9bde-1ac6b83e0d07",
+    "schema_version": "1.0.0",
+    "created_at": "2026-06-06T16:20:14.085754Z",
+    "updated_at": "2026-06-06T16:20:41.703756Z",
+    "pipeline_version": "0.1.0",
+    "extraction_route": "grobid_with_fallback",
+    "source_file": {
+      "filename": "1502.03167_batchnorm.pdf",
+      "sha256": "bdc69e0b568f41d8d3181cc9077a461f58fcdd1c70c9f49efe60a05ee6109655",
+      "page_count": 11,
+      "has_text_layer": true,
+      "is_scanned": false,
+      "size_bytes": 173548
+    },
+    "processing_time_ms": 27609
+  },
+  "header": {
+    "title": "Untitled",
+    "title_confidence": 0.1,
+    "authors": [],
+    "authors_confidence": 0.1,
+    "document_type": "research_article",
+    "language": "en",
+    "doi": null,
+    "arxiv_id": null,
+    "pmid": null,
+    "publication_date": null,
+    "publication_date_raw": null,
+    "venue": null,
+    "venue_type": null,
+    "volume": null,
+    "issue": null,
+    "pages": null,
+    "keywords": []
+  },
+  "abstract": {
+    "raw_text": "",
+    "is_structured": false,
+    "structured": null,
+    "confidence": 0.0
+  },
+  "body": {
+    "sections": [
+      {
+        "section_id": "sec_001",
+        "parent_section_id": null,
+        "level": 1,
+        "position": 0,
+        "original_header": "",
+        "canonical_label": "introduction",
+        "label_confidence": 0.7,
+        "page_start": 0,
+        "page_end": 0,
+        "content": "Batch Normalization: Accelerating Deep Network Training by\nReducing Internal Covariate Shift"
+      },
+      {
+        "section_id": "sec_002",
+        "parent_section_id": null,
+        "level": 1,
+        "position": 1,
+        "original_header": "Abstract",
+        "canonical_label": "other",
+        "label_confidence": 0.3,
+        "page_start": 0,
+        "page_end": 0,
+        "content": "Training Deep Neural Networks is complicated by the fact\nthat the distribution of each layer’s inputs changes during\ntraining, as the parameters of the previous layers change.\nThis slows down the training by requiring lower learning\nrates and careful parameter initialization, and makes it no-\ntoriously hard to train models with saturating nonlineari-\nties. We refer to this phenomenon as internal covariate\nshift, and address the problem by normalizing layer in-\nputs. Our method draws its strength from making normal-\nization a part of the model architecture and performing the\nnormalization for each training mini-batch. Batch Nor-\nmalization allows us to use much higher learning rates and\nbe less careful about initialization. It also acts as a regu-\nlarizer, in some cases eliminating the need for Dropout.\nApplied to a state-of-the-art image classification model,\nBatch Normalization achieves the same accuracy with 14\ntimes fewer training steps, and beats the original model\nby a significant margin.\nUsing an ensemble of batch-\nnormalized networks, we improve upon the best published\nresult on ImageNet classification: reaching 4.9% top-5\nvalidation error (and 4.8% test error), exceeding the ac-\ncuracy of human raters."
+      },
+      {
+        "section_id": "sec_003",
+        "parent_section_id": null,
+        "level": 1,
+        "position": 2,
+        "original_header": "arXiv:1502.03167v3  [cs.LG]  2 Mar 2015",
+        "canonical_label": "future_work",
+        "label_confidence": 0.5,
+        "page_start": 0,
+        "page_end": 7,
+        "content": "1\nIntroduction\n\nDeep learning has dramatically advanced the state of the\nart in vision, speech, and many other areas.\nStochas-\ntic gradient descent (SGD) has proved to be an effec-\ntive way of training deep networks, and SGD variants\nsuch as momentum (Sutskever et al., 2013) and Adagrad\n(Duchi et al., 2011) have been used to achieve state of the\nart performance. SGD optimizes the parameters Θ of the\nnetwork, so as to minimize the loss\n\nN\n�\n\nΘ = arg min\nΘ\n1\nN\n\ni=1\nℓ(xi, Θ)\n\nwhere x1...N is the training data set. With SGD, the train-\ning proceeds in steps, and at each step we consider a mini-\nbatch x1...m of size m. The mini-batch is used to approx-\nimate the gradient of the loss function with respect to the\nparameters, by computing\n\n1\nm\n∂ℓ(xi, Θ)\n\n∂Θ\n.\n\nSergey Ioffe\nGoogle Inc., sioffe@google.com\nChristian Szegedy\nGoogle Inc., szegedy@google.com\n\nUsing mini-batches of examples, as opposed to one exam-\nple at a time, is helpful in several ways. First, the gradient\nof the loss over a mini-batch is an estimate of the gradient\nover the training set, whose quality improves as the batch\nsize increases. Second, computation over a batch can be\nmuch more efficient than m computations for individual\nexamples, due to the parallelism afforded by the modern\ncomputing platforms.\nWhile stochastic gradient is simple and effective, it\nrequires careful tuning of the model hyper-parameters,\nspecifically the learning rate used in optimization, as well\nas the initial values for the model parameters. The train-\ning is complicated by the fact that the inputs to each layer\nare affected by the parameters of all preceding layers – so\nthat small changes to the network parameters amplify as\nthe network becomes deeper.\nThe change in the distributions of layers’ inputs\npresents a problem because the layers need to continu-\nously adapt to the new distribution. When the input dis-\ntribution to a learning system changes, it is said to experi-\nence covariate shift (Shimodaira, 2000). This is typically\nhandled via domain adaptation (Jiang, 2008). However,\nthe notion of covariate shift can be extended beyond the\nlearning system as a whole, to apply to its parts, such as a\nsub-network or a layer. Consider a network computing\n\nℓ= F2(F1(u, Θ1), Θ2)\n\nwhere F1 and F2 are arbitrary transformations, and the\nparameters Θ1, Θ2 are to be learned so as to minimize\nthe loss ℓ. Learning Θ2 can be viewed as if the inputs\nx = F1(u, Θ1) are fed into the sub-network\n\nℓ= F2(x, Θ2).\n\nFor example, a gradient descent step\n\nm\n�\n\n∂F2(xi, Θ2)\n\nΘ2 ←Θ2 −α\n\n∂Θ2\n\ni=1\n\n(for batch size m and learning rate α) is exactly equivalent\nto that for a stand-alone network F2 with input x. There-\nfore, the input distribution properties that make training\nmore efficient – such as having the same distribution be-\ntween the training and test data – apply to training the\nsub-network as well. As such it is advantageous for the\ndistribution of x to remain fixed over time. Then, Θ2 does\n\nnot have to readjust to compensate for the change in the\ndistribution of x.\n\nFixed distribution of inputs to a sub-network would\nhave positive consequences for the layers outside the sub-\nnetwork, as well. Consider a layer with a sigmoid activa-\ntion function z = g(Wu + b) where u is the layer input,\nthe weight matrix W and bias vector b are the layer pa-\nrameters to be learned, and g(x) =\n1\n1+exp(−x). As |x|\nincreases, g′(x) tends to zero. This means that for all di-\nmensions of x = Wu+b except those with small absolute\nvalues, the gradient flowing down to u will vanish and the\nmodel will train slowly. However, since x is affected by\nW, b and the parameters of all the layers below, changes\nto those parameters during training will likely move many\ndimensions of x into the saturated regime of the nonlin-\nearity and slow down the convergence.\nThis effect is\namplified as the network depth increases.\nIn practice,\nthe saturation problem and the resulting vanishing gradi-\nents are usually addressed by using Rectified Linear Units\n(Nair & Hinton, 2010) ReLU(x) = max(x, 0), careful\ninitialization (Bengio & Glorot, 2010; Saxe et al., 2013),\nand small learning rates. If, however, we could ensure\nthat the distribution of nonlinearity inputs remains more\nstable as the network trains, then the optimizer would be\nless likely to get stuck in the saturated regime, and the\ntraining would accelerate.\n\nWe refer to the change in the distributions of internal\nnodes of a deep network, in the course of training, as In-\nternal Covariate Shift. Eliminating it offers a promise of\nfaster training. We propose a new mechanism, which we\ncall Batch Normalization, that takes a step towards re-\nducing internal covariate shift, and in doing so dramati-\ncally accelerates the training of deep neural nets. It ac-\ncomplishes this via a normalization step that fixes the\nmeans and variances of layer inputs. Batch Normalization\nalso has a beneficial effect on the gradient flow through\nthe network, by reducing the dependence of gradients\non the scale of the parameters or of their initial values.\nThis allows us to use much higher learning rates with-\nout the risk of divergence. Furthermore, batch normal-\nization regularizes the model and reduces the need for\nDropout (Srivastava et al., 2014). Finally, Batch Normal-\nization makes it possible to use saturating nonlinearities\nby preventing the network from getting stuck in the satu-\nrated modes.\n\nIn Sec. 4.2, we apply Batch Normalization to the best-\nperforming ImageNet classification network, and show\nthat we can match its performance using only 7% of the\ntraining steps, and can further exceed its accuracy by a\nsubstantial margin. Using an ensemble of such networks\ntrained with Batch Normalization, we achieve the top-5\nerror rate that improves upon the best known results on\nImageNet classification.\n\n2\nTowards\nReducing\nInternal\nCovariate Shift\n\nWe define Internal Covariate Shift as the change in the\ndistribution of network activations due to the change in\nnetwork parameters during training. To improve the train-\ning, we seek to reduce the internal covariate shift. By\nfixing the distribution of the layer inputs x as the training\nprogresses, we expect to improve the training speed. It has\nbeen long known (LeCun et al., 1998b; Wiesler & Ney,\n2011) that the network training converges faster if its in-\nputs are whitened – i.e., linearly transformed to have zero\nmeans and unit variances, and decorrelated. As each layer\nobserves the inputs produced by the layers below, it would\nbe advantageous to achieve the same whitening of the in-\nputs of each layer. By whitening the inputs to each layer,\nwe would take a step towards achieving the fixed distri-\nbutions of inputs that would remove the ill effects of the\ninternal covariate shift.\nWe could consider whitening activations at every train-\ning step or at some interval, either by modifying the\nnetwork directly or by changing the parameters of the\noptimization algorithm to depend on the network ac-\ntivation values (Wiesler et al., 2014; Raiko et al., 2012;\nPovey et al., 2014; Desjardins & Kavukcuoglu).\nHow-\never, if these modifications are interspersed with the op-\ntimization steps, then the gradient descent step may at-\ntempt to update the parameters in a way that requires\nthe normalization to be updated, which reduces the ef-\nfect of the gradient step. For example, consider a layer\nwith the input u that adds the learned bias b, and normal-\nizes the result by subtracting the mean of the activation\ncomputed over the training data: �x = x −E[x] where\nx = u + b, X = {x1...N} is the set of values of x over\nthe training set, and E[x] =\n1\nN\n�N\ni=1 xi. If a gradient\ndescent step ignores the dependence of E[x] on b, then it\nwill update b ←b + ∆b, where ∆b ∝−∂ℓ/∂�x. Then\nu + (b + ∆b) −E[u + (b + ∆b)] = u + b −E[u + b].\nThus, the combination of the update to b and subsequent\nchange in normalization led to no change in the output\nof the layer nor, consequently, the loss. As the training\ncontinues, b will grow indefinitely while the loss remains\nfixed. This problem can get worse if the normalization not\nonly centers but also scales the activations. We have ob-\nserved this empirically in initial experiments, where the\nmodel blows up when the normalization parameters are\ncomputed outside the gradient descent step.\nThe issue with the above approach is that the gradient\ndescent optimization does not take into account the fact\nthat the normalization takes place. To address this issue,\nwe would like to ensure that, for any parameter values,\nthe network always produces activations with the desired\ndistribution. Doing so would allow the gradient of the\nloss with respect to the model parameters to account for\nthe normalization, and for its dependence on the model\nparameters Θ. Let again x be a layer input, treated as a\n\nvector, and X be the set of these inputs over the training\ndata set. The normalization can then be written as a trans-\nformation\n�x = Norm(x, X)\n\nwhich depends not only on the given training example x\nbut on all examples X – each of which depends on Θ if\nx is generated by another layer. For backpropagation, we\nwould need to compute the Jacobians\n\n∂Norm(x, X)\n\n∂x\nand ∂Norm(x, X)\n\n∂X\n;\n\nignoring the latter term would lead to the explosion de-\nscribed above. Within this framework, whitening the layer\ninputs is expensive, as it requires computing the covari-\nance matrix Cov[x] = Ex∈X [xxT ] −E[x]E[x]T and its\ninverse square root, to produce the whitened activations\nCov[x]−1/2(x −E[x]), as well as the derivatives of these\ntransforms for backpropagation. This motivates us to seek\nan alternative that performs input normalization in a way\nthat is differentiable and does not require the analysis of\nthe entire training set after every parameter update.\nSome\nof\nthe\nprevious\napproaches\n(e.g.\n(Lyu & Simoncelli,\n2008))\nuse\nstatistics\ncomputed\nover a single training example, or, in the case of image\nnetworks, over different feature maps at a given location.\nHowever, this changes the representation ability of a\nnetwork by discarding the absolute scale of activations.\nWe want to a preserve the information in the network, by\nnormalizing the activations in a training example relative\nto the statistics of the entire training data.\n\n3\nNormalization\nvia\nMini-Batch\nStatistics\n\nSince the full whitening of each layer’s inputs is costly\nand not everywhere differentiable, we make two neces-\nsary simplifications. The first is that instead of whitening\nthe features in layer inputs and outputs jointly, we will\nnormalize each scalar feature independently, by making it\nhave the mean of zero and the variance of 1. For a layer\nwith d-dimensional input x = (x(1) . . . x(d)), we will nor-\nmalize each dimension\n\n�x(k) = x(k) −E[x(k)]\n�\nVar[x(k)]\n\nwhere the expectation and variance are computed over the\ntraining data set. As shown in (LeCun et al., 1998b), such\nnormalization speeds up convergence, even when the fea-\ntures are not decorrelated.\nNote that simply normalizing each input of a layer may\nchange what the layer can represent. For instance, nor-\nmalizing the inputs of a sigmoid would constrain them to\nthe linear regime of the nonlinearity. To address this, we\nmake sure that the transformation inserted in the network\ncan represent the identity transform. To accomplish this,\n\nwe introduce, for each activation x(k), a pair of parameters\nγ(k), β(k), which scale and shift the normalized value:\n\ny(k) = γ(k)�x(k) + β(k).\n\nThese parameters are learned along with the original\nmodel parameters, and restore the representation power\nof the network. Indeed, by setting γ(k) =\n�\nVar[x(k)] and\nβ(k) = E[x(k)], we could recover the original activations,\nif that were the optimal thing to do.\nIn the batch setting where each training step is based on\nthe entire training set, we would use the whole set to nor-\nmalize activations. However, this is impractical when us-\ning stochastic optimization. Therefore, we make the sec-\nond simplification: since we use mini-batches in stochas-\ntic gradient training, each mini-batch produces estimates\nof the mean and variance of each activation. This way, the\nstatistics used for normalization can fully participate in\nthe gradient backpropagation. Note that the use of mini-\nbatches is enabled by computation of per-dimension vari-\nances rather than joint covariances; in the joint case, reg-\nularization would be required since the mini-batch size is\nlikely to be smaller than the number of activations being\nwhitened, resulting in singular covariance matrices.\nConsider a mini-batch B of size m. Since the normal-\nization is applied to each activation independently, let us\nfocus on a particular activation x(k) and omit k for clarity.\nWe have m values of this activation in the mini-batch,\n\nB = {x1...m}.\n\nLet the normalized values be �x1...m, and their linear trans-\nformations be y1...m. We refer to the transform\n\nBNγ,β : x1...m →y1...m\n\nas the Batch Normalizing Transform. We present the BN\nTransform in Algorithm 1. In the algorithm, ǫ is a constant\nadded to the mini-batch variance for numerical stability.\n\nInput: Values of x over a mini-batch: B = {x1...m};\nParameters to be learned: γ, β\nOutput: {yi = BNγ,β(xi)}\n\nm\n�\n\nµB ←1\n\ni=1\nxi\n// mini-batch mean\n\nm\n�\n\nσ2\nB ←1\n\ni=1\n(xi −µB)2\n// mini-batch variance\n\n�xi ←xi −µB\n�\nσ2\nB + ǫ\n// normalize\n\nyi ←γ�xi + β ≡BNγ,β(xi)\n// scale and shift\n\nAlgorithm 1: Batch Normalizing Transform, applied to\nactivation x over a mini-batch.\n\nThe BN transform can be added to a network to manip-\nulate any activation. In the notation y = BNγ,β(x), we\n\nindicate that the parameters γ and β are to be learned,\nbut it should be noted that the BN transform does not\nindependently process the activation in each training ex-\nample. Rather, BNγ,β(x) depends both on the training\nexample and the other examples in the mini-batch. The\nscaled and shifted values y are passed to other network\nlayers. The normalized activations �x are internal to our\ntransformation, but their presence is crucial. The distri-\nbutions of values of any �x has the expected value of 0\nand the variance of 1, as long as the elements of each\nmini-batch are sampled from the same distribution, and\nif we neglect ǫ.\nThis can be seen by observing that\n�m\ni=1 �xi = 0 and\n1\nm\n�m\ni=1 �x2\ni = 1, and taking expec-\ntations. Each normalized activation �x(k) can be viewed as\nan input to a sub-network composed of the linear trans-\nform y(k) = γ(k)�x(k) + β(k), followed by the other pro-\ncessing done by the original network. These sub-network\ninputs all have fixed means and variances, and although\nthe joint distribution of these normalized �x(k) can change\nover the course of training, we expect that the introduc-\ntion of normalized inputs accelerates the training of the\nsub-network and, consequently, the network as a whole.\nDuring training we need to backpropagate the gradi-\nent of loss ℓthrough this transformation, as well as com-\npute the gradients with respect to the parameters of the\nBN transform. We use chain rule, as follows (before sim-\nplification):\n\n∂ℓ\n∂�xi =\n∂ℓ\n∂yi · γ\n\n∂ℓ\n∂σ2\nB = �m\ni=1\n∂ℓ\n∂�xi · (xi −µB) · −1\n\n2 (σ2\nB + ǫ)−3/2\n\n�\n+\n∂ℓ\n∂σ2\nB ·\n\n∂ℓ\n∂µB =\n��m\ni=1\n∂ℓ\n∂�xi ·\n−1\n√\n\n�m\ni=1 −2(xi−µB)\n\nσ2\nB+ǫ\n\nσ2\nB+ǫ +\n∂ℓ\n∂σ2\nB · 2(xi−µB)\n\n∂ℓ\n∂xi =\n∂ℓ\n∂�xi ·\n1\n√\n\nm\n+\n∂ℓ\n∂µB · 1\n\n∂ℓ\n∂γ = �m\ni=1\n∂ℓ\n∂yi · �xi\n\n∂ℓ\n∂β = �m\ni=1\n∂ℓ\n∂yi\n\nThus, BN transform is a differentiable transformation that\nintroduces normalized activations into the network. This\nensures that as the model is training, layers can continue\nlearning on input distributions that exhibit less internal co-\nvariate shift, thus accelerating the training. Furthermore,\nthe learned affine transform applied to these normalized\nactivations allows the BN transform to represent the iden-\ntity transformation and preserves the network capacity.\n\n3.1\nTraining and Inference with Batch-\nNormalized Networks\n\nTo Batch-Normalize a network, we specify a subset of ac-\ntivations and insert the BN transform for each of them,\naccording to Alg. 1. Any layer that previously received\nx as the input, now receives BN(x). A model employing\nBatch Normalization can be trained using batch gradient\ndescent, or Stochastic Gradient Descent with a mini-batch\nsize m > 1, or with any of its variants such as Adagrad\n\n(Duchi et al., 2011). The normalization of activations that\ndepends on the mini-batch allows efficient training, but is\nneither necessary nor desirable during inference; we want\nthe output to depend only on the input, deterministically.\nFor this, once the network has been trained, we use the\nnormalization\n\n�x =\nx −E[x]\n�\nVar[x] + ǫ\n\nusing the population, rather than mini-batch, statistics.\nNeglecting ǫ, these normalized activations have the same\nmean 0 and variance 1 as during training. We use the un-\nbiased variance estimate Var[x] =\nm\nm−1 · EB[σ2\nB], where\nthe expectation is over training mini-batches of size m and\nσ2\nB are their sample variances. Using moving averages in-\nstead, we can track the accuracy of a model as it trains.\nSince the means and variances are fixed during inference,\nthe normalization is simply a linear transform applied to\neach activation. It may further be composed with the scal-\ning by γ and shift by β, to yield a single linear transform\nthat replaces BN(x). Algorithm 2 summarizes the proce-\ndure for training batch-normalized networks.\n\nInput: Network N with trainable parameters Θ;\nsubset of activations {x(k)}K\nk=1\nOutput: Batch-normalized network for inference, Ninf\nBN\n1: Ntr\nBN ←N\n// Training BN network\n2: for k = 1 . . . K do\n\n3:\nAdd transformation y(k) = BNγ(k),β(k)(x(k)) to\nNtr\nBN (Alg. 1)\n\n4:\nModify each layer in Ntr\nBN with input x(k) to take\ny(k) instead\n5: end for\n\n6: Train\nNtr\nBN\nto\noptimize\nthe\nparameters\nΘ ∪\n{γ(k), β(k)}K\nk=1\n7: Ninf\nBN ←Ntr\nBN\n// Inference BN network with frozen\n// parameters\n\n8: for k = 1 . . . K do\n9:\n// For clarity, x ≡x(k), γ ≡γ(k), µB ≡µ(k)\nB , etc.\n\n10:\nProcess multiple training mini-batches B, each of\nsize m, and average over them:\nE[x] ←EB[µB]\n\nVar[x] ←\nm\nm−1EB[σ2\nB]\n\n11:\nIn Ninf\nBN, replace the transform y = BNγ,β(x) with\ny =\nγ\n√\n\nVar[x]+ǫ · x +\n�\nβ −\nγ E[x]\n√\n\nVar[x]+ǫ\n�\n\n12: end for\n\nAlgorithm 2: Training a Batch-Normalized Network\n\n3.2\nBatch-Normalized Convolutional Net-\nworks\n\nBatch Normalization can be applied to any set of acti-\nvations in the network. Here, we focus on transforms\n\nthat consist of an affine transformation followed by an\nelement-wise nonlinearity:\n\nz = g(Wu + b)\n\nwhere W and b are learned parameters of the model, and\ng(·) is the nonlinearity such as sigmoid or ReLU. This for-\nmulation covers both fully-connected and convolutional\nlayers. We add the BN transform immediately before the\nnonlinearity, by normalizing x = Wu+b. We could have\nalso normalized the layer inputs u, but since u is likely\nthe output of another nonlinearity, the shape of its distri-\nbution is likely to change during training, and constraining\nits first and second moments would not eliminate the co-\nvariate shift. In contrast, Wu + b is more likely to have\na symmetric, non-sparse distribution, that is “more Gaus-\nsian” (Hyv¨arinen & Oja, 2000); normalizing it is likely to\nproduce activations with a stable distribution.\nNote that, since we normalize Wu+b, the bias b can be\nignored since its effect will be canceled by the subsequent\nmean subtraction (the role of the bias is subsumed by β in\nAlg. 1). Thus, z = g(Wu + b) is replaced with\n\nz = g(BN(Wu))\n\nwhere the BN transform is applied independently to each\ndimension of x = Wu, with a separate pair of learned\nparameters γ(k), β(k) per dimension.\nFor convolutional layers, we additionally want the nor-\nmalization to obey the convolutional property – so that\ndifferent elements of the same feature map, at different\nlocations, are normalized in the same way. To achieve\nthis, we jointly normalize all the activations in a mini-\nbatch, over all locations. In Alg. 1, we let B be the set of\nall values in a feature map across both the elements of a\nmini-batch and spatial locations – so for a mini-batch of\nsize m and feature maps of size p × q, we use the effec-\ntive mini-batch of size m′ = |B| = m · p q. We learn a\npair of parameters γ(k) and β(k) per feature map, rather\nthan per activation. Alg. 2 is modified similarly, so that\nduring inference the BN transform applies the same linear\ntransformation to each activation in a given feature map.\n\n3.3\nBatch Normalization enables higher\nlearning rates\n\nIn traditional deep networks, too-high learning rate may\nresult in the gradients that explode or vanish, as well as\ngetting stuck in poor local minima.\nBatch Normaliza-\ntion helps address these issues. By normalizing activa-\ntions throughout the network, it prevents small changes\nto the parameters from amplifying into larger and subop-\ntimal changes in activations in gradients; for instance, it\nprevents the training from getting stuck in the saturated\nregimes of nonlinearities.\nBatch Normalization also makes training more resilient\nto the parameter scale. Normally, large learning rates may\nincrease the scale of layer parameters, which then amplify\n\nthe gradient during backpropagationand lead to the model\nexplosion.\nHowever, with Batch Normalization, back-\npropagation through a layer is unaffected by the scale of\nits parameters. Indeed, for a scalar a,\n\nBN(Wu) = BN((aW)u)\n\nand we can show that\n\n∂BN((aW)u)\n\n∂u\n= ∂BN(Wu)\n\n∂u\n∂BN((aW)u)\n\na · ∂BN(Wu)\n\n∂(aW)\n= 1\n\nThe scale does not affect the layer Jacobian nor, con-\nsequently, the gradient propagation.\nMoreover, larger\nweights lead to smaller gradients, and Batch Normaliza-\ntion will stabilize the parameter growth.\nWe further conjecture that Batch Normalization may\nlead the layer Jacobians to have singular values close to 1,\nwhich is known to be beneficial for training (Saxe et al.,\n2013). Consider two consecutive layers with normalized\ninputs, and the transformation between these normalized\nvectors: �z = F(�x). If we assume that �x and �z are Gaussian\nand uncorrelated, and that F(�x) ≈J�x is a linear transfor-\nmation for the given model parameters, then both �x and �z\nhave unit covariances, and I = Cov[�z] = JCov[�x]JT =\nJJT . Thus, JJT = I, and so all singular values of J\nare equal to 1, which preserves the gradient magnitudes\nduring backpropagation. In reality, the transformation is\nnot linear, and the normalized values are not guaranteed to\nbe Gaussian nor independent, but we nevertheless expect\nBatch Normalization to help make gradient propagation\nbetter behaved. The precise effect of Batch Normaliza-\ntion on gradient propagation remains an area of further\nstudy.\n\n3.4\nBatch Normalization regularizes the\nmodel\n\nWhen training with Batch Normalization, a training ex-\nample is seen in conjunction with other examples in the\nmini-batch, and the training network no longer produc-\ning deterministic values for a given training example. In\nour experiments, we found this effect to be advantageous\nto the generalization of the network. Whereas Dropout\n(Srivastava et al., 2014) is typically used to reduce over-\nfitting, in a batch-normalized network we found that it can\nbe either removed or reduced in strength.\n\n4\nExperiments\n\n4.1\nActivations over time\n\nTo verify the effects of internal covariate shift on train-\ning, and the ability of Batch Normalization to combat it,\nwe considered the problem of predicting the digit class on\nthe MNIST dataset (LeCun et al., 1998a). We used a very\nsimple network, with a 28x28 binary image as input, and\n\n0.9\n\n0.8\n\nWithout BN\nWith BN\n\n10K\n20K\n30K\n40K\n50K\n0.7\n\n(a)\n(b) Without BN\n(c) With BN\n\nFigure 1: (a) The test accuracy of the MNIST network\ntrained with and without Batch Normalization, vs. the\nnumber of training steps. Batch Normalization helps the\nnetwork train faster and achieve higher accuracy.\n(b,\nc) The evolution of input distributions to a typical sig-\nmoid, over the course of training, shown as {15, 50, 85}th\npercentiles. Batch Normalization makes the distribution\nmore stable and reduces the internal covariate shift.\n\n3 fully-connected hidden layers with 100 activations each.\nEach hidden layer computes y = g(Wu+b) with sigmoid\nnonlinearity, and the weights W initialized to small ran-\ndom Gaussian values. The last hidden layer is followed\nby a fully-connected layer with 10 activations (one per\nclass) and cross-entropy loss. We trained the network for\n50000 steps, with 60 examples per mini-batch. We added\nBatch Normalization to each hidden layer of the network,\nas in Sec. 3.1. We were interested in the comparison be-\ntween the baseline and batch-normalized networks, rather\nthan achieving the state of the art performance on MNIST\n(which the described architecture does not).\nFigure 1(a) shows the fraction of correct predictions\nby the two networks on held-out test data, as training\nprogresses.\nThe batch-normalized network enjoys the\nhigher test accuracy. To investigate why, we studied in-\nputs to the sigmoid, in the original network N and batch-\nnormalized network Ntr\nBN (Alg. 2) over the course of train-\ning. In Fig. 1(b,c) we show, for one typical activation from\nthe last hidden layer of each network, how its distribu-\ntion evolves. The distributions in the original network\nchange significantly over time, both in their mean and\nthe variance, which complicates the training of the sub-\nsequent layers. In contrast, the distributions in the batch-\nnormalized network are much more stable as training pro-\ngresses, which aids the training.\n\n4.2\nImageNet classification\n\nWe applied Batch Normalization to a new variant of the\nInception network (Szegedy et al., 2014), trained on the\nImageNet classification task (Russakovsky et al., 2014).\nThe network has a large number of convolutional and\npooling layers, with a softmax layer to predict the image\nclass, out of 1000 possibilities. Convolutional layers use\nReLU as the nonlinearity. The main difference to the net-\nwork described in (Szegedy et al., 2014) is that the 5 × 5\nconvolutional layers are replaced by two consecutive lay-\ners of 3 × 3 convolutions with up to 128 filters. The net-\nwork contains 13.6 · 106 parameters, and, other than the\ntop softmax layer, has no fully-connected layers. More\n\ndetails are given in the Appendix. We refer to this model\nas Inception in the rest of the text. The model was trained\nusing a version of Stochastic Gradient Descent with mo-\nmentum (Sutskever et al., 2013), using the mini-batch size\nof 32. The training was performed using a large-scale, dis-\ntributed architecture (similar to (Dean et al., 2012)). All\nnetworks are evaluated as training progresses by comput-\ning the validation accuracy @1, i.e.\nthe probability of\npredicting the correct label out of 1000 possibilities, on\na held-out set, using a single crop per image.\nIn our experiments, we evaluated several modifications\nof Inception with Batch Normalization. In all cases, Batch\nNormalization was applied to the input of each nonlinear-\nity, in a convolutional way, as described in section 3.2,\nwhile keeping the rest of the architecture constant.\n\n4.2.1\nAccelerating BN Networks\n\nSimply adding Batch Normalization to a network does not\ntake full advantage of our method. To do so, we further\nchanged the network and its training parameters, as fol-\nlows:\nIncrease learning rate. In a batch-normalized model,\nwe have been able to achieve a training speedup from\nhigher learning rates, with no ill side effects (Sec. 3.3).\nRemove Dropout. As described in Sec. 3.4, Batch Nor-\nmalization fulfills some of the same goals as Dropout. Re-\nmoving Dropout from Modified BN-Inception speeds up\ntraining, without increasing overfitting.\nReduce the L2 weight regularization. While in Incep-\ntion an L2 loss on the model parameters controls overfit-\nting, in Modified BN-Inception the weight of this loss is\nreduced by a factor of 5. We find that this improves the\naccuracy on the held-out validation data.\nAccelerate the learning rate decay. In training Incep-\ntion, learning rate was decayed exponentially. Because\nour network trains faster than Inception, we lower the\nlearning rate 6 times faster.\nRemove Local Response Normalization While Incep-\ntion and other networks (Srivastava et al., 2014) benefit\nfrom it, we found that with Batch Normalization it is not\nnecessary.\nShuffle training examples more thoroughly. We enabled\nwithin-shard shuffling of the training data, which prevents\nthe same examples from always appearing in a mini-batch\ntogether. This led to about 1% improvements in the val-\nidation accuracy, which is consistent with the view of\nBatch Normalization as a regularizer (Sec. 3.4): the ran-\ndomization inherent in our method should be most bene-\nficial when it affects an example differently each time it is\nseen.\nReduce the photometric distortions.\nBecause batch-\nnormalized networks train faster and observe each train-\ning example fewer times, we let the trainer focus on more\n“real” images by distorting them less.\n\n0.8\n\n0.7\n\n0.6\n\nInception\nBN−Baseline\nBN−x5\nBN−x30\nBN−x5−Sigmoid\nSteps to match Inception\n\n0.5\n\n5M\n10M\n15M\n20M\n25M\n30M\n0.4\n\nFigure 2: Single crop validation accuracy of Inception\nand its batch-normalized variants, vs.\nthe number of\ntraining steps.\n\n4.2.2\nSingle-Network Classification\n\nWe evaluated the following networks, all trained on the\nLSVRC2012 training data, and tested on the validation\ndata:\nInception: the network described at the beginning of\nSection 4.2, trained with the initial learning rate of 0.0015.\nBN-Baseline: Same as Inception with Batch Normal-\nization before each nonlinearity.\nBN-x5: Inception with Batch Normalization and the\nmodifications in Sec. 4.2.1. The initial learning rate was\nincreased by a factor of 5, to 0.0075. The same learning\nrate increase with original Inception caused the model pa-\nrameters to reach machine infinity.\nBN-x30: Like BN-x5, but with the initial learning rate\n0.045 (30 times that of Inception).\nBN-x5-Sigmoid: Like BN-x5, but with sigmoid non-\nlinearity g(t) =\n1\n1+exp(−x) instead of ReLU. We also at-\ntempted to train the original Inception with sigmoid, but\nthe model remained at the accuracy equivalent to chance.\nIn Figure 2, we show the validation accuracy of the\nnetworks, as a function of the number of training steps.\nInception reached the accuracy of 72.2% after 31 · 106\n\ntraining steps. The Figure 3 shows, for each network,\nthe number of training steps required to reach the same\n72.2% accuracy, as well as the maximum validation accu-\nracy reached by the network and the number of steps to\nreach it.\nBy only using Batch Normalization (BN-Baseline), we\nmatch the accuracy of Inception in less than half the num-\nber of training steps. By applying the modifications in\nSec. 4.2.1, we significantly increase the training speed of\nthe network. BN-x5 needs 14 times fewer steps than In-\nception to reach the 72.2% accuracy. Interestingly, in-\ncreasing the learning rate further (BN-x30) causes the\nmodel to train somewhat slower initially, but allows it to\nreach a higher final accuracy. It reaches 74.8% after 6·106\n\nsteps, i.e. 5 times fewer steps than required by Inception\nto reach 72.2%.\nWe also verified that the reduction in internal covari-\nate shift allows deep networks with Batch Normalization\n\nModel\nSteps to 72.2%\nMax accuracy\nInception\n31.0 · 106\n72.2%\nBN-Baseline\n13.3 · 106\n72.7%\nBN-x5\n2.1 · 106\n73.0%\nBN-x30\n2.7 · 106\n74.8%\nBN-x5-Sigmoid\n69.8%\n\nFigure 3: For Inception and the batch-normalized\nvariants, the number of training steps required to\nreach the maximum accuracy of Inception (72.2%),\nand the maximum accuracy achieved by the net-\nwork.\n\nto be trained when sigmoid is used as the nonlinearity,\ndespite the well-known difficulty of training such net-\nworks. Indeed, BN-x5-Sigmoid achieves the accuracy of\n69.8%. Without Batch Normalization, Inception with sig-\nmoid never achieves better than 1/1000 accuracy.\n\n4.2.3\nEnsemble Classification\n\nThe current reported best results on the ImageNet Large\nScale Visual Recognition Competition are reached by the\nDeep Image ensemble of traditional models (Wu et al.,\n2015) and the ensemble model of (He et al., 2015). The\nlatter reports the top-5 error of 4.94%, as evaluated by the\nILSVRC server. Here we report a top-5 validation error of\n4.9%, and test error of 4.82% (according to the ILSVRC\nserver). This improves upon the previous best result, and\nexceeds the estimated accuracy of human raters according\nto (Russakovsky et al., 2014).\nFor our ensemble, we used 6 networks. Each was based\non BN-x30, modified via some of the following: increased\ninitial weights in the convolutional layers; using Dropout\n(with the Dropout probability of 5% or 10%, vs. 40%\nfor the original Inception); and using non-convolutional,\nper-activation Batch Normalization with last hidden lay-\ners of the model. Each network achieved its maximum\naccuracy after about 6 · 106 training steps. The ensemble\nprediction was based on the arithmetic average of class\nprobabilities predicted by the constituent networks. The\ndetails of ensemble and multicrop inference are similar to\n(Szegedy et al., 2014).\nWe demonstrate in Fig. 4 that batch normalization al-\nlows us to set new state-of-the-art by a healthy margin on\nthe ImageNet classification challenge benchmarks.\n\n5\nConclusion\n\nWe have presented a novel mechanism for dramatically\naccelerating the training of deep networks. It is based on\nthe premise that covariate shift, which is known to com-\nplicate the training of machine learning systems, also ap-\n\nplies to sub-networks and layers, and removing it from\ninternal activations of the network may aid in training.\nOur proposed method draws its power from normalizing\nactivations, and from incorporating this normalization in\nthe network architecture itself. This ensures that the nor-\nmalization is appropriately handled by any optimization\nmethod that is being used to train the network. To en-\nable stochastic optimization methods commonly used in\ndeep network training, we perform the normalization for\neach mini-batch, and backpropagate the gradients through\nthe normalization parameters. Batch Normalization adds\nonly two extra parameters per activation, and in doing so\npreserves the representation ability of the network. We\npresented an algorithm for constructing, training, and per-\nforming inference with batch-normalized networks. The\nresulting networks can be trained with saturating nonlin-\nearities, are more tolerant to increased training rates, and\noften do not require Dropout for regularization.\n\nMerely adding Batch Normalization to a state-of-the-\nart image classification model yields a substantial speedup\nin training. By further increasing the learning rates, re-\nmoving Dropout, and applying other modifications af-\nforded by Batch Normalization, we reach the previous\nstate of the art with only a small fraction of training steps\n– and then beat the state of the art in single-network image\nclassification. Furthermore, by combining multiple mod-\nels trained with Batch Normalization, we perform better\nthan the best known system on ImageNet, by a significant\nmargin.\n\nInterestingly, our method bears similarity to the stan-\ndardization layer of (G¨ulc¸ehre & Bengio, 2013), though\nthe two methods stem from very different goals, and per-\nform different tasks. The goal of Batch Normalization\nis to achieve a stable distribution of activation values\nthroughout training, and in our experiments we apply it\nbefore the nonlinearity since that is where matching the\nfirst and second moments is more likely to result in a\nstable distribution. On the contrary, (G¨ulc¸ehre & Bengio,\n2013) apply the standardization layer to the output of the\nnonlinearity, which results in sparser activations. In our\nlarge-scale image classification experiments, we have not\nobserved the nonlinearity inputs to be sparse, neither with\nnor without Batch Normalization. Other notable differ-\n\nModel\nResolution\nCrops\nModels\nTop-1 error\nTop-5 error\nGoogLeNet ensemble\n224\n144\n7\n-\n6.67%\nDeep Image low-res\n256\n-\n1\n-\n7.96%\nDeep Image high-res\n512\n-\n1\n24.88\n7.42%\nDeep Image ensemble\nvariable\n-\n-\n-\n5.98%\nBN-Inception single crop\n224\n1\n1\n25.2%\n7.82%\nBN-Inception multicrop\n224\n144\n1\n21.99%\n5.82%\nBN-Inception ensemble\n224\n144\n6\n20.1%\n4.9%*\n\nFigure 4: Batch-Normalized Inception comparison with previous state of the art on the provided validation set com-\nprising 50000 images. *BN-Inception ensemble has reached 4.82% top-5 error on the 100000 images of the test set of\nthe ImageNet as reported by the test server.\n\nentiating characteristics of Batch Normalization include\nthe learned scale and shift that allow the BN transform\nto represent identity (the standardization layer did not re-\nquire this since it was followed by the learned linear trans-\nform that, conceptually, absorbs the necessary scale and\nshift), handling of convolutional layers, deterministic in-\nference that does not depend on the mini-batch, and batch-\nnormalizing each convolutional layer in the network.\nIn this work, we have not explored the full range of\npossibilities that Batch Normalization potentially enables.\nOur future work includes applications of our method to\nRecurrent Neural Networks (Pascanu et al., 2013), where\nthe internal covariate shift and the vanishing or exploding\ngradients may be especially severe, and which would al-\nlow us to more thoroughly test the hypothesis that normal-\nization improves gradient propagation (Sec. 3.3). We plan\nto investigate whether Batch Normalization can help with\ndomain adaptation, in its traditional sense – i.e. whether\nthe normalization performed by the network would al-\nlow it to more easily generalize to new data distribu-\ntions, perhaps with just a recomputation of the population\nmeans and variances (Alg. 2). Finally, we believe that fur-\nther theoretical analysis of the algorithm would allow still\nmore improvements and applications."
+      },
+      {
+        "section_id": "sec_004",
+        "parent_section_id": null,
+        "level": 1,
+        "position": 3,
+        "original_header": "References",
+        "canonical_label": "other",
+        "label_confidence": 0.3,
+        "page_start": 7,
+        "page_end": 8,
+        "content": "Bengio, Yoshua and Glorot, Xavier. Understanding the\ndifficulty of training deep feedforward neural networks.\nIn Proceedings of AISTATS 2010, volume 9, pp. 249–\n256, May 2010.\n\nDean, Jeffrey, Corrado, Greg S., Monga, Rajat, Chen, Kai,\nDevin, Matthieu, Le, Quoc V., Mao, Mark Z., Ranzato,\nMarc’Aurelio, Senior, Andrew, Tucker, Paul, Yang, Ke,\nand Ng, Andrew Y. Large scale distributed deep net-\nworks. In NIPS, 2012.\n\nDesjardins, Guillaume and Kavukcuoglu, Koray. Natural\nneural networks. (unpublished).\n\nDuchi, John, Hazan, Elad, and Singer, Yoram. Adaptive\nsubgradient methods for online learning and stochastic\n\noptimization. J. Mach. Learn. Res., 12:2121–2159,July\n2011. ISSN 1532-4435.\n\nG¨ulc¸ehre, C¸ aglar and Bengio, Yoshua. Knowledge mat-\nters: Importance of prior information for optimization.\nCoRR, abs/1301.4083, 2013.\n\nHe, K., Zhang, X., Ren, S., and Sun, J. Delving Deep\ninto Rectifiers: Surpassing Human-Level Performance\non ImageNet Classification. ArXiv e-prints, February\n2015.\n\nHyv¨arinen, A. and Oja, E. Independent component anal-\nysis: Algorithms and applications. Neural Netw., 13\n(4-5):411–430, May 2000.\n\nJiang, Jing. A literature survey on domain adaptation of\nstatistical classifiers, 2008.\n\nLeCun, Y., Bottou, L., Bengio, Y., and Haffner, P.\nGradient-based learning applied to document recog-\nnition. Proceedings of the IEEE, 86(11):2278–2324,\nNovember 1998a.\n\nLeCun, Y., Bottou, L., Orr, G., and Muller, K. Efficient\nbackprop. In Orr, G. and K., Muller (eds.), Neural Net-\nworks: Tricks of the trade. Springer, 1998b.\n\nLyu, S and Simoncelli, E P. Nonlinear image representa-\ntion using divisive normalization. In Proc. Computer\nVision and Pattern Recognition, pp. 1–8. IEEE Com-\nputer Society, Jun 23-28 2008. doi: 10.1109/CVPR.\n2008.4587821.\n\nNair, Vinod and Hinton, Geoffrey E. Rectified linear units\nimprove restricted boltzmann machines. In ICML, pp.\n807–814. Omnipress, 2010.\n\nPascanu, Razvan, Mikolov, Tomas, and Bengio, Yoshua.\nOn the difficulty of training recurrent neural networks.\nIn Proceedings of the 30th International Conference on\nMachine Learning, ICML 2013, Atlanta, GA, USA, 16-\n21 June 2013, pp. 1310–1318, 2013.\n\nPovey, Daniel, Zhang, Xiaohui, and Khudanpur, San-\njeev.\nParallel training of deep neural networks with\nnatural gradient and parameter averaging.\nCoRR,\nabs/1410.7455, 2014.\n\nRaiko, Tapani, Valpola, Harri, and LeCun, Yann. Deep\nlearning made easier by linear transformations in per-\nceptrons. In International Conference on Artificial In-\ntelligence and Statistics (AISTATS), pp. 924–932, 2012.\n\nRussakovsky, Olga, Deng, Jia, Su, Hao, Krause, Jonathan,\nSatheesh, Sanjeev, Ma, Sean, Huang, Zhiheng, Karpa-\nthy, Andrej, Khosla, Aditya, Bernstein, Michael, Berg,\nAlexander C., and Fei-Fei, Li. ImageNet Large Scale\nVisual Recognition Challenge, 2014.\n\nSaxe, Andrew M., McClelland, James L., and Ganguli,\nSurya.\nExact solutions to the nonlinear dynamics\nof learning in deep linear neural networks.\nCoRR,\nabs/1312.6120, 2013.\n\nShimodaira, Hidetoshi.\nImproving predictive inference\nunder covariate shift by weighting the log-likelihood\nfunction. Journal of Statistical Planning and Inference,\n90(2):227–244, October 2000.\n\nSrivastava, Nitish, Hinton, Geoffrey, Krizhevsky, Alex,\nSutskever, Ilya, and Salakhutdinov, Ruslan. Dropout:\nA simple way to prevent neural networks from overfit-\nting. J. Mach. Learn. Res., 15(1):1929–1958, January\n2014.\n\nSutskever, Ilya, Martens, James, Dahl, George E., and\nHinton, Geoffrey E.\nOn the importance of initial-\nization and momentum in deep learning.\nIn ICML\n(3), volume 28 of JMLR Proceedings, pp. 1139–1147.\nJMLR.org, 2013.\n\nSzegedy, Christian, Liu, Wei, Jia, Yangqing, Sermanet,\nPierre, Reed, Scott, Anguelov, Dragomir, Erhan, Du-\nmitru, Vanhoucke, Vincent, and Rabinovich, An-\ndrew.\nGoing deeper with convolutions.\nCoRR,\nabs/1409.4842, 2014.\n\nWiesler, Simon and Ney, Hermann. A convergence anal-\nysis of log-linear training. In Shawe-Taylor, J., Zemel,\nR.S., Bartlett, P., Pereira, F.C.N., and Weinberger, K.Q.\n(eds.), Advances in Neural Information Processing Sys-\ntems 24, pp. 657–665, Granada, Spain, December 2011.\n\nWiesler, Simon, Richard, Alexander, Schl¨uter, Ralf, and\nNey, Hermann. Mean-normalized stochastic gradient\nfor large-scale deep learning.\nIn IEEE International\nConference on Acoustics, Speech, and Signal Process-\ning, pp. 180–184, Florence, Italy, May 2014.\n\nWu, Ren, Yan, Shengen, Shan, Yi, Dang, Qingqing, and\nSun, Gang. Deep image: Scaling up image recognition,\n2015."
+      },
+      {
+        "section_id": "sec_005",
+        "parent_section_id": null,
+        "level": 1,
+        "position": 4,
+        "original_header": "Appendix",
+        "canonical_label": "appendix",
+        "label_confidence": 1.0,
+        "page_start": 8,
+        "page_end": 8,
+        "content": ""
+      },
+      {
+        "section_id": "sec_006",
+        "parent_section_id": null,
+        "level": 1,
+        "position": 5,
+        "original_header": "Variant of the Inception Model Used",
+        "canonical_label": "conclusion",
+        "label_confidence": 0.6,
+        "page_start": 8,
+        "page_end": 10,
+        "content": "Figure 5 documents the changes that were performed\ncompared to\nthe\narchitecture with\nrespect\nto\nthe\nGoogleNet archictecture. For the interpretation of this\ntable, please consult (Szegedy et al., 2014). The notable\narchitecture changes compared to the GoogLeNet model\ninclude:\n\n• The 5×5 convolutional layers are replaced by two\nconsecutive 3×3 convolutional layers.\nThis in-\ncreases the maximum depth of the network by 9\n\nweight layers. Also it increases the number of pa-\nrameters by 25% and the computational cost is in-\ncreased by about 30%.\n\n• The number 28×28 inception modules is increased\nfrom 2 to 3.\n\n• Inside the modules, sometimes average, sometimes\nmaximum-pooling is employed. This is indicated in\nthe entries corresponding to the pooling layers of the\ntable.\n\n• There are no across the board pooling layers be-\ntween any two Inception modules, but stride-2 con-\nvolution/pooling layers are employed before the fil-\nter concatenation in the modules 3c, 4e.\n\nOur model employed separable convolution with depth\nmultiplier 8 on the first convolutional layer. This reduces\nthe computational cost while increasing the memory con-\nsumption at training time.\n\ntype\npatch size/\nstride\n\noutput\nsize\ndepth\n#1×1\n#3×3\nreduce\n#3×3\ndouble #3×3\nreduce\n\ndouble\n#3×3\nPool +proj\n\nconvolution*\n7×7/2\n112×112×64\n1\nmax pool\n3×3/2\n56×56×64\n0\nconvolution\n3×3/1\n56×56×192\n1\n64\n192\nmax pool\n3×3/2\n28×28×192\n0\ninception (3a)\n28×28×256\n3\n64\n64\n64\n64\n96\navg + 32\ninception (3b)\n28×28×320\n3\n64\n64\n96\n64\n96\navg + 64\ninception (3c)\nstride 2\n28×28×576\n3\n0\n128\n160\n64\n96\nmax + pass through\ninception (4a)\n14×14×576\n3\n224\n64\n96\n96\n128\navg + 128\ninception (4b)\n14×14×576\n3\n192\n96\n128\n96\n128\navg + 128\ninception (4c)\n14×14×576\n3\n160\n128\n160\n128\n160\navg + 128\ninception (4d)\n14×14×576\n3\n96\n128\n192\n160\n192\navg + 128\ninception (4e)\nstride 2\n14×14×1024\n3\n0\n128\n192\n192\n256\nmax + pass through\ninception (5a)\n7×7×1024\n3\n352\n192\n320\n160\n224\navg + 128\ninception (5b)\n7×7×1024\n3\n352\n192\n320\n192\n224\nmax + 128\navg pool\n7×7/1\n1×1×1024\n0\n\nFigure 5: Inception architecture"
+      }
+    ],
+    "chunks": [
+      {
+        "chunk_id": "chk_000",
+        "text": "Batch Normalization: Accelerating Deep Network Training by\nReducing Internal Covariate Shift",
+        "word_count": 11,
+        "section_id": "sec_001",
+        "canonical_label": "introduction",
+        "page_start": 0,
+        "page_end": 0,
+        "paragraph_index": 0,
+        "reading_order": 0,
+        "extraction_method": "pymupdf_fallback",
+        "extraction_confidence": 0.7,
+        "entity_ids": [],
+        "claim_ids": []
+      },
+      {
+        "chunk_id": "chk_001",
+        "text": "Training Deep Neural Networks is complicated by the fact\nthat the distribution of each layer’s inputs changes during\ntraining, as the parameters of the previous layers change.\nThis slows down the training by requiring lower learning\nrates and careful parameter initialization, and makes it no-\ntoriously hard to train models with saturating nonlineari-\nties. We refer to this phenomenon as internal covariate\nshift, and address the problem by normalizing layer in-\nputs. Our method draws its strength from making normal-\nization a part of the model architecture and performing the\nnormalization for each training mini-batch. Batch Nor-\nmalization allows us to use much higher learning rates and\nbe less careful about initialization. It also acts as a regu-\nlarizer, in some cases eliminating the need for Dropout.\nApplied to a state-of-the-art image classification model,\nBatch Normalization achieves the same accuracy with 14\ntimes fewer training steps, and beats the original model\nby a significant margin.\nUsing an ensemble of batch-\nnormalized networks, we improve upon the best published\nresult on ImageNet classification: reaching 4.9% top-5\nvalidation error (and 4.8% test error), exceeding the ac-\ncuracy of human raters.",
+        "word_count": 188,
+        "section_id": "sec_002",
+        "canonical_label": "other",
+        "page_start": 0,
+        "page_end": 0,
+        "paragraph_index": 0,
+        "reading_order": 1,
+        "extraction_method": "pymupdf_fallback",
+        "extraction_confidence": 0.3,
+        "entity_ids": [
+          "ent_001",
+          "ent_002",
+          "ent_003"
+        ],
+        "claim_ids": [
+          "clm_001",
+          "clm_002"
+        ]
+      },
+      {
+        "chunk_id": "chk_002",
+        "text": "1\nIntroduction\n\nDeep learning has dramatically advanced the state of the\nart in vision, speech, and many other areas.\nStochas-\ntic gradient descent (SGD) has proved to be an effec-\ntive way of training deep networks, and SGD variants\nsuch as momentum (Sutskever et al., 2013) and Adagrad\n(Duchi et al., 2011) have been used to achieve state of the\nart performance. SGD optimizes the parameters Θ of the\nnetwork, so as to minimize the loss\n\nN\n�\n\nΘ = arg min\nΘ\n1\nN\n\ni=1\nℓ(xi, Θ)\n\nwhere x1...N is the training data set. With SGD, the train-\ning proceeds in steps, and at each step we consider a mini-\nbatch x1...m of size m. The mini-batch is used to approx-\nimate the gradient of the loss function with respect to the\nparameters, by computing\n\n1\nm\n∂ℓ(xi, Θ)\n\n∂Θ\n.\n\nSergey Ioffe\nGoogle Inc., sioffe@google.com\nChristian Szegedy\nGoogle Inc., szegedy@google.com",
+        "word_count": 152,
+        "section_id": "sec_003",
+        "canonical_label": "future_work",
+        "page_start": 0,
+        "page_end": 7,
+        "paragraph_index": 0,
+        "reading_order": 2,
+        "extraction_method": "pymupdf_fallback",
+        "extraction_confidence": 0.5,
+        "entity_ids": [],
+        "claim_ids": []
+      },
+      {
+        "chunk_id": "chk_003",
+        "text": "Using mini-batches of examples, as opposed to one exam-\nple at a time, is helpful in several ways. First, the gradient\nof the loss over a mini-batch is an estimate of the gradient\nover the training set, whose quality improves as the batch\nsize increases. Second, computation over a batch can be\nmuch more efficient than m computations for individual\nexamples, due to the parallelism afforded by the modern\ncomputing platforms.\nWhile stochastic gradient is simple and effective, it\nrequires careful tuning of the model hyper-parameters,\nspecifically the learning rate used in optimization, as well\nas the initial values for the model parameters. The train-\ning is complicated by the fact that the inputs to each layer\nare affected by the parameters of all preceding layers – so\nthat small changes to the network parameters amplify as\nthe network becomes deeper.\nThe change in the distributions of layers’ inputs\npresents a problem because the layers need to continu-\nously adapt to the new distribution. When the input dis-\ntribution to a learning system changes, it is said to experi-\nence covariate shift (Shimodaira, 2000). This is typically\nhandled via domain adaptation (Jiang, 2008). However,\nthe notion of covariate shift can be extended beyond the\nlearning system as a whole, to apply to its parts, such as a\nsub-network or a layer. Consider a network computing",
+        "word_count": 225,
+        "section_id": "sec_003",
+        "canonical_label": "future_work",
+        "page_start": 0,
+        "page_end": 7,
+        "paragraph_index": 1,
+        "reading_order": 3,
+        "extraction_method": "pymupdf_fallback",
+        "extraction_confidence": 0.5,
+        "entity_ids": [
+          "ent_004",
+          "ent_005",
+          "ent_006"
+        ],
+        "claim_ids": [
+          "clm_003",
+          "clm_004"
+        ]
+      },
+      {
+        "chunk_id": "chk_004",
+        "text": "ℓ= F2(F1(u, Θ1), Θ2)\n\nwhere F1 and F2 are arbitrary transformations, and the\nparameters Θ1, Θ2 are to be learned so as to minimize\nthe loss ℓ. Learning Θ2 can be viewed as if the inputs\nx = F1(u, Θ1) are fed into the sub-network\n\nℓ= F2(x, Θ2).\n\nFor example, a gradient descent step\n\nm\n�\n\n∂F2(xi, Θ2)\n\nΘ2 ←Θ2 −α\n\n∂Θ2\n\ni=1\n\n(for batch size m and learning rate α) is exactly equivalent\nto that for a stand-alone network F2 with input x. There-\nfore, the input distribution properties that make training\nmore efficient – such as having the same distribution be-\ntween the training and test data – apply to training the\nsub-network as well. As such it is advantageous for the\ndistribution of x to remain fixed over time. Then, Θ2 does\n\nnot have to readjust to compensate for the change in the\ndistribution of x.\n\nFixed distribution of inputs to a sub-network would\nhave positive consequences for the layers outside the sub-\nnetwork, as well. Consider a layer with a sigmoid activa-\ntion function z = g(Wu + b) where u is the layer input,\nthe weight matrix W and bias vector b are the layer pa-\nrameters to be learned, and g(x) =\n1\n1+exp(−x). As |x|\nincreases, g′(x) tends to zero. This means that for all di-\nmensions of x = Wu+b except those with small absolute\nvalues, the gradient flowing down to u will vanish and the\nmodel will train slowly. However, since x is affected by\nW, b and the parameters of all the layers below, changes\nto those parameters during training will likely move many\ndimensions of x into the saturated regime of the nonlin-\nearity and slow down the convergence.\nThis effect is\namplified as the network depth increases.\nIn practice,\nthe saturation problem and the resulting vanishing gradi-\nents are usually addressed by using Rectified Linear Units\n(Nair & Hinton, 2010) ReLU(x) = max(x, 0), careful\ninitialization (Bengio & Glorot, 2010; Saxe et al., 2013),\nand small learning rates. If, however, we could ensure\nthat the distribution of nonlinearity inputs remains more\nstable as the network trains, then the optimizer would be\nless likely to get stuck in the saturated regime, and the\ntraining would accelerate.",
+        "word_count": 377,
+        "section_id": "sec_003",
+        "canonical_label": "future_work",
+        "page_start": 0,
+        "page_end": 7,
+        "paragraph_index": 2,
+        "reading_order": 4,
+        "extraction_method": "pymupdf_fallback",
+        "extraction_confidence": 0.5,
+        "entity_ids": [
+          "ent_007",
+          "ent_008"
+        ],
+        "claim_ids": []
+      },
+      {
+        "chunk_id": "chk_005",
+        "text": "We refer to the change in the distributions of internal\nnodes of a deep network, in the course of training, as In-\nternal Covariate Shift. Eliminating it offers a promise of\nfaster training. We propose a new mechanism, which we\ncall Batch Normalization, that takes a step towards re-\nducing internal covariate shift, and in doing so dramati-\ncally accelerates the training of deep neural nets. It ac-\ncomplishes this via a normalization step that fixes the\nmeans and variances of layer inputs. Batch Normalization\nalso has a beneficial effect on the gradient flow through\nthe network, by reducing the dependence of gradients\non the scale of the parameters or of their initial values.\nThis allows us to use much higher learning rates with-\nout the risk of divergence. Furthermore, batch normal-\nization regularizes the model and reduces the need for\nDropout (Srivastava et al., 2014). Finally, Batch Normal-\nization makes it possible to use saturating nonlinearities\nby preventing the network from getting stuck in the satu-\nrated modes.",
+        "word_count": 169,
+        "section_id": "sec_003",
+        "canonical_label": "future_work",
+        "page_start": 0,
+        "page_end": 7,
+        "paragraph_index": 3,
+        "reading_order": 5,
+        "extraction_method": "pymupdf_fallback",
+        "extraction_confidence": 0.5,
+        "entity_ids": [
+          "ent_009"
+        ],
+        "claim_ids": [
+          "clm_005"
+        ]
+      },
+      {
+        "chunk_id": "chk_006",
+        "text": "In Sec. 4.2, we apply Batch Normalization to the best-\nperforming ImageNet classification network, and show\nthat we can match its performance using only 7% of the\ntraining steps, and can further exceed its accuracy by a\nsubstantial margin. Using an ensemble of such networks\ntrained with Batch Normalization, we achieve the top-5\nerror rate that improves upon the best known results on\nImageNet classification.\n\n2\nTowards\nReducing\nInternal\nCovariate Shift\n\nWe define Internal Covariate Shift as the change in the\ndistribution of network activations due to the change in\nnetwork parameters during training. To improve the train-\ning, we seek to reduce the internal covariate shift. By\nfixing the distribution of the layer inputs x as the training\nprogresses, we expect to improve the training speed. It has\nbeen long known (LeCun et al., 1998b; Wiesler & Ney,\n2011) that the network training converges faster if its in-\nputs are whitened – i.e., linearly transformed to have zero\nmeans and unit variances, and decorrelated. As each layer\nobserves the inputs produced by the layers below, it would\nbe advantageous to achieve the same whitening of the in-\nputs of each layer. By whitening the inputs to each layer,\nwe would take a step towards achieving the fixed distri-\nbutions of inputs that would remove the ill effects of the\ninternal covariate shift.\nWe could consider whitening activations at every train-\ning step or at some interval, either by modifying the\nnetwork directly or by changing the parameters of the\noptimization algorithm to depend on the network ac-\ntivation values (Wiesler et al., 2014; Raiko et al., 2012;\nPovey et al., 2014; Desjardins & Kavukcuoglu).\nHow-\never, if these modifications are interspersed with the op-\ntimization steps, then the gradient descent step may at-\ntempt to update the parameters in a way that requires\nthe normalization to be updated, which reduces the ef-\nfect of the gradient step. For example, consider a layer\nwith the input u that adds the learned bias b, and normal-\nizes the result by subtracting the mean of the activation\ncomputed over the training data: �x = x −E[x] where\nx = u + b, X = {x1...N} is the set of values of x over\nthe training set, and E[x] =\n1\nN\n�N\ni=1 xi. If a gradient\ndescent step ignores the dependence of E[x] on b, then it\nwill update b ←b + ∆b, where ∆b ∝−∂ℓ/∂�x. Then\nu + (b + ∆b) −E[u + (b + ∆b)] = u + b −E[u + b].\nThus, the combination of the update to b and subsequent\nchange in normalization led to no change in the output\nof the layer nor, consequently, the loss. As the training\ncontinues, b will grow indefinitely while the loss remains\nfixed. This problem can get worse if the normalization not\nonly centers but also scales the activations. We have ob-\nserved this empirically in initial experiments, where the\nmodel blows up when the normalization parameters are\ncomputed outside the gradient descent step.\nThe issue with the above approach is that the gradient\ndescent optimization does not take into account the fact\nthat the normalization takes place. To address this issue,\nwe would like to ensure that, for any parameter values,\nthe network always produces activations with the desired\ndistribution. Doing so would allow the gradient of the\nloss with respect to the model parameters to account for\nthe normalization, and for its dependence on the model\nparameters Θ. Let again x be a layer input, treated as a",
+        "word_count": 590,
+        "section_id": "sec_003",
+        "canonical_label": "future_work",
+        "page_start": 0,
+        "page_end": 7,
+        "paragraph_index": 4,
+        "reading_order": 6,
+        "extraction_method": "pymupdf_fallback",
+        "extraction_confidence": 0.5,
+        "entity_ids": [
+          "ent_010",
+          "ent_011",
+          "ent_012",
+          "ent_013"
+        ],
+        "claim_ids": [
+          "clm_006"
+        ]
+      },
+      {
+        "chunk_id": "chk_007",
+        "text": "vector, and X be the set of these inputs over the training\ndata set. The normalization can then be written as a trans-\nformation\n�x = Norm(x, X)\n\nwhich depends not only on the given training example x\nbut on all examples X – each of which depends on Θ if\nx is generated by another layer. For backpropagation, we\nwould need to compute the Jacobians\n\n∂Norm(x, X)\n\n∂x\nand ∂Norm(x, X)\n\n∂X\n;\n\nignoring the latter term would lead to the explosion de-\nscribed above. Within this framework, whitening the layer\ninputs is expensive, as it requires computing the covari-\nance matrix Cov[x] = Ex∈X [xxT ] −E[x]E[x]T and its\ninverse square root, to produce the whitened activations\nCov[x]−1/2(x −E[x]), as well as the derivatives of these\ntransforms for backpropagation. This motivates us to seek\nan alternative that performs input normalization in a way\nthat is differentiable and does not require the analysis of\nthe entire training set after every parameter update.\nSome\nof\nthe\nprevious\napproaches\n(e.g.\n(Lyu & Simoncelli,\n2008))\nuse\nstatistics\ncomputed\nover a single training example, or, in the case of image\nnetworks, over different feature maps at a given location.\nHowever, this changes the representation ability of a\nnetwork by discarding the absolute scale of activations.\nWe want to a preserve the information in the network, by\nnormalizing the activations in a training example relative\nto the statistics of the entire training data.",
+        "word_count": 239,
+        "section_id": "sec_003",
+        "canonical_label": "future_work",
+        "page_start": 0,
+        "page_end": 7,
+        "paragraph_index": 5,
+        "reading_order": 7,
+        "extraction_method": "pymupdf_fallback",
+        "extraction_confidence": 0.5,
+        "entity_ids": [
+          "ent_014"
+        ],
+        "claim_ids": [
+          "clm_007"
+        ]
+      },
+      {
+        "chunk_id": "chk_008",
+        "text": "3\nNormalization\nvia\nMini-Batch\nStatistics\n\nSince the full whitening of each layer’s inputs is costly\nand not everywhere differentiable, we make two neces-\nsary simplifications. The first is that instead of whitening\nthe features in layer inputs and outputs jointly, we will\nnormalize each scalar feature independently, by making it\nhave the mean of zero and the variance of 1. For a layer\nwith d-dimensional input x = (x(1) . . . x(d)), we will nor-\nmalize each dimension\n\n�x(k) = x(k) −E[x(k)]\n�\nVar[x(k)]\n\nwhere the expectation and variance are computed over the\ntraining data set. As shown in (LeCun et al., 1998b), such\nnormalization speeds up convergence, even when the fea-\ntures are not decorrelated.\nNote that simply normalizing each input of a layer may\nchange what the layer can represent. For instance, nor-\nmalizing the inputs of a sigmoid would constrain them to\nthe linear regime of the nonlinearity. To address this, we\nmake sure that the transformation inserted in the network\ncan represent the identity transform. To accomplish this,",
+        "word_count": 173,
+        "section_id": "sec_003",
+        "canonical_label": "future_work",
+        "page_start": 0,
+        "page_end": 7,
+        "paragraph_index": 6,
+        "reading_order": 8,
+        "extraction_method": "pymupdf_fallback",
+        "extraction_confidence": 0.5,
+        "entity_ids": [
+          "ent_015"
+        ],
+        "claim_ids": []
+      },
+      {
+        "chunk_id": "chk_009",
+        "text": "we introduce, for each activation x(k), a pair of parameters\nγ(k), β(k), which scale and shift the normalized value:\n\ny(k) = γ(k)�x(k) + β(k).\n\nThese parameters are learned along with the original\nmodel parameters, and restore the representation power\nof the network. Indeed, by setting γ(k) =\n�\nVar[x(k)] and\nβ(k) = E[x(k)], we could recover the original activations,\nif that were the optimal thing to do.\nIn the batch setting where each training step is based on\nthe entire training set, we would use the whole set to nor-\nmalize activations. However, this is impractical when us-\ning stochastic optimization. Therefore, we make the sec-\nond simplification: since we use mini-batches in stochas-\ntic gradient training, each mini-batch produces estimates\nof the mean and variance of each activation. This way, the\nstatistics used for normalization can fully participate in\nthe gradient backpropagation. Note that the use of mini-\nbatches is enabled by computation of per-dimension vari-\nances rather than joint covariances; in the joint case, reg-\nularization would be required since the mini-batch size is\nlikely to be smaller than the number of activations being\nwhitened, resulting in singular covariance matrices.\nConsider a mini-batch B of size m. Since the normal-\nization is applied to each activation independently, let us\nfocus on a particular activation x(k) and omit k for clarity.\nWe have m values of this activation in the mini-batch,",
+        "word_count": 232,
+        "section_id": "sec_003",
+        "canonical_label": "future_work",
+        "page_start": 0,
+        "page_end": 7,
+        "paragraph_index": 7,
+        "reading_order": 9,
+        "extraction_method": "pymupdf_fallback",
+        "extraction_confidence": 0.5,
+        "entity_ids": [
+          "ent_016",
+          "ent_017"
+        ],
+        "claim_ids": [
+          "clm_008"
+        ]
+      },
+      {
+        "chunk_id": "chk_010",
+        "text": "B = {x1...m}.\n\nLet the normalized values be �x1...m, and their linear trans-\nformations be y1...m. We refer to the transform\n\nBNγ,β : x1...m →y1...m\n\nas the Batch Normalizing Transform. We present the BN\nTransform in Algorithm 1. In the algorithm, ǫ is a constant\nadded to the mini-batch variance for numerical stability.\n\nInput: Values of x over a mini-batch: B = {x1...m};\nParameters to be learned: γ, β\nOutput: {yi = BNγ,β(xi)}\n\nm\n�\n\nµB ←1\n\ni=1\nxi\n// mini-batch mean\n\nm\n�\n\nσ2\nB ←1\n\ni=1\n(xi −µB)2\n// mini-batch variance\n\n�xi ←xi −µB\n�\nσ2\nB + ǫ\n// normalize\n\nyi ←γ�xi + β ≡BNγ,β(xi)\n// scale and shift\n\nAlgorithm 1: Batch Normalizing Transform, applied to\nactivation x over a mini-batch.\n\nThe BN transform can be added to a network to manip-\nulate any activation. In the notation y = BNγ,β(x), we\n\nindicate that the parameters γ and β are to be learned,\nbut it should be noted that the BN transform does not\nindependently process the activation in each training ex-\nample. Rather, BNγ,β(x) depends both on the training\nexample and the other examples in the mini-batch. The\nscaled and shifted values y are passed to other network\nlayers. The normalized activations �x are internal to our\ntransformation, but their presence is crucial. The distri-\nbutions of values of any �x has the expected value of 0\nand the variance of 1, as long as the elements of each\nmini-batch are sampled from the same distribution, and\nif we neglect ǫ.\nThis can be seen by observing that\n�m\ni=1 �xi = 0 and\n1\nm\n�m\ni=1 �x2\ni = 1, and taking expec-\ntations. Each normalized activation �x(k) can be viewed as\nan input to a sub-network composed of the linear trans-\nform y(k) = γ(k)�x(k) + β(k), followed by the other pro-\ncessing done by the original network. These sub-network\ninputs all have fixed means and variances, and although\nthe joint distribution of these normalized �x(k) can change\nover the course of training, we expect that the introduc-\ntion of normalized inputs accelerates the training of the\nsub-network and, consequently, the network as a whole.\nDuring training we need to backpropagate the gradi-\nent of loss ℓthrough this transformation, as well as com-\npute the gradients with respect to the parameters of the\nBN transform. We use chain rule, as follows (before sim-\nplification):",
+        "word_count": 401,
+        "section_id": "sec_003",
+        "canonical_label": "future_work",
+        "page_start": 0,
+        "page_end": 7,
+        "paragraph_index": 8,
+        "reading_order": 10,
+        "extraction_method": "pymupdf_fallback",
+        "extraction_confidence": 0.5,
+        "entity_ids": [
+          "ent_018"
+        ],
+        "claim_ids": [
+          "clm_009"
+        ]
+      },
+      {
+        "chunk_id": "chk_011",
+        "text": "∂ℓ\n∂�xi =\n∂ℓ\n∂yi · γ\n\n∂ℓ\n∂σ2\nB = �m\ni=1\n∂ℓ\n∂�xi · (xi −µB) · −1\n\n2 (σ2\nB + ǫ)−3/2\n\n�\n+\n∂ℓ\n∂σ2\nB ·\n\n∂ℓ\n∂µB =\n��m\ni=1\n∂ℓ\n∂�xi ·\n−1\n√\n\n�m\ni=1 −2(xi−µB)\n\nσ2\nB+ǫ\n\nσ2\nB+ǫ +\n∂ℓ\n∂σ2\nB · 2(xi−µB)\n\n∂ℓ\n∂xi =\n∂ℓ\n∂�xi ·\n1\n√\n\nm\n+\n∂ℓ\n∂µB · 1\n\n∂ℓ\n∂γ = �m\ni=1\n∂ℓ\n∂yi · �xi\n\n∂ℓ\n∂β = �m\ni=1\n∂ℓ\n∂yi\n\nThus, BN transform is a differentiable transformation that\nintroduces normalized activations into the network. This\nensures that as the model is training, layers can continue\nlearning on input distributions that exhibit less internal co-\nvariate shift, thus accelerating the training. Furthermore,\nthe learned affine transform applied to these normalized\nactivations allows the BN transform to represent the iden-\ntity transformation and preserves the network capacity.\n\n3.1\nTraining and Inference with Batch-\nNormalized Networks",
+        "word_count": 157,
+        "section_id": "sec_003",
+        "canonical_label": "future_work",
+        "page_start": 0,
+        "page_end": 7,
+        "paragraph_index": 9,
+        "reading_order": 11,
+        "extraction_method": "pymupdf_fallback",
+        "extraction_confidence": 0.5,
+        "entity_ids": [
+          "ent_019",
+          "ent_020"
+        ],
+        "claim_ids": []
+      },
+      {
+        "chunk_id": "chk_012",
+        "text": "To Batch-Normalize a network, we specify a subset of ac-\ntivations and insert the BN transform for each of them,\naccording to Alg. 1. Any layer that previously received\nx as the input, now receives BN(x). A model employing\nBatch Normalization can be trained using batch gradient\ndescent, or Stochastic Gradient Descent with a mini-batch\nsize m > 1, or with any of its variants such as Adagrad\n\n(Duchi et al., 2011). The normalization of activations that\ndepends on the mini-batch allows efficient training, but is\nneither necessary nor desirable during inference; we want\nthe output to depend only on the input, deterministically.\nFor this, once the network has been trained, we use the\nnormalization\n\n�x =\nx −E[x]\n�\nVar[x] + ǫ\n\nusing the population, rather than mini-batch, statistics.\nNeglecting ǫ, these normalized activations have the same\nmean 0 and variance 1 as during training. We use the un-\nbiased variance estimate Var[x] =\nm\nm−1 · EB[σ2\nB], where\nthe expectation is over training mini-batches of size m and\nσ2\nB are their sample variances. Using moving averages in-\nstead, we can track the accuracy of a model as it trains.\nSince the means and variances are fixed during inference,\nthe normalization is simply a linear transform applied to\neach activation. It may further be composed with the scal-\ning by γ and shift by β, to yield a single linear transform\nthat replaces BN(x). Algorithm 2 summarizes the proce-\ndure for training batch-normalized networks.",
+        "word_count": 247,
+        "section_id": "sec_003",
+        "canonical_label": "future_work",
+        "page_start": 0,
+        "page_end": 7,
+        "paragraph_index": 10,
+        "reading_order": 12,
+        "extraction_method": "pymupdf_fallback",
+        "extraction_confidence": 0.5,
+        "entity_ids": [
+          "ent_021",
+          "ent_022",
+          "ent_023",
+          "ent_024"
+        ],
+        "claim_ids": []
+      },
+      {
+        "chunk_id": "chk_013",
+        "text": "Input: Network N with trainable parameters Θ;\nsubset of activations {x(k)}K\nk=1\nOutput: Batch-normalized network for inference, Ninf\nBN\n1: Ntr\nBN ←N\n// Training BN network\n2: for k = 1 . . . K do\n\n3:\nAdd transformation y(k) = BNγ(k),β(k)(x(k)) to\nNtr\nBN (Alg. 1)\n\n4:\nModify each layer in Ntr\nBN with input x(k) to take\ny(k) instead\n5: end for\n\n6: Train\nNtr\nBN\nto\noptimize\nthe\nparameters\nΘ ∪\n{γ(k), β(k)}K\nk=1\n7: Ninf\nBN ←Ntr\nBN\n// Inference BN network with frozen\n// parameters\n\n8: for k = 1 . . . K do\n9:\n// For clarity, x ≡x(k), γ ≡γ(k), µB ≡µ(k)\nB , etc.\n\n10:\nProcess multiple training mini-batches B, each of\nsize m, and average over them:\nE[x] ←EB[µB]\n\nVar[x] ←\nm\nm−1EB[σ2\nB]\n\n11:\nIn Ninf\nBN, replace the transform y = BNγ,β(x) with\ny =\nγ\n√",
+        "word_count": 150,
+        "section_id": "sec_003",
+        "canonical_label": "future_work",
+        "page_start": 0,
+        "page_end": 7,
+        "paragraph_index": 11,
+        "reading_order": 13,
+        "extraction_method": "pymupdf_fallback",
+        "extraction_confidence": 0.5,
+        "entity_ids": [],
+        "claim_ids": []
+      },
+      {
+        "chunk_id": "chk_014",
+        "text": "Var[x]+ǫ · x +\n�\nβ −\nγ E[x]\n√\n\nVar[x]+ǫ\n�\n\n12: end for\n\nAlgorithm 2: Training a Batch-Normalized Network\n\n3.2\nBatch-Normalized Convolutional Net-\nworks\n\nBatch Normalization can be applied to any set of acti-\nvations in the network. Here, we focus on transforms\n\nthat consist of an affine transformation followed by an\nelement-wise nonlinearity:\n\nz = g(Wu + b)\n\nwhere W and b are learned parameters of the model, and\ng(·) is the nonlinearity such as sigmoid or ReLU. This for-\nmulation covers both fully-connected and convolutional\nlayers. We add the BN transform immediately before the\nnonlinearity, by normalizing x = Wu+b. We could have\nalso normalized the layer inputs u, but since u is likely\nthe output of another nonlinearity, the shape of its distri-\nbution is likely to change during training, and constraining\nits first and second moments would not eliminate the co-\nvariate shift. In contrast, Wu + b is more likely to have\na symmetric, non-sparse distribution, that is “more Gaus-\nsian” (Hyv¨arinen & Oja, 2000); normalizing it is likely to\nproduce activations with a stable distribution.\nNote that, since we normalize Wu+b, the bias b can be\nignored since its effect will be canceled by the subsequent\nmean subtraction (the role of the bias is subsumed by β in\nAlg. 1). Thus, z = g(Wu + b) is replaced with",
+        "word_count": 227,
+        "section_id": "sec_003",
+        "canonical_label": "future_work",
+        "page_start": 0,
+        "page_end": 7,
+        "paragraph_index": 12,
+        "reading_order": 14,
+        "extraction_method": "pymupdf_fallback",
+        "extraction_confidence": 0.5,
+        "entity_ids": [],
+        "claim_ids": []
+      },
+      {
+        "chunk_id": "chk_015",
+        "text": "z = g(BN(Wu))\n\nwhere the BN transform is applied independently to each\ndimension of x = Wu, with a separate pair of learned\nparameters γ(k), β(k) per dimension.\nFor convolutional layers, we additionally want the nor-\nmalization to obey the convolutional property – so that\ndifferent elements of the same feature map, at different\nlocations, are normalized in the same way. To achieve\nthis, we jointly normalize all the activations in a mini-\nbatch, over all locations. In Alg. 1, we let B be the set of\nall values in a feature map across both the elements of a\nmini-batch and spatial locations – so for a mini-batch of\nsize m and feature maps of size p × q, we use the effec-\ntive mini-batch of size m′ = |B| = m · p q. We learn a\npair of parameters γ(k) and β(k) per feature map, rather\nthan per activation. Alg. 2 is modified similarly, so that\nduring inference the BN transform applies the same linear\ntransformation to each activation in a given feature map.",
+        "word_count": 176,
+        "section_id": "sec_003",
+        "canonical_label": "future_work",
+        "page_start": 0,
+        "page_end": 7,
+        "paragraph_index": 13,
+        "reading_order": 15,
+        "extraction_method": "pymupdf_fallback",
+        "extraction_confidence": 0.5,
+        "entity_ids": [],
+        "claim_ids": []
+      },
+      {
+        "chunk_id": "chk_016",
+        "text": "3.3\nBatch Normalization enables higher\nlearning rates\n\nIn traditional deep networks, too-high learning rate may\nresult in the gradients that explode or vanish, as well as\ngetting stuck in poor local minima.\nBatch Normaliza-\ntion helps address these issues. By normalizing activa-\ntions throughout the network, it prevents small changes\nto the parameters from amplifying into larger and subop-\ntimal changes in activations in gradients; for instance, it\nprevents the training from getting stuck in the saturated\nregimes of nonlinearities.\nBatch Normalization also makes training more resilient\nto the parameter scale. Normally, large learning rates may\nincrease the scale of layer parameters, which then amplify\n\nthe gradient during backpropagationand lead to the model\nexplosion.\nHowever, with Batch Normalization, back-\npropagation through a layer is unaffected by the scale of\nits parameters. Indeed, for a scalar a,\n\nBN(Wu) = BN((aW)u)\n\nand we can show that\n\n∂BN((aW)u)\n\n∂u\n= ∂BN(Wu)\n\n∂u\n∂BN((aW)u)",
+        "word_count": 150,
+        "section_id": "sec_003",
+        "canonical_label": "future_work",
+        "page_start": 0,
+        "page_end": 7,
+        "paragraph_index": 14,
+        "reading_order": 16,
+        "extraction_method": "pymupdf_fallback",
+        "extraction_confidence": 0.5,
+        "entity_ids": [],
+        "claim_ids": [
+          "clm_010",
+          "clm_011"
+        ]
+      },
+      {
+        "chunk_id": "chk_017",
+        "text": "a · ∂BN(Wu)\n\n∂(aW)\n= 1\n\nThe scale does not affect the layer Jacobian nor, con-\nsequently, the gradient propagation.\nMoreover, larger\nweights lead to smaller gradients, and Batch Normaliza-\ntion will stabilize the parameter growth.\nWe further conjecture that Batch Normalization may\nlead the layer Jacobians to have singular values close to 1,\nwhich is known to be beneficial for training (Saxe et al.,\n2013). Consider two consecutive layers with normalized\ninputs, and the transformation between these normalized\nvectors: �z = F(�x). If we assume that �x and �z are Gaussian\nand uncorrelated, and that F(�x) ≈J�x is a linear transfor-\nmation for the given model parameters, then both �x and �z\nhave unit covariances, and I = Cov[�z] = JCov[�x]JT =\nJJT . Thus, JJT = I, and so all singular values of J\nare equal to 1, which preserves the gradient magnitudes\nduring backpropagation. In reality, the transformation is\nnot linear, and the normalized values are not guaranteed to\nbe Gaussian nor independent, but we nevertheless expect\nBatch Normalization to help make gradient propagation\nbetter behaved. The precise effect of Batch Normaliza-\ntion on gradient propagation remains an area of further\nstudy.",
+        "word_count": 195,
+        "section_id": "sec_003",
+        "canonical_label": "future_work",
+        "page_start": 0,
+        "page_end": 7,
+        "paragraph_index": 15,
+        "reading_order": 17,
+        "extraction_method": "pymupdf_fallback",
+        "extraction_confidence": 0.5,
+        "entity_ids": [],
+        "claim_ids": [
+          "clm_012"
+        ]
+      },
+      {
+        "chunk_id": "chk_018",
+        "text": "3.4\nBatch Normalization regularizes the\nmodel\n\nWhen training with Batch Normalization, a training ex-\nample is seen in conjunction with other examples in the\nmini-batch, and the training network no longer produc-\ning deterministic values for a given training example. In\nour experiments, we found this effect to be advantageous\nto the generalization of the network. Whereas Dropout\n(Srivastava et al., 2014) is typically used to reduce over-\nfitting, in a batch-normalized network we found that it can\nbe either removed or reduced in strength.\n\n4\nExperiments\n\n4.1\nActivations over time\n\nTo verify the effects of internal covariate shift on train-\ning, and the ability of Batch Normalization to combat it,\nwe considered the problem of predicting the digit class on\nthe MNIST dataset (LeCun et al., 1998a). We used a very\nsimple network, with a 28x28 binary image as input, and\n\n0.9\n\n0.8\n\nWithout BN\nWith BN\n\n10K\n20K\n30K\n40K\n50K\n0.7",
+        "word_count": 154,
+        "section_id": "sec_003",
+        "canonical_label": "future_work",
+        "page_start": 0,
+        "page_end": 7,
+        "paragraph_index": 16,
+        "reading_order": 18,
+        "extraction_method": "pymupdf_fallback",
+        "extraction_confidence": 0.5,
+        "entity_ids": [
+          "ent_025",
+          "ent_026"
+        ],
+        "claim_ids": [
+          "clm_013",
+          "clm_014"
+        ]
+      },
+      {
+        "chunk_id": "chk_019",
+        "text": "(a)\n(b) Without BN\n(c) With BN\n\nFigure 1: (a) The test accuracy of the MNIST network\ntrained with and without Batch Normalization, vs. the\nnumber of training steps. Batch Normalization helps the\nnetwork train faster and achieve higher accuracy.\n(b,\nc) The evolution of input distributions to a typical sig-\nmoid, over the course of training, shown as {15, 50, 85}th\npercentiles. Batch Normalization makes the distribution\nmore stable and reduces the internal covariate shift.\n\n3 fully-connected hidden layers with 100 activations each.\nEach hidden layer computes y = g(Wu+b) with sigmoid\nnonlinearity, and the weights W initialized to small ran-\ndom Gaussian values. The last hidden layer is followed\nby a fully-connected layer with 10 activations (one per\nclass) and cross-entropy loss. We trained the network for\n50000 steps, with 60 examples per mini-batch. We added\nBatch Normalization to each hidden layer of the network,\nas in Sec. 3.1. We were interested in the comparison be-\ntween the baseline and batch-normalized networks, rather\nthan achieving the state of the art performance on MNIST\n(which the described architecture does not).\nFigure 1(a) shows the fraction of correct predictions\nby the two networks on held-out test data, as training\nprogresses.\nThe batch-normalized network enjoys the\nhigher test accuracy. To investigate why, we studied in-\nputs to the sigmoid, in the original network N and batch-\nnormalized network Ntr\nBN (Alg. 2) over the course of train-\ning. In Fig. 1(b,c) we show, for one typical activation from\nthe last hidden layer of each network, how its distribu-\ntion evolves. The distributions in the original network\nchange significantly over time, both in their mean and\nthe variance, which complicates the training of the sub-\nsequent layers. In contrast, the distributions in the batch-\nnormalized network are much more stable as training pro-\ngresses, which aids the training.",
+        "word_count": 306,
+        "section_id": "sec_003",
+        "canonical_label": "future_work",
+        "page_start": 0,
+        "page_end": 7,
+        "paragraph_index": 17,
+        "reading_order": 19,
+        "extraction_method": "pymupdf_fallback",
+        "extraction_confidence": 0.5,
+        "entity_ids": [
+          "ent_027",
+          "ent_028",
+          "ent_029"
+        ],
+        "claim_ids": [
+          "clm_015",
+          "clm_016"
+        ]
+      },
+      {
+        "chunk_id": "chk_020",
+        "text": "4.2\nImageNet classification\n\nWe applied Batch Normalization to a new variant of the\nInception network (Szegedy et al., 2014), trained on the\nImageNet classification task (Russakovsky et al., 2014).\nThe network has a large number of convolutional and\npooling layers, with a softmax layer to predict the image\nclass, out of 1000 possibilities. Convolutional layers use\nReLU as the nonlinearity. The main difference to the net-\nwork described in (Szegedy et al., 2014) is that the 5 × 5\nconvolutional layers are replaced by two consecutive lay-\ners of 3 × 3 convolutions with up to 128 filters. The net-\nwork contains 13.6 · 106 parameters, and, other than the\ntop softmax layer, has no fully-connected layers. More\n\ndetails are given in the Appendix. We refer to this model\nas Inception in the rest of the text. The model was trained\nusing a version of Stochastic Gradient Descent with mo-\nmentum (Sutskever et al., 2013), using the mini-batch size\nof 32. The training was performed using a large-scale, dis-\ntributed architecture (similar to (Dean et al., 2012)). All\nnetworks are evaluated as training progresses by comput-\ning the validation accuracy @1, i.e.\nthe probability of\npredicting the correct label out of 1000 possibilities, on\na held-out set, using a single crop per image.\nIn our experiments, we evaluated several modifications\nof Inception with Batch Normalization. In all cases, Batch\nNormalization was applied to the input of each nonlinear-\nity, in a convolutional way, as described in section 3.2,\nwhile keeping the rest of the architecture constant.",
+        "word_count": 256,
+        "section_id": "sec_003",
+        "canonical_label": "future_work",
+        "page_start": 0,
+        "page_end": 7,
+        "paragraph_index": 18,
+        "reading_order": 20,
+        "extraction_method": "pymupdf_fallback",
+        "extraction_confidence": 0.5,
+        "entity_ids": [
+          "ent_030",
+          "ent_031",
+          "ent_032",
+          "ent_033",
+          "ent_034",
+          "ent_035"
+        ],
+        "claim_ids": []
+      },
+      {
+        "chunk_id": "chk_021",
+        "text": "4.2.1\nAccelerating BN Networks\n\nSimply adding Batch Normalization to a network does not\ntake full advantage of our method. To do so, we further\nchanged the network and its training parameters, as fol-\nlows:\nIncrease learning rate. In a batch-normalized model,\nwe have been able to achieve a training speedup from\nhigher learning rates, with no ill side effects (Sec. 3.3).\nRemove Dropout. As described in Sec. 3.4, Batch Nor-\nmalization fulfills some of the same goals as Dropout. Re-\nmoving Dropout from Modified BN-Inception speeds up\ntraining, without increasing overfitting.\nReduce the L2 weight regularization. While in Incep-\ntion an L2 loss on the model parameters controls overfit-\nting, in Modified BN-Inception the weight of this loss is\nreduced by a factor of 5. We find that this improves the\naccuracy on the held-out validation data.\nAccelerate the learning rate decay. In training Incep-\ntion, learning rate was decayed exponentially. Because\nour network trains faster than Inception, we lower the\nlearning rate 6 times faster.\nRemove Local Response Normalization While Incep-\ntion and other networks (Srivastava et al., 2014) benefit\nfrom it, we found that with Batch Normalization it is not\nnecessary.\nShuffle training examples more thoroughly. We enabled\nwithin-shard shuffling of the training data, which prevents\nthe same examples from always appearing in a mini-batch\ntogether. This led to about 1% improvements in the val-\nidation accuracy, which is consistent with the view of\nBatch Normalization as a regularizer (Sec. 3.4): the ran-\ndomization inherent in our method should be most bene-\nficial when it affects an example differently each time it is\nseen.\nReduce the photometric distortions.\nBecause batch-\nnormalized networks train faster and observe each train-\ning example fewer times, we let the trainer focus on more\n“real” images by distorting them less.",
+        "word_count": 297,
+        "section_id": "sec_003",
+        "canonical_label": "future_work",
+        "page_start": 0,
+        "page_end": 7,
+        "paragraph_index": 19,
+        "reading_order": 21,
+        "extraction_method": "pymupdf_fallback",
+        "extraction_confidence": 0.5,
+        "entity_ids": [
+          "ent_036"
+        ],
+        "claim_ids": [
+          "clm_017",
+          "clm_018",
+          "clm_019",
+          "clm_020",
+          "clm_021"
+        ]
+      },
+      {
+        "chunk_id": "chk_022",
+        "text": "0.8\n\n0.7\n\n0.6\n\nInception\nBN−Baseline\nBN−x5\nBN−x30\nBN−x5−Sigmoid\nSteps to match Inception\n\n0.5\n\n5M\n10M\n15M\n20M\n25M\n30M\n0.4\n\nFigure 2: Single crop validation accuracy of Inception\nand its batch-normalized variants, vs.\nthe number of\ntraining steps.\n\n4.2.2\nSingle-Network Classification\n\nWe evaluated the following networks, all trained on the\nLSVRC2012 training data, and tested on the validation\ndata:\nInception: the network described at the beginning of\nSection 4.2, trained with the initial learning rate of 0.0015.\nBN-Baseline: Same as Inception with Batch Normal-\nization before each nonlinearity.\nBN-x5: Inception with Batch Normalization and the\nmodifications in Sec. 4.2.1. The initial learning rate was\nincreased by a factor of 5, to 0.0075. The same learning\nrate increase with original Inception caused the model pa-\nrameters to reach machine infinity.\nBN-x30: Like BN-x5, but with the initial learning rate\n0.045 (30 times that of Inception).\nBN-x5-Sigmoid: Like BN-x5, but with sigmoid non-\nlinearity g(t) =\n1\n1+exp(−x) instead of ReLU. We also at-\ntempted to train the original Inception with sigmoid, but\nthe model remained at the accuracy equivalent to chance.\nIn Figure 2, we show the validation accuracy of the\nnetworks, as a function of the number of training steps.\nInception reached the accuracy of 72.2% after 31 · 106",
+        "word_count": 210,
+        "section_id": "sec_003",
+        "canonical_label": "future_work",
+        "page_start": 0,
+        "page_end": 7,
+        "paragraph_index": 20,
+        "reading_order": 22,
+        "extraction_method": "pymupdf_fallback",
+        "extraction_confidence": 0.5,
+        "entity_ids": [
+          "ent_037"
+        ],
+        "claim_ids": [
+          "clm_022",
+          "clm_023"
+        ]
+      },
+      {
+        "chunk_id": "chk_023",
+        "text": "training steps. The Figure 3 shows, for each network,\nthe number of training steps required to reach the same\n72.2% accuracy, as well as the maximum validation accu-\nracy reached by the network and the number of steps to\nreach it.\nBy only using Batch Normalization (BN-Baseline), we\nmatch the accuracy of Inception in less than half the num-\nber of training steps. By applying the modifications in\nSec. 4.2.1, we significantly increase the training speed of\nthe network. BN-x5 needs 14 times fewer steps than In-\nception to reach the 72.2% accuracy. Interestingly, in-\ncreasing the learning rate further (BN-x30) causes the\nmodel to train somewhat slower initially, but allows it to\nreach a higher final accuracy. It reaches 74.8% after 6·106\n\nsteps, i.e. 5 times fewer steps than required by Inception\nto reach 72.2%.\nWe also verified that the reduction in internal covari-\nate shift allows deep networks with Batch Normalization",
+        "word_count": 153,
+        "section_id": "sec_003",
+        "canonical_label": "future_work",
+        "page_start": 0,
+        "page_end": 7,
+        "paragraph_index": 21,
+        "reading_order": 23,
+        "extraction_method": "pymupdf_fallback",
+        "extraction_confidence": 0.5,
+        "entity_ids": [
+          "ent_038",
+          "ent_039"
+        ],
+        "claim_ids": [
+          "clm_024"
+        ]
+      },
+      {
+        "chunk_id": "chk_024",
+        "text": "Model\nSteps to 72.2%\nMax accuracy\nInception\n31.0 · 106\n72.2%\nBN-Baseline\n13.3 · 106\n72.7%\nBN-x5\n2.1 · 106\n73.0%\nBN-x30\n2.7 · 106\n74.8%\nBN-x5-Sigmoid\n69.8%\n\nFigure 3: For Inception and the batch-normalized\nvariants, the number of training steps required to\nreach the maximum accuracy of Inception (72.2%),\nand the maximum accuracy achieved by the net-\nwork.\n\nto be trained when sigmoid is used as the nonlinearity,\ndespite the well-known difficulty of training such net-\nworks. Indeed, BN-x5-Sigmoid achieves the accuracy of\n69.8%. Without Batch Normalization, Inception with sig-\nmoid never achieves better than 1/1000 accuracy.\n\n4.2.3\nEnsemble Classification\n\nThe current reported best results on the ImageNet Large\nScale Visual Recognition Competition are reached by the\nDeep Image ensemble of traditional models (Wu et al.,\n2015) and the ensemble model of (He et al., 2015). The\nlatter reports the top-5 error of 4.94%, as evaluated by the\nILSVRC server. Here we report a top-5 validation error of\n4.9%, and test error of 4.82% (according to the ILSVRC\nserver). This improves upon the previous best result, and\nexceeds the estimated accuracy of human raters according\nto (Russakovsky et al., 2014).\nFor our ensemble, we used 6 networks. Each was based\non BN-x30, modified via some of the following: increased\ninitial weights in the convolutional layers; using Dropout\n(with the Dropout probability of 5% or 10%, vs. 40%\nfor the original Inception); and using non-convolutional,\nper-activation Batch Normalization with last hidden lay-\ners of the model. Each network achieved its maximum\naccuracy after about 6 · 106 training steps. The ensemble\nprediction was based on the arithmetic average of class\nprobabilities predicted by the constituent networks. The\ndetails of ensemble and multicrop inference are similar to\n(Szegedy et al., 2014).\nWe demonstrate in Fig. 4 that batch normalization al-\nlows us to set new state-of-the-art by a healthy margin on\nthe ImageNet classification challenge benchmarks.",
+        "word_count": 315,
+        "section_id": "sec_003",
+        "canonical_label": "future_work",
+        "page_start": 0,
+        "page_end": 7,
+        "paragraph_index": 22,
+        "reading_order": 24,
+        "extraction_method": "pymupdf_fallback",
+        "extraction_confidence": 0.5,
+        "entity_ids": [
+          "ent_040",
+          "ent_041",
+          "ent_042",
+          "ent_043",
+          "ent_044"
+        ],
+        "claim_ids": [
+          "clm_025",
+          "clm_026",
+          "clm_027"
+        ]
+      },
+      {
+        "chunk_id": "chk_025",
+        "text": "5\nConclusion\n\nWe have presented a novel mechanism for dramatically\naccelerating the training of deep networks. It is based on\nthe premise that covariate shift, which is known to com-\nplicate the training of machine learning systems, also ap-\n\nplies to sub-networks and layers, and removing it from\ninternal activations of the network may aid in training.\nOur proposed method draws its power from normalizing\nactivations, and from incorporating this normalization in\nthe network architecture itself. This ensures that the nor-\nmalization is appropriately handled by any optimization\nmethod that is being used to train the network. To en-\nable stochastic optimization methods commonly used in\ndeep network training, we perform the normalization for\neach mini-batch, and backpropagate the gradients through\nthe normalization parameters. Batch Normalization adds\nonly two extra parameters per activation, and in doing so\npreserves the representation ability of the network. We\npresented an algorithm for constructing, training, and per-\nforming inference with batch-normalized networks. The\nresulting networks can be trained with saturating nonlin-\nearities, are more tolerant to increased training rates, and\noften do not require Dropout for regularization.",
+        "word_count": 183,
+        "section_id": "sec_003",
+        "canonical_label": "future_work",
+        "page_start": 0,
+        "page_end": 7,
+        "paragraph_index": 23,
+        "reading_order": 25,
+        "extraction_method": "pymupdf_fallback",
+        "extraction_confidence": 0.5,
+        "entity_ids": [
+          "ent_045",
+          "ent_046"
+        ],
+        "claim_ids": []
+      },
+      {
+        "chunk_id": "chk_026",
+        "text": "Merely adding Batch Normalization to a state-of-the-\nart image classification model yields a substantial speedup\nin training. By further increasing the learning rates, re-\nmoving Dropout, and applying other modifications af-\nforded by Batch Normalization, we reach the previous\nstate of the art with only a small fraction of training steps\n– and then beat the state of the art in single-network image\nclassification. Furthermore, by combining multiple mod-\nels trained with Batch Normalization, we perform better\nthan the best known system on ImageNet, by a significant\nmargin.\n\nInterestingly, our method bears similarity to the stan-\ndardization layer of (G¨ulc¸ehre & Bengio, 2013), though\nthe two methods stem from very different goals, and per-\nform different tasks. The goal of Batch Normalization\nis to achieve a stable distribution of activation values\nthroughout training, and in our experiments we apply it\nbefore the nonlinearity since that is where matching the\nfirst and second moments is more likely to result in a\nstable distribution. On the contrary, (G¨ulc¸ehre & Bengio,\n2013) apply the standardization layer to the output of the\nnonlinearity, which results in sparser activations. In our\nlarge-scale image classification experiments, we have not\nobserved the nonlinearity inputs to be sparse, neither with\nnor without Batch Normalization. Other notable differ-",
+        "word_count": 209,
+        "section_id": "sec_003",
+        "canonical_label": "future_work",
+        "page_start": 0,
+        "page_end": 7,
+        "paragraph_index": 24,
+        "reading_order": 26,
+        "extraction_method": "pymupdf_fallback",
+        "extraction_confidence": 0.5,
+        "entity_ids": [
+          "ent_047"
+        ],
+        "claim_ids": [
+          "clm_028",
+          "clm_029",
+          "clm_030",
+          "clm_031",
+          "clm_032"
+        ]
+      },
+      {
+        "chunk_id": "chk_027",
+        "text": "Model\nResolution\nCrops\nModels\nTop-1 error\nTop-5 error\nGoogLeNet ensemble\n224\n144\n7\n-\n6.67%\nDeep Image low-res\n256\n-\n1\n-\n7.96%\nDeep Image high-res\n512\n-\n1\n24.88\n7.42%\nDeep Image ensemble\nvariable\n-\n-\n-\n5.98%\nBN-Inception single crop\n224\n1\n1\n25.2%\n7.82%\nBN-Inception multicrop\n224\n144\n1\n21.99%\n5.82%\nBN-Inception ensemble\n224\n144\n6\n20.1%\n4.9%*\n\nFigure 4: Batch-Normalized Inception comparison with previous state of the art on the provided validation set com-\nprising 50000 images. *BN-Inception ensemble has reached 4.82% top-5 error on the 100000 images of the test set of\nthe ImageNet as reported by the test server.\n\nentiating characteristics of Batch Normalization include\nthe learned scale and shift that allow the BN transform\nto represent identity (the standardization layer did not re-\nquire this since it was followed by the learned linear trans-\nform that, conceptually, absorbs the necessary scale and\nshift), handling of convolutional layers, deterministic in-\nference that does not depend on the mini-batch, and batch-\nnormalizing each convolutional layer in the network.\nIn this work, we have not explored the full range of\npossibilities that Batch Normalization potentially enables.\nOur future work includes applications of our method to\nRecurrent Neural Networks (Pascanu et al., 2013), where\nthe internal covariate shift and the vanishing or exploding\ngradients may be especially severe, and which would al-\nlow us to more thoroughly test the hypothesis that normal-\nization improves gradient propagation (Sec. 3.3). We plan\nto investigate whether Batch Normalization can help with\ndomain adaptation, in its traditional sense – i.e. whether\nthe normalization performed by the network would al-\nlow it to more easily generalize to new data distribu-\ntions, perhaps with just a recomputation of the population\nmeans and variances (Alg. 2). Finally, we believe that fur-\nther theoretical analysis of the algorithm would allow still\nmore improvements and applications.",
+        "word_count": 310,
+        "section_id": "sec_003",
+        "canonical_label": "future_work",
+        "page_start": 0,
+        "page_end": 7,
+        "paragraph_index": 25,
+        "reading_order": 27,
+        "extraction_method": "pymupdf_fallback",
+        "extraction_confidence": 0.5,
+        "entity_ids": [
+          "ent_048",
+          "ent_049"
+        ],
+        "claim_ids": [
+          "clm_033",
+          "clm_034"
+        ]
+      },
+      {
+        "chunk_id": "chk_028",
+        "text": "Bengio, Yoshua and Glorot, Xavier. Understanding the\ndifficulty of training deep feedforward neural networks.\nIn Proceedings of AISTATS 2010, volume 9, pp. 249–\n256, May 2010.\n\nDean, Jeffrey, Corrado, Greg S., Monga, Rajat, Chen, Kai,\nDevin, Matthieu, Le, Quoc V., Mao, Mark Z., Ranzato,\nMarc’Aurelio, Senior, Andrew, Tucker, Paul, Yang, Ke,\nand Ng, Andrew Y. Large scale distributed deep net-\nworks. In NIPS, 2012.\n\nDesjardins, Guillaume and Kavukcuoglu, Koray. Natural\nneural networks. (unpublished).\n\nDuchi, John, Hazan, Elad, and Singer, Yoram. Adaptive\nsubgradient methods for online learning and stochastic\n\noptimization. J. Mach. Learn. Res., 12:2121–2159,July\n2011. ISSN 1532-4435.\n\nG¨ulc¸ehre, C¸ aglar and Bengio, Yoshua. Knowledge mat-\nters: Importance of prior information for optimization.\nCoRR, abs/1301.4083, 2013.\n\nHe, K., Zhang, X., Ren, S., and Sun, J. Delving Deep\ninto Rectifiers: Surpassing Human-Level Performance\non ImageNet Classification. ArXiv e-prints, February\n2015.\n\nHyv¨arinen, A. and Oja, E. Independent component anal-\nysis: Algorithms and applications. Neural Netw., 13\n(4-5):411–430, May 2000.",
+        "word_count": 156,
+        "section_id": "sec_004",
+        "canonical_label": "other",
+        "page_start": 7,
+        "page_end": 8,
+        "paragraph_index": 0,
+        "reading_order": 28,
+        "extraction_method": "pymupdf_fallback",
+        "extraction_confidence": 0.3,
+        "entity_ids": [
+          "ent_050"
+        ],
+        "claim_ids": []
+      },
+      {
+        "chunk_id": "chk_029",
+        "text": "Jiang, Jing. A literature survey on domain adaptation of\nstatistical classifiers, 2008.\n\nLeCun, Y., Bottou, L., Bengio, Y., and Haffner, P.\nGradient-based learning applied to document recog-\nnition. Proceedings of the IEEE, 86(11):2278–2324,\nNovember 1998a.\n\nLeCun, Y., Bottou, L., Orr, G., and Muller, K. Efficient\nbackprop. In Orr, G. and K., Muller (eds.), Neural Net-\nworks: Tricks of the trade. Springer, 1998b.\n\nLyu, S and Simoncelli, E P. Nonlinear image representa-\ntion using divisive normalization. In Proc. Computer\nVision and Pattern Recognition, pp. 1–8. IEEE Com-\nputer Society, Jun 23-28 2008. doi: 10.1109/CVPR.\n2008.4587821.\n\nNair, Vinod and Hinton, Geoffrey E. Rectified linear units\nimprove restricted boltzmann machines. In ICML, pp.\n807–814. Omnipress, 2010.\n\nPascanu, Razvan, Mikolov, Tomas, and Bengio, Yoshua.\nOn the difficulty of training recurrent neural networks.\nIn Proceedings of the 30th International Conference on\nMachine Learning, ICML 2013, Atlanta, GA, USA, 16-\n21 June 2013, pp. 1310–1318, 2013.",
+        "word_count": 150,
+        "section_id": "sec_004",
+        "canonical_label": "other",
+        "page_start": 7,
+        "page_end": 8,
+        "paragraph_index": 1,
+        "reading_order": 29,
+        "extraction_method": "pymupdf_fallback",
+        "extraction_confidence": 0.3,
+        "entity_ids": [
+          "ent_051"
+        ],
+        "claim_ids": []
+      },
+      {
+        "chunk_id": "chk_030",
+        "text": "Povey, Daniel, Zhang, Xiaohui, and Khudanpur, San-\njeev.\nParallel training of deep neural networks with\nnatural gradient and parameter averaging.\nCoRR,\nabs/1410.7455, 2014.\n\nRaiko, Tapani, Valpola, Harri, and LeCun, Yann. Deep\nlearning made easier by linear transformations in per-\nceptrons. In International Conference on Artificial In-\ntelligence and Statistics (AISTATS), pp. 924–932, 2012.\n\nRussakovsky, Olga, Deng, Jia, Su, Hao, Krause, Jonathan,\nSatheesh, Sanjeev, Ma, Sean, Huang, Zhiheng, Karpa-\nthy, Andrej, Khosla, Aditya, Bernstein, Michael, Berg,\nAlexander C., and Fei-Fei, Li. ImageNet Large Scale\nVisual Recognition Challenge, 2014.\n\nSaxe, Andrew M., McClelland, James L., and Ganguli,\nSurya.\nExact solutions to the nonlinear dynamics\nof learning in deep linear neural networks.\nCoRR,\nabs/1312.6120, 2013.\n\nShimodaira, Hidetoshi.\nImproving predictive inference\nunder covariate shift by weighting the log-likelihood\nfunction. Journal of Statistical Planning and Inference,\n90(2):227–244, October 2000.\n\nSrivastava, Nitish, Hinton, Geoffrey, Krizhevsky, Alex,\nSutskever, Ilya, and Salakhutdinov, Ruslan. Dropout:\nA simple way to prevent neural networks from overfit-\nting. J. Mach. Learn. Res., 15(1):1929–1958, January\n2014.",
+        "word_count": 163,
+        "section_id": "sec_004",
+        "canonical_label": "other",
+        "page_start": 7,
+        "page_end": 8,
+        "paragraph_index": 2,
+        "reading_order": 30,
+        "extraction_method": "pymupdf_fallback",
+        "extraction_confidence": 0.3,
+        "entity_ids": [
+          "ent_052"
+        ],
+        "claim_ids": []
+      },
+      {
+        "chunk_id": "chk_031",
+        "text": "Sutskever, Ilya, Martens, James, Dahl, George E., and\nHinton, Geoffrey E.\nOn the importance of initial-\nization and momentum in deep learning.\nIn ICML\n(3), volume 28 of JMLR Proceedings, pp. 1139–1147.\nJMLR.org, 2013.\n\nSzegedy, Christian, Liu, Wei, Jia, Yangqing, Sermanet,\nPierre, Reed, Scott, Anguelov, Dragomir, Erhan, Du-\nmitru, Vanhoucke, Vincent, and Rabinovich, An-\ndrew.\nGoing deeper with convolutions.\nCoRR,\nabs/1409.4842, 2014.\n\nWiesler, Simon and Ney, Hermann. A convergence anal-\nysis of log-linear training. In Shawe-Taylor, J., Zemel,\nR.S., Bartlett, P., Pereira, F.C.N., and Weinberger, K.Q.\n(eds.), Advances in Neural Information Processing Sys-\ntems 24, pp. 657–665, Granada, Spain, December 2011.\n\nWiesler, Simon, Richard, Alexander, Schl¨uter, Ralf, and\nNey, Hermann. Mean-normalized stochastic gradient\nfor large-scale deep learning.\nIn IEEE International\nConference on Acoustics, Speech, and Signal Process-\ning, pp. 180–184, Florence, Italy, May 2014.\n\nWu, Ren, Yan, Shengen, Shan, Yi, Dang, Qingqing, and\nSun, Gang. Deep image: Scaling up image recognition,\n2015.",
+        "word_count": 152,
+        "section_id": "sec_004",
+        "canonical_label": "other",
+        "page_start": 7,
+        "page_end": 8,
+        "paragraph_index": 3,
+        "reading_order": 31,
+        "extraction_method": "pymupdf_fallback",
+        "extraction_confidence": 0.3,
+        "entity_ids": [
+          "ent_053"
+        ],
+        "claim_ids": []
+      },
+      {
+        "chunk_id": "chk_032",
+        "text": "Figure 5 documents the changes that were performed\ncompared to\nthe\narchitecture with\nrespect\nto\nthe\nGoogleNet archictecture. For the interpretation of this\ntable, please consult (Szegedy et al., 2014). The notable\narchitecture changes compared to the GoogLeNet model\ninclude:\n\n• The 5×5 convolutional layers are replaced by two\nconsecutive 3×3 convolutional layers.\nThis in-\ncreases the maximum depth of the network by 9\n\nweight layers. Also it increases the number of pa-\nrameters by 25% and the computational cost is in-\ncreased by about 30%.\n\n• The number 28×28 inception modules is increased\nfrom 2 to 3.\n\n• Inside the modules, sometimes average, sometimes\nmaximum-pooling is employed. This is indicated in\nthe entries corresponding to the pooling layers of the\ntable.\n\n• There are no across the board pooling layers be-\ntween any two Inception modules, but stride-2 con-\nvolution/pooling layers are employed before the fil-\nter concatenation in the modules 3c, 4e.",
+        "word_count": 154,
+        "section_id": "sec_006",
+        "canonical_label": "conclusion",
+        "page_start": 8,
+        "page_end": 10,
+        "paragraph_index": 0,
+        "reading_order": 32,
+        "extraction_method": "pymupdf_fallback",
+        "extraction_confidence": 0.6,
+        "entity_ids": [],
+        "claim_ids": []
+      },
+      {
+        "chunk_id": "chk_033",
+        "text": "Our model employed separable convolution with depth\nmultiplier 8 on the first convolutional layer. This reduces\nthe computational cost while increasing the memory con-\nsumption at training time.\n\ntype\npatch size/\nstride\n\noutput\nsize\ndepth\n#1×1\n#3×3\nreduce\n#3×3\ndouble #3×3\nreduce\n\ndouble\n#3×3\nPool +proj\n\nconvolution*\n7×7/2\n112×112×64\n1\nmax pool\n3×3/2\n56×56×64\n0\nconvolution\n3×3/1\n56×56×192\n1\n64\n192\nmax pool\n3×3/2\n28×28×192\n0\ninception (3a)\n28×28×256\n3\n64\n64\n64\n64\n96\navg + 32\ninception (3b)\n28×28×320\n3\n64\n64\n96\n64\n96\navg + 64\ninception (3c)\nstride 2\n28×28×576\n3\n0\n128\n160\n64\n96\nmax + pass through\ninception (4a)\n14×14×576\n3\n224\n64\n96\n96\n128\navg + 128\ninception (4b)\n14×14×576\n3\n192\n96\n128\n96\n128\navg + 128\ninception (4c)\n14×14×576\n3\n160\n128\n160\n128\n160\navg + 128\ninception (4d)\n14×14×576\n3\n96\n128\n192\n160\n192\navg + 128\ninception (4e)\nstride 2\n14×14×1024\n3\n0\n128\n192\n192\n256\nmax + pass through\ninception (5a)\n7×7×1024\n3\n352\n192\n320\n160\n224\navg + 128\ninception (5b)\n7×7×1024\n3\n352\n192\n320\n192\n224\nmax + 128\navg pool\n7×7/1\n1×1×1024\n0\n\nFigure 5: Inception architecture",
+        "word_count": 201,
+        "section_id": "sec_006",
+        "canonical_label": "conclusion",
+        "page_start": 8,
+        "page_end": 10,
+        "paragraph_index": 1,
+        "reading_order": 33,
+        "extraction_method": "pymupdf_fallback",
+        "extraction_confidence": 0.6,
+        "entity_ids": [],
+        "claim_ids": []
+      }
+    ],
+    "tables": [],
+    "figures": []
+  },
+  "references": [],
+  "citations": [],
+  "entities": [
+    {
+      "entity_id": "ent_001",
+      "text": "ImageNet",
+      "label": "dataset",
+      "chunk_id": "chk_001",
+      "sentence": "result on ImageNet classification: reaching 4.",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_002",
+      "text": "accuracy",
+      "label": "metric",
+      "chunk_id": "chk_001",
+      "sentence": "Batch Normalization achieves the same accuracy with 14",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_003",
+      "text": "ensemble of batch-\nnormalized networks",
+      "label": "method",
+      "chunk_id": "chk_001",
+      "sentence": "Using an ensemble of batch-\nnormalized networks, we improve upon the best published",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_004",
+      "text": "the gradient\nof the loss over a mini-batch is an estimate of the gradient\nover the",
+      "label": "dataset",
+      "chunk_id": "chk_003",
+      "sentence": "First, the gradient\nof the loss over a mini-batch is an estimate of the gradient\nover the training set, whose quality improves as the batch",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_005",
+      "text": "mini-batches of examples",
+      "label": "method",
+      "chunk_id": "chk_003",
+      "sentence": "Using mini-batches of examples, as opposed to one exam-",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_006",
+      "text": "problem because the layers need to continu-\nously adapt to the new distribution",
+      "label": "method",
+      "chunk_id": "chk_003",
+      "sentence": "presents a problem because the layers need to continu-\nously adapt to the new distribution.",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_007",
+      "text": "F1",
+      "label": "metric",
+      "chunk_id": "chk_004",
+      "sentence": "ℓ= F2(F1(u, Θ1), Θ2)",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_008",
+      "text": "Rectified Linear Units",
+      "label": "method",
+      "chunk_id": "chk_004",
+      "sentence": "ents are usually addressed by using Rectified Linear Units",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_009",
+      "text": "new mechanism",
+      "label": "method",
+      "chunk_id": "chk_005",
+      "sentence": "We propose a new mechanism, which we",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_010",
+      "text": "ImageNet",
+      "label": "dataset",
+      "chunk_id": "chk_006",
+      "sentence": "performing ImageNet classification network, and show",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_011",
+      "text": "is the set of values of x over\nthe",
+      "label": "dataset",
+      "chunk_id": "chk_006",
+      "sentence": "..N} is the set of values of x over\nthe training set, and E[x] =",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_012",
+      "text": "accuracy",
+      "label": "metric",
+      "chunk_id": "chk_006",
+      "sentence": "training steps, and can further exceed its accuracy by a",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_013",
+      "text": "ensemble of such networks\ntrained with Batch Normalization",
+      "label": "method",
+      "chunk_id": "chk_006",
+      "sentence": "Using an ensemble of such networks\ntrained with Batch Normalization, we achieve the top-5",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_014",
+      "text": "This motivates us to seek\nan alternative that performs input normalization in a way\nthat is differentiable and does not require the analysis of\nthe entire",
+      "label": "dataset",
+      "chunk_id": "chk_007",
+      "sentence": "This motivates us to seek\nan alternative that performs input normalization in a way\nthat is differentiable and does not require the analysis of\nthe entire training set after every parameter update.",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_015",
+      "text": "identity transform",
+      "label": "method",
+      "chunk_id": "chk_008",
+      "sentence": "can represent the identity transform.",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_016",
+      "text": "In the batch setting where each training step is based on\nthe entire",
+      "label": "dataset",
+      "chunk_id": "chk_009",
+      "sentence": "In the batch setting where each training step is based on\nthe entire training set, we would use the whole set to nor-",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_017",
+      "text": "entire training set",
+      "label": "method",
+      "chunk_id": "chk_009",
+      "sentence": "In the batch setting where each training step is based on\nthe entire training set, we would use the whole set to nor-",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_018",
+      "text": "BN\nTransform in Algorithm",
+      "label": "method",
+      "chunk_id": "chk_010",
+      "sentence": "We present the BN\nTransform in Algorithm 1.",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_019",
+      "text": "normalized activations into the network",
+      "label": "method",
+      "chunk_id": "chk_011",
+      "sentence": "introduces normalized activations into the network.",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_020",
+      "text": "iden-\ntity transformation and preserves the network capacity",
+      "label": "method",
+      "chunk_id": "chk_011",
+      "sentence": "activations allows the BN transform to represent the iden-\ntity transformation and preserves the network capacity.",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_021",
+      "text": "accuracy",
+      "label": "metric",
+      "chunk_id": "chk_012",
+      "sentence": "stead, we can track the accuracy of a model as it trains.",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_022",
+      "text": "batch gradient\ndescent",
+      "label": "method",
+      "chunk_id": "chk_012",
+      "sentence": "Batch Normalization can be trained using batch gradient\ndescent, or Stochastic Gradient Descent with a mini-batch",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_023",
+      "text": "the population",
+      "label": "method",
+      "chunk_id": "chk_012",
+      "sentence": "using the population, rather than mini-batch, statistics.",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_024",
+      "text": "moving averages in-\nstead",
+      "label": "method",
+      "chunk_id": "chk_012",
+      "sentence": "Using moving averages in-\nstead, we can track the accuracy of a model as it trains.",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_025",
+      "text": "MNIST",
+      "label": "dataset",
+      "chunk_id": "chk_018",
+      "sentence": "the MNIST dataset (LeCun et al.",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_026",
+      "text": "we considered the problem of predicting the digit class on\nthe MNIST",
+      "label": "dataset",
+      "chunk_id": "chk_018",
+      "sentence": "we considered the problem of predicting the digit class on\nthe MNIST dataset (LeCun et al.",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_027",
+      "text": "MNIST",
+      "label": "dataset",
+      "chunk_id": "chk_019",
+      "sentence": "Figure 1: (a) The test accuracy of the MNIST network",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_028",
+      "text": "accuracy",
+      "label": "metric",
+      "chunk_id": "chk_019",
+      "sentence": "Figure 1: (a) The test accuracy of the MNIST network",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_029",
+      "text": "cross-entropy",
+      "label": "metric",
+      "chunk_id": "chk_019",
+      "sentence": "class) and cross-entropy loss.",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_030",
+      "text": "ImageNet",
+      "label": "dataset",
+      "chunk_id": "chk_020",
+      "sentence": "ImageNet classification",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_031",
+      "text": "accuracy",
+      "label": "metric",
+      "chunk_id": "chk_020",
+      "sentence": "ing the validation accuracy @1, i.",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_032",
+      "text": "version of Stochastic Gradient Descent with mo-\nmentum",
+      "label": "method",
+      "chunk_id": "chk_020",
+      "sentence": "using a version of Stochastic Gradient Descent with mo-\nmentum (Sutskever et al.",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_033",
+      "text": "mini-batch size\nof",
+      "label": "method",
+      "chunk_id": "chk_020",
+      "sentence": ", 2013), using the mini-batch size\nof 32.",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_034",
+      "text": "large-scale",
+      "label": "method",
+      "chunk_id": "chk_020",
+      "sentence": "The training was performed using a large-scale, dis-",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_035",
+      "text": "single crop per image",
+      "label": "method",
+      "chunk_id": "chk_020",
+      "sentence": "a held-out set, using a single crop per image.",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_036",
+      "text": "accuracy",
+      "label": "metric",
+      "chunk_id": "chk_021",
+      "sentence": "accuracy on the held-out validation data.",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_037",
+      "text": "accuracy",
+      "label": "metric",
+      "chunk_id": "chk_022",
+      "sentence": "Figure 2: Single crop validation accuracy of Inception",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_038",
+      "text": "accuracy",
+      "label": "metric",
+      "chunk_id": "chk_023",
+      "sentence": "2% accuracy, as well as the maximum validation accu-",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_039",
+      "text": "Batch Normalization",
+      "label": "method",
+      "chunk_id": "chk_023",
+      "sentence": "By only using Batch Normalization (BN-Baseline), we",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_040",
+      "text": "ImageNet",
+      "label": "dataset",
+      "chunk_id": "chk_024",
+      "sentence": "The current reported best results on the ImageNet Large",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_041",
+      "text": "accuracy",
+      "label": "metric",
+      "chunk_id": "chk_024",
+      "sentence": "Max accuracy",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_042",
+      "text": "BN-x30",
+      "label": "method",
+      "chunk_id": "chk_024",
+      "sentence": "Each was based\non BN-x30, modified via some of the following: increased",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_043",
+      "text": "non-convolutional",
+      "label": "method",
+      "chunk_id": "chk_024",
+      "sentence": "for the original Inception); and using non-convolutional,",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_044",
+      "text": "arithmetic average of class\nprobabilities predicted by the constituent networks",
+      "label": "method",
+      "chunk_id": "chk_024",
+      "sentence": "prediction was based on the arithmetic average of class\nprobabilities predicted by the constituent networks.",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_045",
+      "text": "premise that covariate shift",
+      "label": "method",
+      "chunk_id": "chk_025",
+      "sentence": "It is based on\nthe premise that covariate shift, which is known to com-",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_046",
+      "text": "method draws its power from normalizing\nactivations",
+      "label": "method",
+      "chunk_id": "chk_025",
+      "sentence": "Our proposed method draws its power from normalizing\nactivations, and from incorporating this normalization in",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_047",
+      "text": "ImageNet",
+      "label": "dataset",
+      "chunk_id": "chk_026",
+      "sentence": "than the best known system on ImageNet, by a significant",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_048",
+      "text": "ImageNet",
+      "label": "dataset",
+      "chunk_id": "chk_027",
+      "sentence": "the ImageNet as reported by the test server.",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_049",
+      "text": "images of the",
+      "label": "dataset",
+      "chunk_id": "chk_027",
+      "sentence": "82% top-5 error on the 100000 images of the test set of",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_050",
+      "text": "ImageNet",
+      "label": "dataset",
+      "chunk_id": "chk_028",
+      "sentence": "on ImageNet Classification.",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_051",
+      "text": "divisive normalization",
+      "label": "method",
+      "chunk_id": "chk_029",
+      "sentence": "tion using divisive normalization.",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_052",
+      "text": "ImageNet",
+      "label": "dataset",
+      "chunk_id": "chk_030",
+      "sentence": "ImageNet Large Scale",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_053",
+      "text": "R",
+      "label": "tool",
+      "chunk_id": "chk_031",
+      "sentence": "R.",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    }
+  ],
+  "candidate_claims": [
+    {
+      "claim_id": "clm_001",
+      "sentence": "Our method draws its strength from making normal-",
+      "chunk_id": "chk_001",
+      "section_id": "sec_002",
+      "canonical_label": "other",
+      "claim_type": "methodological",
+      "matched_patterns": [
+        "our\\s+(?:approach|method|contribution)"
+      ],
+      "confidence": 0.5,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_002",
+      "sentence": "Applied to a state-of-the-art image classification model,",
+      "chunk_id": "chk_001",
+      "section_id": "sec_002",
+      "canonical_label": "other",
+      "claim_type": "comparative",
+      "matched_patterns": [
+        "state[- ]of[- ]the[- ]art"
+      ],
+      "confidence": 0.5,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_003",
+      "sentence": "examples, due to the parallelism afforded by the modern",
+      "chunk_id": "chk_003",
+      "section_id": "sec_003",
+      "canonical_label": "future_work",
+      "claim_type": "causal",
+      "matched_patterns": [
+        "due\\s+to"
+      ],
+      "confidence": 0.5,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_004",
+      "sentence": "presents a problem because the layers need to continu-",
+      "chunk_id": "chk_003",
+      "section_id": "sec_003",
+      "canonical_label": "future_work",
+      "claim_type": "causal",
+      "matched_patterns": [
+        "(?:causes?|caused)\\s+"
+      ],
+      "confidence": 0.5,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_005",
+      "sentence": "We propose a new mechanism, which we",
+      "chunk_id": "chk_005",
+      "section_id": "sec_003",
+      "canonical_label": "future_work",
+      "claim_type": "methodological",
+      "matched_patterns": [
+        "we\\s+(?:propose|introduce|present|develop)"
+      ],
+      "confidence": 0.5,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_006",
+      "sentence": "distribution of network activations due to the change in",
+      "chunk_id": "chk_006",
+      "section_id": "sec_003",
+      "canonical_label": "future_work",
+      "claim_type": "causal",
+      "matched_patterns": [
+        "due\\s+to"
+      ],
+      "confidence": 0.5,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_007",
+      "sentence": "ignoring the latter term would lead to the explosion de-",
+      "chunk_id": "chk_007",
+      "section_id": "sec_003",
+      "canonical_label": "future_work",
+      "claim_type": "causal",
+      "matched_patterns": [
+        "leads?\\s+to"
+      ],
+      "confidence": 0.5,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_008",
+      "sentence": "we introduce, for each activation x(k), a pair of parameters",
+      "chunk_id": "chk_009",
+      "section_id": "sec_003",
+      "canonical_label": "future_work",
+      "claim_type": "methodological",
+      "matched_patterns": [
+        "we\\s+(?:propose|introduce|present|develop)"
+      ],
+      "confidence": 0.5,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_009",
+      "sentence": "We present the BN",
+      "chunk_id": "chk_010",
+      "section_id": "sec_003",
+      "canonical_label": "future_work",
+      "claim_type": "methodological",
+      "matched_patterns": [
+        "we\\s+(?:propose|introduce|present|develop)"
+      ],
+      "confidence": 0.5,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_010",
+      "sentence": "result in the gradients that explode or vanish, as well as",
+      "chunk_id": "chk_016",
+      "section_id": "sec_003",
+      "canonical_label": "future_work",
+      "claim_type": "causal",
+      "matched_patterns": [
+        "results?\\s+in"
+      ],
+      "confidence": 0.5,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_011",
+      "sentence": "the gradient during backpropagationand lead to the model",
+      "chunk_id": "chk_016",
+      "section_id": "sec_003",
+      "canonical_label": "future_work",
+      "claim_type": "causal",
+      "matched_patterns": [
+        "leads?\\s+to"
+      ],
+      "confidence": 0.5,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_012",
+      "sentence": "weights lead to smaller gradients, and Batch Normaliza-",
+      "chunk_id": "chk_017",
+      "section_id": "sec_003",
+      "canonical_label": "future_work",
+      "claim_type": "causal",
+      "matched_patterns": [
+        "leads?\\s+to"
+      ],
+      "confidence": 0.5,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_013",
+      "sentence": "our experiments, we found this effect to be advantageous",
+      "chunk_id": "chk_018",
+      "section_id": "sec_003",
+      "canonical_label": "future_work",
+      "claim_type": "existence",
+      "matched_patterns": [
+        "we\\s+(?:find|found|observe|show|demonstrate)"
+      ],
+      "confidence": 0.5,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_014",
+      "sentence": "fitting, in a batch-normalized network we found that it can",
+      "chunk_id": "chk_018",
+      "section_id": "sec_003",
+      "canonical_label": "future_work",
+      "claim_type": "existence",
+      "matched_patterns": [
+        "we\\s+(?:find|found|observe|show|demonstrate)"
+      ],
+      "confidence": 0.5,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_015",
+      "sentence": "than achieving the state of the art performance on MNIST",
+      "chunk_id": "chk_019",
+      "section_id": "sec_003",
+      "canonical_label": "future_work",
+      "claim_type": "comparative",
+      "matched_patterns": [
+        "state[- ]of[- ]the[- ]art"
+      ],
+      "confidence": 0.5,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_016",
+      "sentence": "1(b,c) we show, for one typical activation from",
+      "chunk_id": "chk_019",
+      "section_id": "sec_003",
+      "canonical_label": "future_work",
+      "claim_type": "existence",
+      "matched_patterns": [
+        "we\\s+(?:find|found|observe|show|demonstrate)"
+      ],
+      "confidence": 0.5,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_017",
+      "sentence": "take full advantage of our method.",
+      "chunk_id": "chk_021",
+      "section_id": "sec_003",
+      "canonical_label": "future_work",
+      "claim_type": "methodological",
+      "matched_patterns": [
+        "our\\s+(?:approach|method|contribution)"
+      ],
+      "confidence": 0.5,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_018",
+      "sentence": "We find that this improves the",
+      "chunk_id": "chk_021",
+      "section_id": "sec_003",
+      "canonical_label": "future_work",
+      "claim_type": "existence",
+      "matched_patterns": [
+        "we\\s+(?:find|found|observe|show|demonstrate)"
+      ],
+      "confidence": 0.5,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_019",
+      "sentence": "from it, we found that with Batch Normalization it is not",
+      "chunk_id": "chk_021",
+      "section_id": "sec_003",
+      "canonical_label": "future_work",
+      "claim_type": "existence",
+      "matched_patterns": [
+        "we\\s+(?:find|found|observe|show|demonstrate)"
+      ],
+      "confidence": 0.5,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_020",
+      "sentence": "domization inherent in our method should be most bene-",
+      "chunk_id": "chk_021",
+      "section_id": "sec_003",
+      "canonical_label": "future_work",
+      "claim_type": "methodological",
+      "matched_patterns": [
+        "our\\s+(?:approach|method|contribution)"
+      ],
+      "confidence": 0.5,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_021",
+      "sentence": "Because batch-",
+      "chunk_id": "chk_021",
+      "section_id": "sec_003",
+      "canonical_label": "future_work",
+      "claim_type": "causal",
+      "matched_patterns": [
+        "(?:causes?|caused)\\s+"
+      ],
+      "confidence": 0.5,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_022",
+      "sentence": "rate increase with original Inception caused the model pa-",
+      "chunk_id": "chk_022",
+      "section_id": "sec_003",
+      "canonical_label": "future_work",
+      "claim_type": "causal",
+      "matched_patterns": [
+        "(?:causes?|caused)\\s+"
+      ],
+      "confidence": 0.5,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_023",
+      "sentence": "In Figure 2, we show the validation accuracy of the",
+      "chunk_id": "chk_022",
+      "section_id": "sec_003",
+      "canonical_label": "future_work",
+      "claim_type": "existence",
+      "matched_patterns": [
+        "we\\s+(?:find|found|observe|show|demonstrate)"
+      ],
+      "confidence": 0.5,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_024",
+      "sentence": "creasing the learning rate further (BN-x30) causes the",
+      "chunk_id": "chk_023",
+      "section_id": "sec_003",
+      "canonical_label": "future_work",
+      "claim_type": "causal",
+      "matched_patterns": [
+        "(?:causes?|caused)\\s+"
+      ],
+      "confidence": 0.5,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_025",
+      "sentence": "moid never achieves better than 1/1000 accuracy.",
+      "chunk_id": "chk_024",
+      "section_id": "sec_003",
+      "canonical_label": "future_work",
+      "claim_type": "comparative",
+      "matched_patterns": [
+        "(?:better|worse|superior|inferior)\\s+(?:than|to)"
+      ],
+      "confidence": 0.5,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_026",
+      "sentence": "We demonstrate in Fig.",
+      "chunk_id": "chk_024",
+      "section_id": "sec_003",
+      "canonical_label": "future_work",
+      "claim_type": "existence",
+      "matched_patterns": [
+        "we\\s+(?:find|found|observe|show|demonstrate)"
+      ],
+      "confidence": 0.5,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_027",
+      "sentence": "lows us to set new state-of-the-art by a healthy margin on",
+      "chunk_id": "chk_024",
+      "section_id": "sec_003",
+      "canonical_label": "future_work",
+      "claim_type": "comparative",
+      "matched_patterns": [
+        "state[- ]of[- ]the[- ]art"
+      ],
+      "confidence": 0.5,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_028",
+      "sentence": "state of the art with only a small fraction of training steps",
+      "chunk_id": "chk_026",
+      "section_id": "sec_003",
+      "canonical_label": "future_work",
+      "claim_type": "comparative",
+      "matched_patterns": [
+        "state[- ]of[- ]the[- ]art"
+      ],
+      "confidence": 0.5,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_029",
+      "sentence": "– and then beat the state of the art in single-network image",
+      "chunk_id": "chk_026",
+      "section_id": "sec_003",
+      "canonical_label": "future_work",
+      "claim_type": "comparative",
+      "matched_patterns": [
+        "state[- ]of[- ]the[- ]art"
+      ],
+      "confidence": 0.5,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_030",
+      "sentence": "Interestingly, our method bears similarity to the stan-",
+      "chunk_id": "chk_026",
+      "section_id": "sec_003",
+      "canonical_label": "future_work",
+      "claim_type": "methodological",
+      "matched_patterns": [
+        "our\\s+(?:approach|method|contribution)"
+      ],
+      "confidence": 0.5,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_031",
+      "sentence": "first and second moments is more likely to result in a",
+      "chunk_id": "chk_026",
+      "section_id": "sec_003",
+      "canonical_label": "future_work",
+      "claim_type": "causal",
+      "matched_patterns": [
+        "results?\\s+in"
+      ],
+      "confidence": 0.5,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_032",
+      "sentence": "nonlinearity, which results in sparser activations.",
+      "chunk_id": "chk_026",
+      "section_id": "sec_003",
+      "canonical_label": "future_work",
+      "claim_type": "causal",
+      "matched_patterns": [
+        "results?\\s+in"
+      ],
+      "confidence": 0.5,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_033",
+      "sentence": "Figure 4: Batch-Normalized Inception comparison with previous state of the art on the provided validation set com-",
+      "chunk_id": "chk_027",
+      "section_id": "sec_003",
+      "canonical_label": "future_work",
+      "claim_type": "comparative",
+      "matched_patterns": [
+        "state[- ]of[- ]the[- ]art"
+      ],
+      "confidence": 0.5,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_034",
+      "sentence": "Our future work includes applications of our method to",
+      "chunk_id": "chk_027",
+      "section_id": "sec_003",
+      "canonical_label": "future_work",
+      "claim_type": "methodological",
+      "matched_patterns": [
+        "our\\s+(?:approach|method|contribution)"
+      ],
+      "confidence": 0.5,
+      "page": 0
+    }
+  ],
+  "quality": {
+    "overall_confidence": 0.23341025641025642,
+    "field_scores": {
+      "title": 0.31,
+      "authors": 0.0,
+      "abstract": 0.0,
+      "sections": 0.7166666666666666,
+      "references": 0.0,
+      "citations": 0.0,
+      "entities": 0.6615384615384615,
+      "claims": 0.6166666666666667
+    },
+    "extraction_completeness": {
+      "total_pages": 11,
+      "pages_with_text_extracted": 11,
+      "sections_detected": 6,
+      "references_total": 0,
+      "references_resolved": 0,
+      "citations_total": 0,
+      "citations_linked": 0,
+      "chunks_total": 34,
+      "entities_total": 53,
+      "claims_total": 34
+    },
+    "validation_errors": [],
+    "validation_warnings": [
+      "Section 'sec_005' ('Appendix') has no associated chunks"
+    ],
+    "requires_manual_review": true,
+    "manual_review_reasons": [
+      "Overall confidence is low (0.23 < 0.50)",
+      "Title confidence is very low (0.31 < 0.40)"
+    ],
+    "pipeline_log": [
+      {
+        "stage": "intake",
+        "status": "success",
+        "started_at": "2026-06-06T16:20:14.085754Z",
+        "completed_at": "2026-06-06T16:20:14.100892Z",
+        "duration_ms": 15,
+        "warnings": [],
+        "errors": [],
+        "details": {
+          "sha256": "bdc69e0b568f41d8d3181cc9077a461f58fcdd1c70c9f49efe60a05ee6109655",
+          "page_count": 11,
+          "route": "grobid_primary",
+          "has_text_layer": true
+        }
+      },
+      {
+        "stage": "extraction",
+        "status": "partial",
+        "started_at": "2026-06-06T16:20:14.100892Z",
+        "completed_at": "2026-06-06T16:20:41.490463Z",
+        "duration_ms": 27389,
+        "warnings": [
+          "Primary extraction failed ([WinError 10054] An existing connection was forcibly closed by the remote host); PyMuPDF fallback used"
+        ],
+        "errors": [],
+        "details": {}
+      },
+      {
+        "stage": "structuring",
+        "status": "success",
+        "started_at": "2026-06-06T16:20:41.490463Z",
+        "completed_at": "2026-06-06T16:20:41.496274Z",
+        "duration_ms": 5,
+        "warnings": [],
+        "errors": [],
+        "details": {
+          "sections": 6,
+          "chunks": 34,
+          "references": 0,
+          "citations": 0,
+          "tables": 0,
+          "figures": 0
+        }
+      },
+      {
+        "stage": "enrichment",
+        "status": "success",
+        "started_at": "2026-06-06T16:20:41.496274Z",
+        "completed_at": "2026-06-06T16:20:41.703756Z",
+        "duration_ms": 207,
+        "warnings": [],
+        "errors": [],
+        "details": {
+          "entities": 53,
+          "claims": 34
+        }
+      },
+      {
+        "stage": "quality",
+        "status": "success",
+        "started_at": "2026-06-06T16:20:41.703756Z",
+        "completed_at": "2026-06-06T16:20:41.703756Z",
+        "duration_ms": 0,
+        "warnings": [],
+        "errors": [],
+        "details": {
+          "overall_confidence": 0.23341025641025642,
+          "requires_review": true
+        }
+      }
+    ],
+    "llm_calls": []
+  }
+}

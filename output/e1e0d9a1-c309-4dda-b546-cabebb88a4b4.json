@@ -1,0 +1,720 @@
+{
+  "meta": {
+    "sro_id": "e1e0d9a1-c309-4dda-b546-cabebb88a4b4",
+    "schema_version": "1.0.0",
+    "created_at": "2026-06-06T14:04:28.493663Z",
+    "updated_at": "2026-06-06T14:04:54.323849Z",
+    "pipeline_version": "0.1.0",
+    "extraction_route": "grobid_with_fallback",
+    "source_file": {
+      "filename": "sample_paper.pdf",
+      "sha256": "6e932e46b5490e8466c3b7769b6ff6d2334a3b6b30dc24fdc87374fc35c4ed75",
+      "page_count": 3,
+      "has_text_layer": true,
+      "is_scanned": false,
+      "size_bytes": 8265
+    },
+    "processing_time_ms": 25828
+  },
+  "header": {
+    "title": "Untitled",
+    "title_confidence": 0.1,
+    "authors": [],
+    "authors_confidence": 0.1,
+    "document_type": "research_article",
+    "language": "en",
+    "doi": null,
+    "arxiv_id": null,
+    "pmid": null,
+    "publication_date": null,
+    "publication_date_raw": null,
+    "venue": null,
+    "venue_type": null,
+    "volume": null,
+    "issue": null,
+    "pages": null,
+    "keywords": []
+  },
+  "abstract": {
+    "raw_text": "",
+    "is_structured": false,
+    "structured": null,
+    "confidence": 0.0
+  },
+  "body": {
+    "sections": [
+      {
+        "section_id": "sec_001",
+        "parent_section_id": null,
+        "level": 1,
+        "position": 0,
+        "original_header": "Attention Is All You Need",
+        "canonical_label": "introduction",
+        "label_confidence": 0.7,
+        "page_start": 0,
+        "page_end": 0,
+        "content": "Ashish Vaswani, Noam Shazeer, Niki Parmar\n\nGoogle Brain\n\nAbstract. The dominant sequence transduction models are based on complex recurrent or\nconvolutional neural networks that include an encoder and a decoder. The best performing\nmodels also connect the encoder and decoder through an attention mechanism. We propose a\nnew simple network architecture, the Transformer, based solely on attention mechanisms,\ndispensing with recurrence and convolutions entirely. Experiments on two machine translation\ntasks show that these models are superior in quality while being more parallelizable and\nrequiring significantly less time to train."
+      },
+      {
+        "section_id": "sec_002",
+        "parent_section_id": null,
+        "level": 1,
+        "position": 1,
+        "original_header": "1 Introduction",
+        "canonical_label": "introduction",
+        "label_confidence": 0.9231,
+        "page_start": 1,
+        "page_end": 1,
+        "content": "Recurrent neural networks, long short-term memory and gated recurrent neural networks\nin particular, have been firmly established as state of the art approaches in sequence\nmodeling and transduction problems such as language modeling and machine translation.\nNumerous efforts have since continued to push the boundaries of recurrent language\nmodels and encoder-decoder architectures."
+      },
+      {
+        "section_id": "sec_003",
+        "parent_section_id": null,
+        "level": 1,
+        "position": 2,
+        "original_header": "2 Model Architecture",
+        "canonical_label": "methodology",
+        "label_confidence": 0.9474,
+        "page_start": 1,
+        "page_end": 1,
+        "content": "The Transformer follows an encoder-decoder structure using stacked self-attention\nand point-wise, fully connected layers for both the encoder and decoder. We propose\na new architecture called Multi-Head Attention. Our model achieves a BLEU score of\n28.4 on the WMT 2014 English-to-German translation task, which outperforms the\nprevious state-of-the-art. We find that p < 0.001 for all comparisons."
+      },
+      {
+        "section_id": "sec_004",
+        "parent_section_id": null,
+        "level": 1,
+        "position": 3,
+        "original_header": "3 Results",
+        "canonical_label": "results",
+        "label_confidence": 0.875,
+        "page_start": 2,
+        "page_end": 2,
+        "content": "Our experiments demonstrate that the Transformer model outperforms all existing\nmodels on two machine translation benchmarks. The model achieves state-of-the-art\nresults using PyTorch and trained on 8 NVIDIA P100 GPUs. Results show improvement\nof 2.0 BLEU over the best previously reported scores."
+      },
+      {
+        "section_id": "sec_005",
+        "parent_section_id": null,
+        "level": 1,
+        "position": 4,
+        "original_header": "4 Conclusion",
+        "canonical_label": "conclusion",
+        "label_confidence": 0.9091,
+        "page_start": 2,
+        "page_end": 2,
+        "content": "In this work, we presented the Transformer, the first sequence transduction model\nbased entirely on attention. We plan to extend the Transformer to other tasks."
+      },
+      {
+        "section_id": "sec_006",
+        "parent_section_id": null,
+        "level": 1,
+        "position": 5,
+        "original_header": "References",
+        "canonical_label": "discussion",
+        "label_confidence": 0.5,
+        "page_start": 2,
+        "page_end": 2,
+        "content": "[1] Bahdanau et al. Neural Machine Translation. ICLR 2015.\n\n[2] Sutskever et al. Sequence to Sequence Learning. NeurIPS 2014."
+      }
+    ],
+    "chunks": [
+      {
+        "chunk_id": "chk_000",
+        "text": "Ashish Vaswani, Noam Shazeer, Niki Parmar\n\nGoogle Brain\n\nAbstract. The dominant sequence transduction models are based on complex recurrent or\nconvolutional neural networks that include an encoder and a decoder. The best performing\nmodels also connect the encoder and decoder through an attention mechanism. We propose a\nnew simple network architecture, the Transformer, based solely on attention mechanisms,\ndispensing with recurrence and convolutions entirely. Experiments on two machine translation\ntasks show that these models are superior in quality while being more parallelizable and\nrequiring significantly less time to train.",
+        "word_count": 89,
+        "section_id": "sec_001",
+        "canonical_label": "introduction",
+        "page_start": 0,
+        "page_end": 0,
+        "paragraph_index": 0,
+        "reading_order": 0,
+        "extraction_method": "pymupdf_fallback",
+        "extraction_confidence": 0.7,
+        "entity_ids": [
+          "ent_001",
+          "ent_002",
+          "ent_003",
+          "ent_004",
+          "ent_015",
+          "ent_016"
+        ],
+        "claim_ids": [
+          "clm_001"
+        ]
+      },
+      {
+        "chunk_id": "chk_001",
+        "text": "Recurrent neural networks, long short-term memory and gated recurrent neural networks\nin particular, have been firmly established as state of the art approaches in sequence\nmodeling and transduction problems such as language modeling and machine translation.\nNumerous efforts have since continued to push the boundaries of recurrent language\nmodels and encoder-decoder architectures.",
+        "word_count": 52,
+        "section_id": "sec_002",
+        "canonical_label": "introduction",
+        "page_start": 1,
+        "page_end": 1,
+        "paragraph_index": 0,
+        "reading_order": 1,
+        "extraction_method": "pymupdf_fallback",
+        "extraction_confidence": 0.9231,
+        "entity_ids": [],
+        "claim_ids": [
+          "clm_002"
+        ]
+      },
+      {
+        "chunk_id": "chk_002",
+        "text": "The Transformer follows an encoder-decoder structure using stacked self-attention\nand point-wise, fully connected layers for both the encoder and decoder. We propose\na new architecture called Multi-Head Attention. Our model achieves a BLEU score of\n28.4 on the WMT 2014 English-to-German translation task, which outperforms the\nprevious state-of-the-art. We find that p < 0.001 for all comparisons.",
+        "word_count": 57,
+        "section_id": "sec_003",
+        "canonical_label": "methodology",
+        "page_start": 1,
+        "page_end": 1,
+        "paragraph_index": 0,
+        "reading_order": 2,
+        "extraction_method": "pymupdf_fallback",
+        "extraction_confidence": 0.9474,
+        "entity_ids": [
+          "ent_005",
+          "ent_006",
+          "ent_007",
+          "ent_008",
+          "ent_009",
+          "ent_010",
+          "ent_017",
+          "ent_018",
+          "ent_019",
+          "ent_020"
+        ],
+        "claim_ids": [
+          "clm_003",
+          "clm_004",
+          "clm_005",
+          "clm_006"
+        ]
+      },
+      {
+        "chunk_id": "chk_003",
+        "text": "Our experiments demonstrate that the Transformer model outperforms all existing\nmodels on two machine translation benchmarks. The model achieves state-of-the-art\nresults using PyTorch and trained on 8 NVIDIA P100 GPUs. Results show improvement\nof 2.0 BLEU over the best previously reported scores.",
+        "word_count": 42,
+        "section_id": "sec_004",
+        "canonical_label": "results",
+        "page_start": 2,
+        "page_end": 2,
+        "paragraph_index": 0,
+        "reading_order": 3,
+        "extraction_method": "pymupdf_fallback",
+        "extraction_confidence": 0.875,
+        "entity_ids": [
+          "ent_011",
+          "ent_012",
+          "ent_021",
+          "ent_022",
+          "ent_023"
+        ],
+        "claim_ids": [
+          "clm_007",
+          "clm_008",
+          "clm_009",
+          "clm_010"
+        ]
+      },
+      {
+        "chunk_id": "chk_004",
+        "text": "In this work, we presented the Transformer, the first sequence transduction model\nbased entirely on attention. We plan to extend the Transformer to other tasks.",
+        "word_count": 25,
+        "section_id": "sec_005",
+        "canonical_label": "conclusion",
+        "page_start": 2,
+        "page_end": 2,
+        "paragraph_index": 0,
+        "reading_order": 4,
+        "extraction_method": "pymupdf_fallback",
+        "extraction_confidence": 0.9091,
+        "entity_ids": [
+          "ent_013"
+        ],
+        "claim_ids": [
+          "clm_011"
+        ]
+      },
+      {
+        "chunk_id": "chk_005",
+        "text": "[1] Bahdanau et al. Neural Machine Translation. ICLR 2015.\n\n[2] Sutskever et al. Sequence to Sequence Learning. NeurIPS 2014.",
+        "word_count": 19,
+        "section_id": "sec_006",
+        "canonical_label": "discussion",
+        "page_start": 2,
+        "page_end": 2,
+        "paragraph_index": 0,
+        "reading_order": 5,
+        "extraction_method": "pymupdf_fallback",
+        "extraction_confidence": 0.5,
+        "entity_ids": [
+          "ent_014"
+        ],
+        "claim_ids": []
+      }
+    ],
+    "tables": [],
+    "figures": []
+  },
+  "references": [],
+  "citations": [],
+  "entities": [
+    {
+      "entity_id": "ent_001",
+      "text": "Ashish Vaswani",
+      "label": "person",
+      "chunk_id": "chk_000",
+      "sentence": "Ashish Vaswani, Noam Shazeer, Niki Parmar",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_002",
+      "text": "Noam Shazeer",
+      "label": "person",
+      "chunk_id": "chk_000",
+      "sentence": "Ashish Vaswani, Noam Shazeer, Niki Parmar",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_003",
+      "text": "Niki Parmar\n\nGoogle Brain\n\nAbstract",
+      "label": "organization",
+      "chunk_id": "chk_000",
+      "sentence": "Ashish Vaswani, Noam Shazeer, Niki Parmar\n\nGoogle Brain\n\nAbstract.",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_004",
+      "text": "Transformer",
+      "label": "organization",
+      "chunk_id": "chk_000",
+      "sentence": "new simple network architecture, the Transformer, based solely on attention mechanisms,",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_005",
+      "text": "Transformer",
+      "label": "organization",
+      "chunk_id": "chk_002",
+      "sentence": "The Transformer follows an encoder-decoder structure using stacked self-attention",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_006",
+      "text": "Multi-Head Attention",
+      "label": "organization",
+      "chunk_id": "chk_002",
+      "sentence": "a new architecture called Multi-Head Attention.",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_007",
+      "text": "BLEU",
+      "label": "organization",
+      "chunk_id": "chk_002",
+      "sentence": "Our model achieves a BLEU score of",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_008",
+      "text": "WMT",
+      "label": "organization",
+      "chunk_id": "chk_002",
+      "sentence": "4 on the WMT 2014 English-to-German translation task, which outperforms the",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_009",
+      "text": "English",
+      "label": "other",
+      "chunk_id": "chk_002",
+      "sentence": "4 on the WMT 2014 English-to-German translation task, which outperforms the",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_010",
+      "text": "German",
+      "label": "organization",
+      "chunk_id": "chk_002",
+      "sentence": "4 on the WMT 2014 English-to-German translation task, which outperforms the",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_011",
+      "text": "Transformer",
+      "label": "organization",
+      "chunk_id": "chk_003",
+      "sentence": "Our experiments demonstrate that the Transformer model outperforms all existing",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_012",
+      "text": "PyTorch",
+      "label": "organization",
+      "chunk_id": "chk_003",
+      "sentence": "results using PyTorch and trained on 8 NVIDIA P100 GPUs.",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_013",
+      "text": "Transformer",
+      "label": "organization",
+      "chunk_id": "chk_004",
+      "sentence": "In this work, we presented the Transformer, the first sequence transduction model",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_014",
+      "text": "Sequence Learning",
+      "label": "organization",
+      "chunk_id": "chk_005",
+      "sentence": "Sequence to Sequence Learning.",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_015",
+      "text": "complex recurrent or\nconvolutional neural networks that include an encoder and a decoder",
+      "label": "method",
+      "chunk_id": "chk_000",
+      "sentence": "The dominant sequence transduction models are based on complex recurrent or\nconvolutional neural networks that include an encoder and a decoder.",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_016",
+      "text": "new simple network architecture",
+      "label": "method",
+      "chunk_id": "chk_000",
+      "sentence": "We propose a\nnew simple network architecture, the Transformer, based solely on attention mechanisms,",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_017",
+      "text": "WMT",
+      "label": "dataset",
+      "chunk_id": "chk_002",
+      "sentence": "4 on the WMT 2014 English-to-German translation task, which outperforms the",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_018",
+      "text": "BLEU",
+      "label": "metric",
+      "chunk_id": "chk_002",
+      "sentence": "Our model achieves a BLEU score of",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_019",
+      "text": "stacked self-attention\nand point-wise",
+      "label": "method",
+      "chunk_id": "chk_002",
+      "sentence": "The Transformer follows an encoder-decoder structure using stacked self-attention\nand point-wise, fully connected layers for both the encoder and decoder.",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_020",
+      "text": "new architecture called Multi-Head Attention",
+      "label": "method",
+      "chunk_id": "chk_002",
+      "sentence": "We propose\na new architecture called Multi-Head Attention.",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_021",
+      "text": "BLEU",
+      "label": "metric",
+      "chunk_id": "chk_003",
+      "sentence": "0 BLEU over the best previously reported scores.",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_022",
+      "text": "PyTorch",
+      "label": "tool",
+      "chunk_id": "chk_003",
+      "sentence": "results using PyTorch and trained on 8 NVIDIA P100 GPUs.",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_023",
+      "text": "PyTorch and trained on",
+      "label": "method",
+      "chunk_id": "chk_003",
+      "sentence": "results using PyTorch and trained on 8 NVIDIA P100 GPUs.",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    }
+  ],
+  "candidate_claims": [
+    {
+      "claim_id": "clm_001",
+      "sentence": "We propose a\nnew simple network architecture, the Transformer, based solely on attention mechanisms,\ndispensing with recurrence and convolutions entirely.",
+      "chunk_id": "chk_000",
+      "section_id": "sec_001",
+      "canonical_label": "introduction",
+      "claim_type": "methodological",
+      "matched_patterns": [
+        "we\\s+(?:propose|introduce|present|develop)"
+      ],
+      "confidence": 0.4,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_002",
+      "sentence": "Recurrent neural networks, long short-term memory and gated recurrent neural networks\nin particular, have been firmly established as state of the art approaches in sequence\nmodeling and transduction problems such as language modeling and machine translation.",
+      "chunk_id": "chk_001",
+      "section_id": "sec_002",
+      "canonical_label": "introduction",
+      "claim_type": "comparative",
+      "matched_patterns": [
+        "state[- ]of[- ]the[- ]art"
+      ],
+      "confidence": 0.4,
+      "page": 1
+    },
+    {
+      "claim_id": "clm_003",
+      "sentence": "We propose\na new architecture called Multi-Head Attention.",
+      "chunk_id": "chk_002",
+      "section_id": "sec_003",
+      "canonical_label": "methodology",
+      "claim_type": "methodological",
+      "matched_patterns": [
+        "we\\s+(?:propose|introduce|present|develop)"
+      ],
+      "confidence": 0.65,
+      "page": 1
+    },
+    {
+      "claim_id": "clm_004",
+      "sentence": "Our model achieves a BLEU score of\n28.4 on the WMT 2014 English-to-German translation task, which outperforms the\nprevious state-of-the-art.",
+      "chunk_id": "chk_002",
+      "section_id": "sec_003",
+      "canonical_label": "methodology",
+      "claim_type": "comparative",
+      "matched_patterns": [
+        "outperforms?",
+        "state[- ]of[- ]the[- ]art"
+      ],
+      "confidence": 0.8,
+      "page": 1
+    },
+    {
+      "claim_id": "clm_005",
+      "sentence": "We find that p < 0.001 for all comparisons.",
+      "chunk_id": "chk_002",
+      "section_id": "sec_003",
+      "canonical_label": "methodology",
+      "claim_type": "statistical",
+      "matched_patterns": [
+        "p\\s*[<>≤≥=]\\s*0\\.\\d+"
+      ],
+      "confidence": 0.8,
+      "page": 1
+    },
+    {
+      "claim_id": "clm_006",
+      "sentence": "We find that p < 0.001 for all comparisons.",
+      "chunk_id": "chk_002",
+      "section_id": "sec_003",
+      "canonical_label": "methodology",
+      "claim_type": "existence",
+      "matched_patterns": [
+        "we\\s+(?:find|found|observe|show|demonstrate)"
+      ],
+      "confidence": 0.8,
+      "page": 1
+    },
+    {
+      "claim_id": "clm_007",
+      "sentence": "Our experiments demonstrate that the Transformer model outperforms all existing\nmodels on two machine translation benchmarks.",
+      "chunk_id": "chk_003",
+      "section_id": "sec_004",
+      "canonical_label": "results",
+      "claim_type": "comparative",
+      "matched_patterns": [
+        "outperforms?"
+      ],
+      "confidence": 0.7,
+      "page": 2
+    },
+    {
+      "claim_id": "clm_008",
+      "sentence": "The model achieves state-of-the-art\nresults using PyTorch and trained on 8 NVIDIA P100 GPUs.",
+      "chunk_id": "chk_003",
+      "section_id": "sec_004",
+      "canonical_label": "results",
+      "claim_type": "comparative",
+      "matched_patterns": [
+        "state[- ]of[- ]the[- ]art"
+      ],
+      "confidence": 0.7,
+      "page": 2
+    },
+    {
+      "claim_id": "clm_009",
+      "sentence": "Results show improvement\nof 2.0 BLEU over the best previously reported scores.",
+      "chunk_id": "chk_003",
+      "section_id": "sec_004",
+      "canonical_label": "results",
+      "claim_type": "comparative",
+      "matched_patterns": [
+        "improvement\\s+(?:of|over)"
+      ],
+      "confidence": 0.8,
+      "page": 2
+    },
+    {
+      "claim_id": "clm_010",
+      "sentence": "Results show improvement\nof 2.0 BLEU over the best previously reported scores.",
+      "chunk_id": "chk_003",
+      "section_id": "sec_004",
+      "canonical_label": "results",
+      "claim_type": "existence",
+      "matched_patterns": [
+        "results?\\s+(?:show|indicate|suggest|demonstrate)"
+      ],
+      "confidence": 0.8,
+      "page": 2
+    },
+    {
+      "claim_id": "clm_011",
+      "sentence": "In this work, we presented the Transformer, the first sequence transduction model\nbased entirely on attention.",
+      "chunk_id": "chk_004",
+      "section_id": "sec_005",
+      "canonical_label": "conclusion",
+      "claim_type": "methodological",
+      "matched_patterns": [
+        "we\\s+(?:propose|introduce|present|develop)"
+      ],
+      "confidence": 0.65,
+      "page": 2
+    }
+  ],
+  "quality": {
+    "overall_confidence": 0.27372851195905545,
+    "field_scores": {
+      "title": 0.31,
+      "authors": 0.0,
+      "abstract": 0.0,
+      "sections": 0.8912166666666667,
+      "references": 0.0,
+      "citations": 0.0,
+      "entities": 0.7533444816053512,
+      "claims": 0.8075757575757576
+    },
+    "extraction_completeness": {
+      "total_pages": 3,
+      "pages_with_text_extracted": 3,
+      "sections_detected": 6,
+      "references_total": 0,
+      "references_resolved": 0,
+      "citations_total": 0,
+      "citations_linked": 0,
+      "chunks_total": 6,
+      "entities_total": 23,
+      "claims_total": 11
+    },
+    "validation_errors": [],
+    "validation_warnings": [],
+    "requires_manual_review": true,
+    "manual_review_reasons": [
+      "Overall confidence is low (0.27 < 0.50)",
+      "Title confidence is very low (0.31 < 0.40)"
+    ],
+    "pipeline_log": [
+      {
+        "stage": "intake",
+        "status": "success",
+        "started_at": "2026-06-06T14:04:28.493663Z",
+        "completed_at": "2026-06-06T14:04:28.507159Z",
+        "duration_ms": 13,
+        "warnings": [],
+        "errors": [],
+        "details": {
+          "sha256": "6e932e46b5490e8466c3b7769b6ff6d2334a3b6b30dc24fdc87374fc35c4ed75",
+          "page_count": 3,
+          "route": "grobid_primary",
+          "has_text_layer": true
+        }
+      },
+      {
+        "stage": "extraction",
+        "status": "partial",
+        "started_at": "2026-06-06T14:04:28.507159Z",
+        "completed_at": "2026-06-06T14:04:42.059786Z",
+        "duration_ms": 13552,
+        "warnings": [
+          "Primary extraction failed (GROBID returned no output — service may be down); PyMuPDF fallback used"
+        ],
+        "errors": [],
+        "details": {}
+      },
+      {
+        "stage": "structuring",
+        "status": "success",
+        "started_at": "2026-06-06T14:04:42.059786Z",
+        "completed_at": "2026-06-06T14:04:42.088772Z",
+        "duration_ms": 28,
+        "warnings": [],
+        "errors": [],
+        "details": {
+          "sections": 6,
+          "chunks": 6,
+          "references": 0,
+          "citations": 0,
+          "tables": 0,
+          "figures": 0
+        }
+      },
+      {
+        "stage": "enrichment",
+        "status": "success",
+        "started_at": "2026-06-06T14:04:42.088772Z",
+        "completed_at": "2026-06-06T14:04:54.323849Z",
+        "duration_ms": 12235,
+        "warnings": [],
+        "errors": [],
+        "details": {
+          "entities": 23,
+          "claims": 11
+        }
+      },
+      {
+        "stage": "quality",
+        "status": "success",
+        "started_at": "2026-06-06T14:04:54.326521Z",
+        "completed_at": "2026-06-06T14:04:54.328547Z",
+        "duration_ms": 2,
+        "warnings": [],
+        "errors": [],
+        "details": {
+          "overall_confidence": 0.27372851195905545,
+          "requires_review": true
+        }
+      }
+    ],
+    "llm_calls": []
+  }
+}

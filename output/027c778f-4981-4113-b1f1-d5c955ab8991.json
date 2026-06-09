@@ -1,0 +1,457 @@
+{
+  "meta": {
+    "sro_id": "027c778f-4981-4113-b1f1-d5c955ab8991",
+    "schema_version": "1.0.0",
+    "created_at": "2026-06-06T16:01:32.630413Z",
+    "updated_at": "2026-06-06T16:02:02.574131Z",
+    "pipeline_version": "0.1.0",
+    "extraction_route": "grobid_primary",
+    "source_file": {
+      "filename": "sample_paper.pdf",
+      "sha256": "6e932e46b5490e8466c3b7769b6ff6d2334a3b6b30dc24fdc87374fc35c4ed75",
+      "page_count": 3,
+      "has_text_layer": true,
+      "is_scanned": false,
+      "size_bytes": 8265
+    },
+    "processing_time_ms": 29938
+  },
+  "header": {
+    "title": "Attention Is All You Need",
+    "title_confidence": 0.9,
+    "authors": [
+      {
+        "full_name": "Ashish Vaswani",
+        "given_name": "Ashish",
+        "surname": "Vaswani",
+        "affiliations": [
+          "Google Brain"
+        ],
+        "email": null,
+        "orcid": null,
+        "is_corresponding": false
+      },
+      {
+        "full_name": "Noam Shazeer",
+        "given_name": "Noam",
+        "surname": "Shazeer",
+        "affiliations": [
+          "Google Brain"
+        ],
+        "email": null,
+        "orcid": null,
+        "is_corresponding": false
+      },
+      {
+        "full_name": "Niki Parmar",
+        "given_name": "Niki",
+        "surname": "Parmar",
+        "affiliations": [
+          "Google Brain"
+        ],
+        "email": null,
+        "orcid": null,
+        "is_corresponding": false
+      }
+    ],
+    "authors_confidence": 0.85,
+    "document_type": "research_article",
+    "language": "en",
+    "doi": null,
+    "arxiv_id": null,
+    "pmid": null,
+    "publication_date": null,
+    "publication_date_raw": null,
+    "venue": null,
+    "venue_type": null,
+    "volume": null,
+    "issue": null,
+    "pages": null,
+    "keywords": []
+  },
+  "abstract": {
+    "raw_text": "The dominant sequence transduction models are based on complex recurrent or convolutional neural networks that include an encoder and a decoder. The best performing models also connect the encoder and decoder through an attention mechanism. We propose a new simple network architecture, the Transformer, based solely on attention mechanisms, dispensing with recurrence and convolutions entirely. Experiments on two machine translation tasks show that these models are superior in quality while being more parallelizable and requiring significantly less time to train.\n\nOur experiments demonstrate that the Transformer model outperforms all existing models on two machine translation benchmarks. The model achieves state-of-the-art results using PyTorch and trained on 8 NVIDIA P100 GPUs. Results show improvement of 2.0 BLEU over the best previously reported scores.\n\nIn this work, we presented the Transformer, the first sequence transduction model based entirely on attention. We plan to extend the Transformer to other tasks.",
+    "is_structured": false,
+    "structured": null,
+    "confidence": 0.9
+  },
+  "body": {
+    "sections": [
+      {
+        "section_id": "sec_001",
+        "parent_section_id": null,
+        "level": 1,
+        "position": 0,
+        "original_header": "Introduction",
+        "canonical_label": "introduction",
+        "label_confidence": 1.0,
+        "page_start": 0,
+        "page_end": 0,
+        "content": "Recurrent neural networks, long short-term memory and gated recurrent neural networks in particular, have been firmly established as state of the art approaches in sequence modeling and transduction problems such as language modeling and machine translation. Numerous efforts have since continued to push the boundaries of recurrent language models and encoder-decoder architectures."
+      },
+      {
+        "section_id": "sec_002",
+        "parent_section_id": null,
+        "level": 1,
+        "position": 1,
+        "original_header": "Model Architecture",
+        "canonical_label": "methodology",
+        "label_confidence": 1.0,
+        "page_start": 0,
+        "page_end": 0,
+        "content": "The Transformer follows an encoder-decoder structure using stacked self-attention and point-wise, fully connected layers for both the encoder and decoder. We propose a new architecture called Multi-Head Attention. Our model achieves a BLEU score of 28.4 on the WMT 2014 English-to-German translation task, which outperforms the previous state-of-the-art. We find that p < 0.001 for all comparisons."
+      }
+    ],
+    "chunks": [
+      {
+        "chunk_id": "chk_000",
+        "text": "Recurrent neural networks, long short-term memory and gated recurrent neural networks in particular, have been firmly established as state of the art approaches in sequence modeling and transduction problems such as language modeling and machine translation. Numerous efforts have since continued to push the boundaries of recurrent language models and encoder-decoder architectures.",
+        "word_count": 52,
+        "section_id": "sec_001",
+        "canonical_label": "introduction",
+        "page_start": 0,
+        "page_end": 0,
+        "paragraph_index": 0,
+        "reading_order": 0,
+        "extraction_method": "grobid",
+        "extraction_confidence": 1.0,
+        "entity_ids": [],
+        "claim_ids": [
+          "clm_001"
+        ]
+      },
+      {
+        "chunk_id": "chk_001",
+        "text": "The Transformer follows an encoder-decoder structure using stacked self-attention and point-wise, fully connected layers for both the encoder and decoder. We propose a new architecture called Multi-Head Attention. Our model achieves a BLEU score of 28.4 on the WMT 2014 English-to-German translation task, which outperforms the previous state-of-the-art. We find that p < 0.001 for all comparisons.",
+        "word_count": 57,
+        "section_id": "sec_002",
+        "canonical_label": "methodology",
+        "page_start": 0,
+        "page_end": 0,
+        "paragraph_index": 0,
+        "reading_order": 1,
+        "extraction_method": "grobid",
+        "extraction_confidence": 1.0,
+        "entity_ids": [
+          "ent_001",
+          "ent_002",
+          "ent_003",
+          "ent_004",
+          "ent_005",
+          "ent_006",
+          "ent_007",
+          "ent_008",
+          "ent_009",
+          "ent_010"
+        ],
+        "claim_ids": [
+          "clm_002",
+          "clm_003",
+          "clm_004",
+          "clm_005"
+        ]
+      }
+    ],
+    "tables": [],
+    "figures": []
+  },
+  "references": [
+    {
+      "ref_id": "ref_001",
+      "raw_text": "Neural Machine Translation\n\t\t\n\t\t\tBahdanau\n\t\t\n\t\n\t\n\t\tICLR\n\t\t\n\t\t\t2015",
+      "resolution_status": "unresolved",
+      "ref_confidence": 0.7,
+      "title": "Neural Machine Translation",
+      "authors": [
+        "Bahdanau"
+      ],
+      "year": "2015",
+      "venue": "ICLR",
+      "doi": null,
+      "url": null,
+      "resolution_source": "none"
+    },
+    {
+      "ref_id": "ref_002",
+      "raw_text": "Table 1: Sequence of <i>mecA</i> and <i>femA</i> gene-specific primers used in this study (Al-Talib et al., 2014).\n\t\t\n\t\t\tSutskever\n\t\t\n\t\t10.7717/peerj.19579/table-1\n\t\n\t\n\t\tNeurIPS\n\t\t\n\t\t\t2014\n\t\t\tPeerJ",
+      "resolution_status": "resolved",
+      "ref_confidence": 1.0,
+      "title": "Table 1: Sequence of <i>mecA</i> and <i>femA</i> gene-specific primers used in this study (Al-Talib et al., 2014).",
+      "authors": [
+        "Sutskever"
+      ],
+      "year": "2014",
+      "venue": "NeurIPS",
+      "doi": "10.7717/peerj.19579/table-1",
+      "url": null,
+      "resolution_source": "grobid_consolidation"
+    }
+  ],
+  "citations": [],
+  "entities": [
+    {
+      "entity_id": "ent_001",
+      "text": "Transformer",
+      "label": "organization",
+      "chunk_id": "chk_001",
+      "sentence": "The Transformer follows an encoder-decoder structure using stacked self-attention and point-wise, fully connected layers for both the encoder and decoder.",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_002",
+      "text": "Multi-Head Attention",
+      "label": "organization",
+      "chunk_id": "chk_001",
+      "sentence": "We propose a new architecture called Multi-Head Attention.",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_003",
+      "text": "BLEU",
+      "label": "organization",
+      "chunk_id": "chk_001",
+      "sentence": "Our model achieves a BLEU score of 28.",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_004",
+      "text": "WMT",
+      "label": "organization",
+      "chunk_id": "chk_001",
+      "sentence": "4 on the WMT 2014 English-to-German translation task, which outperforms the previous state-of-the-art.",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_005",
+      "text": "English",
+      "label": "other",
+      "chunk_id": "chk_001",
+      "sentence": "4 on the WMT 2014 English-to-German translation task, which outperforms the previous state-of-the-art.",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_006",
+      "text": "German",
+      "label": "organization",
+      "chunk_id": "chk_001",
+      "sentence": "4 on the WMT 2014 English-to-German translation task, which outperforms the previous state-of-the-art.",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_007",
+      "text": "WMT",
+      "label": "dataset",
+      "chunk_id": "chk_001",
+      "sentence": "4 on the WMT 2014 English-to-German translation task, which outperforms the previous state-of-the-art.",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_008",
+      "text": "BLEU",
+      "label": "metric",
+      "chunk_id": "chk_001",
+      "sentence": "Our model achieves a BLEU score of 28.",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_009",
+      "text": "stacked self-attention and point-wise",
+      "label": "method",
+      "chunk_id": "chk_001",
+      "sentence": "The Transformer follows an encoder-decoder structure using stacked self-attention and point-wise, fully connected layers for both the encoder and decoder.",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_010",
+      "text": "new architecture called Multi-Head Attention",
+      "label": "method",
+      "chunk_id": "chk_001",
+      "sentence": "We propose a new architecture called Multi-Head Attention.",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    }
+  ],
+  "candidate_claims": [
+    {
+      "claim_id": "clm_001",
+      "sentence": "Recurrent neural networks, long short-term memory and gated recurrent neural networks in particular, have been firmly established as state of the art approaches in sequence modeling and transduction problems such as language modeling and machine translation.",
+      "chunk_id": "chk_000",
+      "section_id": "sec_001",
+      "canonical_label": "introduction",
+      "claim_type": "comparative",
+      "matched_patterns": [
+        "state[- ]of[- ]the[- ]art"
+      ],
+      "confidence": 0.4,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_002",
+      "sentence": "We propose a new architecture called Multi-Head Attention.",
+      "chunk_id": "chk_001",
+      "section_id": "sec_002",
+      "canonical_label": "methodology",
+      "claim_type": "methodological",
+      "matched_patterns": [
+        "we\\s+(?:propose|introduce|present|develop)"
+      ],
+      "confidence": 0.65,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_003",
+      "sentence": "Our model achieves a BLEU score of 28.4 on the WMT 2014 English-to-German translation task, which outperforms the previous state-of-the-art.",
+      "chunk_id": "chk_001",
+      "section_id": "sec_002",
+      "canonical_label": "methodology",
+      "claim_type": "comparative",
+      "matched_patterns": [
+        "outperforms?",
+        "state[- ]of[- ]the[- ]art"
+      ],
+      "confidence": 0.8,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_004",
+      "sentence": "We find that p < 0.001 for all comparisons.",
+      "chunk_id": "chk_001",
+      "section_id": "sec_002",
+      "canonical_label": "methodology",
+      "claim_type": "statistical",
+      "matched_patterns": [
+        "p\\s*[<>≤≥=]\\s*0\\.\\d+"
+      ],
+      "confidence": 0.8,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_005",
+      "sentence": "We find that p < 0.001 for all comparisons.",
+      "chunk_id": "chk_001",
+      "section_id": "sec_002",
+      "canonical_label": "methodology",
+      "claim_type": "existence",
+      "matched_patterns": [
+        "we\\s+(?:find|found|observe|show|demonstrate)"
+      ],
+      "confidence": 0.8,
+      "page": 0
+    }
+  ],
+  "quality": {
+    "overall_confidence": 0.7858461538461537,
+    "field_scores": {
+      "title": 0.95,
+      "authors": 1.0,
+      "abstract": 1.0,
+      "sections": 0.8500000000000001,
+      "references": 0.6000000000000001,
+      "citations": 0.0,
+      "entities": 0.7219230769230769,
+      "claims": 0.845
+    },
+    "extraction_completeness": {
+      "total_pages": 3,
+      "pages_with_text_extracted": 1,
+      "sections_detected": 2,
+      "references_total": 2,
+      "references_resolved": 1,
+      "citations_total": 0,
+      "citations_linked": 0,
+      "chunks_total": 2,
+      "entities_total": 10,
+      "claims_total": 5
+    },
+    "validation_errors": [],
+    "validation_warnings": [],
+    "requires_manual_review": false,
+    "manual_review_reasons": [],
+    "pipeline_log": [
+      {
+        "stage": "intake",
+        "status": "success",
+        "started_at": "2026-06-06T16:01:32.631421Z",
+        "completed_at": "2026-06-06T16:01:32.635419Z",
+        "duration_ms": 3,
+        "warnings": [],
+        "errors": [],
+        "details": {
+          "sha256": "6e932e46b5490e8466c3b7769b6ff6d2334a3b6b30dc24fdc87374fc35c4ed75",
+          "page_count": 3,
+          "route": "grobid_primary",
+          "has_text_layer": true
+        }
+      },
+      {
+        "stage": "extraction",
+        "status": "success",
+        "started_at": "2026-06-06T16:01:32.635419Z",
+        "completed_at": "2026-06-06T16:01:54.053070Z",
+        "duration_ms": 21417,
+        "warnings": [],
+        "errors": [],
+        "details": {
+          "method": "grobid_primary",
+          "fallback_used": false,
+          "grobid_quality": 0.7478,
+          "sections_extracted": 2,
+          "references_extracted": 2
+        }
+      },
+      {
+        "stage": "structuring",
+        "status": "success",
+        "started_at": "2026-06-06T16:01:54.053070Z",
+        "completed_at": "2026-06-06T16:01:55.149079Z",
+        "duration_ms": 1096,
+        "warnings": [],
+        "errors": [],
+        "details": {
+          "sections": 2,
+          "chunks": 2,
+          "references": 2,
+          "citations": 0,
+          "tables": 0,
+          "figures": 0
+        }
+      },
+      {
+        "stage": "enrichment",
+        "status": "success",
+        "started_at": "2026-06-06T16:01:55.149079Z",
+        "completed_at": "2026-06-06T16:02:02.574131Z",
+        "duration_ms": 7425,
+        "warnings": [],
+        "errors": [],
+        "details": {
+          "entities": 10,
+          "claims": 5
+        }
+      },
+      {
+        "stage": "quality",
+        "status": "success",
+        "started_at": "2026-06-06T16:02:02.585213Z",
+        "completed_at": "2026-06-06T16:02:02.587211Z",
+        "duration_ms": 1,
+        "warnings": [],
+        "errors": [],
+        "details": {
+          "overall_confidence": 0.7858461538461537,
+          "requires_review": false
+        }
+      }
+    ],
+    "llm_calls": []
+  }
+}

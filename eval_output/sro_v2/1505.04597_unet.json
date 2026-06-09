@@ -1,0 +1,1808 @@
+{
+  "meta": {
+    "sro_id": "25600c88-81a2-47b9-a952-cd52c30e7ada",
+    "schema_version": "1.0.0",
+    "created_at": "2026-06-09T08:47:11.468908Z",
+    "updated_at": "2026-06-09T08:47:41.423931Z",
+    "pipeline_version": "0.1.0",
+    "extraction_route": "grobid_primary",
+    "source_file": {
+      "filename": "1505.04597_unet.pdf",
+      "sha256": "a3172b2124f38e260dc2c7ed968d87c31bc94dbc19a42a7ab3dcbd7534319c44",
+      "page_count": 8,
+      "has_text_layer": true,
+      "is_scanned": false,
+      "size_bytes": 1648684
+    },
+    "processing_time_ms": 29953
+  },
+  "header": {
+    "title": "U-Net: Convolutional Networks for Biomedical Image Segmentation",
+    "title_confidence": 0.9,
+    "authors": [
+      {
+        "full_name": "Olaf Ronneberger",
+        "given_name": "Olaf",
+        "surname": "Ronneberger",
+        "affiliations": [
+          "Computer Science Department and BIOSS Centre for Biological Signalling Studies, University of Freiburg"
+        ],
+        "email": null,
+        "orcid": null,
+        "is_corresponding": false
+      },
+      {
+        "full_name": "Philipp Fischer",
+        "given_name": "Philipp",
+        "surname": "Fischer",
+        "affiliations": [
+          "Computer Science Department and BIOSS Centre for Biological Signalling Studies, University of Freiburg"
+        ],
+        "email": null,
+        "orcid": null,
+        "is_corresponding": false
+      },
+      {
+        "full_name": "Thomas Brox",
+        "given_name": "Thomas",
+        "surname": "Brox",
+        "affiliations": [
+          "Computer Science Department and BIOSS Centre for Biological Signalling Studies, University of Freiburg"
+        ],
+        "email": null,
+        "orcid": null,
+        "is_corresponding": false
+      }
+    ],
+    "authors_confidence": 0.85,
+    "document_type": "research_article",
+    "language": "en",
+    "doi": null,
+    "arxiv_id": null,
+    "pmid": null,
+    "publication_date": "2015-05-18",
+    "publication_date_raw": "2015-05-18",
+    "venue": null,
+    "venue_type": null,
+    "volume": null,
+    "issue": null,
+    "pages": null,
+    "keywords": []
+  },
+  "abstract": {
+    "raw_text": "There is large consent that successful training of deep networks requires many thousand annotated training samples. In this paper, we present a network and training strategy that relies on the strong use of data augmentation to use the available annotated samples more efficiently. The architecture consists of a contracting path to capture context and a symmetric expanding path that enables precise localization. We show that such a network can be trained end-to-end from very few images and outperforms the prior best method (a sliding-window convolutional network) on the ISBI challenge for segmentation of neuronal structures in electron microscopic stacks. Using the same network trained on transmitted light microscopy images (phase contrast and DIC) we won the ISBI cell tracking challenge 2015 in these categories by a large margin. Moreover, the network is fast. Segmentation of a 512x512 image takes less than a second on a recent GPU. The full implementation (based on Caffe) and the trained networks are available at",
+    "is_structured": false,
+    "structured": null,
+    "confidence": 0.9
+  },
+  "body": {
+    "sections": [
+      {
+        "section_id": "sec_001",
+        "parent_section_id": null,
+        "level": 1,
+        "position": 0,
+        "original_header": "Introduction",
+        "canonical_label": "introduction",
+        "label_confidence": 1.0,
+        "page_start": 0,
+        "page_end": 0,
+        "content": "In the last two years, deep convolutional networks have outperformed the state of the art in many visual recognition tasks, e.g. [7,3]. While convolutional networks have already existed for a long time [8], their success was limited due to the size of the available training sets and the size of the considered networks. The breakthrough by Krizhevsky et al. [7] was due to supervised training of a large network with 8 layers and millions of parameters on the ImageNet dataset with 1 million training images. Since then, even larger and deeper networks have been trained [12].\n\nThe typical use of convolutional networks is on classification tasks, where the output to an image is a single class label. However, in many visual tasks, especially in biomedical image processing, the desired output should include localization, i.e., a class label is supposed to be assigned to each pixel. Moreover, thousands of training images are usually beyond reach in biomedical tasks. Hence, Ciresan et al. [1] trained a network in a sliding-window setup to predict the class label of each pixel by providing a local region (patch)   as input. First, this network can localize. Secondly, the training data in terms of patches is much larger than the number of training images. The resulting network won the EM segmentation challenge at ISBI 2012 by a large margin.\n\nObviously, the strategy in Ciresan et al. [1] has two drawbacks. First, it is quite slow because the network must be run separately for each patch, and there is a lot of redundancy due to overlapping patches. Secondly, there is a trade-off between localization accuracy and the use of context. Larger patches require more max-pooling layers that reduce the localization accuracy, while small patches allow the network to see only little context. More recent approaches [11,4] proposed a classifier output that takes into account the features from multiple layers. Good localization and the use of context are possible at the same time.\n\nIn this paper, we build upon a more elegant architecture, the so-called \"fully convolutional network\" [9]. We modify and extend this architecture such that it works with very few training images and yields more precise segmentations; see Figure 1. The main idea in [9] is to supplement a usual contracting network by successive layers, where pooling operators are replaced by upsampling operators. Hence, these layers increase the resolution of the output. In order to localize, high resolution features from the contracting path are combined with the upsampled Fig. 2. Overlap-tile strategy for seamless segmentation of arbitrary large images (here segmentation of neuronal structures in EM stacks). Prediction of the segmentation in the yellow area, requires image data within the blue area as input. Missing input data is extrapolated by mirroring output. A successive convolution layer can then learn to assemble a more precise output based on this information.\n\nOne important modification in our architecture is that in the upsampling part we have also a large number of feature channels, which allow the network to propagate context information to higher resolution layers. As a consequence, the expansive path is more or less symmetric to the contracting path, and yields a u-shaped architecture. The network does not have any fully connected layers and only uses the valid part of each convolution, i.e., the segmentation map only contains the pixels, for which the full context is available in the input image. This strategy allows the seamless segmentation of arbitrarily large images by an overlap-tile strategy (see Figure 2). To predict the pixels in the border region of the image, the missing context is extrapolated by mirroring the input image. This tiling strategy is important to apply the network to large images, since otherwise the resolution would be limited by the GPU memory.\n\nAs for our tasks there is very little training data available, we use excessive data augmentation by applying elastic deformations to the available training images. This allows the network to learn invariance to such deformations, without the need to see these transformations in the annotated image corpus. This is particularly important in biomedical segmentation, since deformation used to be the most common variation in tissue and realistic deformations can be simulated efficiently. The value of data augmentation for learning invariance has been shown in Dosovitskiy et al. [2] in the scope of unsupervised feature learning.\n\nAnother challenge in many cell segmentation tasks is the separation of touching objects of the same class; see Figure 3. To this end, we propose the use of a weighted loss, where the separating background labels between touching cells obtain a large weight in the loss function.\n\nThe resulting network is applicable to various biomedical segmentation problems. In this paper, we show results on the segmentation of neuronal structures in EM stacks (an ongoing competition started at ISBI 2012), where we out-performed the network of Ciresan et al. [1]. Furthermore, we show results for cell segmentation in light microscopy images from the ISBI cell tracking challenge 2015. Here we won with a large margin on the two most challenging 2D transmitted light datasets."
+      },
+      {
+        "section_id": "sec_002",
+        "parent_section_id": null,
+        "level": 1,
+        "position": 1,
+        "original_header": "Network Architecture",
+        "canonical_label": "methodology",
+        "label_confidence": 1.0,
+        "page_start": 0,
+        "page_end": 0,
+        "content": "The network architecture is illustrated in Figure 1. It consists of a contracting path (left side) and an expansive path (right side). The contracting path follows the typical architecture of a convolutional network. It consists of the repeated application of two 3x3 convolutions (unpadded convolutions), each followed by a rectified linear unit (ReLU) and a 2x2 max pooling operation with stride 2 for downsampling. At each downsampling step we double the number of feature channels. Every step in the expansive path consists of an upsampling of the feature map followed by a 2x2 convolution (\"up-convolution\") that halves the number of feature channels, a concatenation with the correspondingly cropped feature map from the contracting path, and two 3x3 convolutions, each followed by a ReLU. The cropping is necessary due to the loss of border pixels in every convolution. At the final layer a 1x1 convolution is used to map each 64component feature vector to the desired number of classes. In total the network has 23 convolutional layers.\n\nTo allow a seamless tiling of the output segmentation map (see Figure 2), it is important to select the input tile size such that all 2x2 max-pooling operations are applied to a layer with an even x-and y-size."
+      },
+      {
+        "section_id": "sec_003",
+        "parent_section_id": null,
+        "level": 1,
+        "position": 2,
+        "original_header": "Training",
+        "canonical_label": "methodology",
+        "label_confidence": 1.0,
+        "page_start": 0,
+        "page_end": 0,
+        "content": "The input images and their corresponding segmentation maps are used to train the network with the stochastic gradient descent implementation of Caffe [6]. Due to the unpadded convolutions, the output image is smaller than the input by a constant border width. To minimize the overhead and make maximum use of the GPU memory, we favor large input tiles over a large batch size and hence reduce the batch to a single image. Accordingly we use a high momentum (0.99) such that a large number of the previously seen training samples determine the update in the current optimization step.\n\nThe energy function is computed by a pixel-wise soft-max over the final feature map combined with the cross entropy loss function. The soft-max is defined as\n\n) where a k (x) denotes the activation in feature channel k at the pixel position x ∈ Ω with Ω ⊂ Z 2 . K is the number of classes and p k (x) is the approximated maximum-function. I.e. p k (x) ≈ 1 for the k that has the maximum activation a k (x) and p k (x) ≈ 0 for all other k. The cross entropy then penalizes at each position the deviation of p (x) (x) from 1 using where : Ω → {1, . . . , K} is the true label of each pixel and w : Ω → R is a weight map that we introduced to give some pixels more importance in the training.\n\nWe pre-compute the weight map for each ground truth segmentation to compensate the different frequency of pixels from a certain class in the training data set, and to force the network to learn the small separation borders that we introduce between touching cells (See Figure 3c andd).\n\nThe separation border is computed using morphological operations. The weight map is then computed as\n\nwhere w c : Ω → R is the weight map to balance the class frequencies, d 1 : Ω → R denotes the distance to the border of the nearest cell and d 2 : Ω → R the distance to the border of the second nearest cell. In our experiments we set w 0 = 10 and σ ≈ 5 pixels.\n\nIn deep networks with many convolutional layers and different paths through the network, a good initialization of the weights is extremely important. Otherwise, parts of the network might give excessive activations, while other parts never contribute. Ideally the initial weights should be adapted such that each feature map in the network has approximately unit variance. For a network with our architecture (alternating convolution and ReLU layers) this can be achieved by drawing the initial weights from a Gaussian distribution with a standard deviation of 2/N , where N denotes the number of incoming nodes of one neuron [5]. E.g. for a 3x3 convolution and 64 feature channels in the previous layer N = 9 • 64 = 576."
+      },
+      {
+        "section_id": "sec_004",
+        "parent_section_id": null,
+        "level": 1,
+        "position": 3,
+        "original_header": "Data Augmentation",
+        "canonical_label": "methodology",
+        "label_confidence": 1.0,
+        "page_start": 0,
+        "page_end": 0,
+        "content": "Data augmentation is essential to teach the network the desired invariance and robustness properties, when only few training samples are available. In case of microscopical images we primarily need shift and rotation invariance as well as robustness to deformations and gray value variations. Especially random elastic deformations of the training samples seem to be the key concept to train a segmentation network with very few annotated images. We generate smooth deformations using random displacement vectors on a coarse 3 by 3 grid. The displacements are sampled from a Gaussian distribution with 10 pixels standard deviation. Per-pixel displacements are then computed using bicubic interpolation. Drop-out layers at the end of the contracting path perform further implicit data augmentation."
+      },
+      {
+        "section_id": "sec_005",
+        "parent_section_id": null,
+        "level": 1,
+        "position": 4,
+        "original_header": "Experiments",
+        "canonical_label": "results",
+        "label_confidence": 1.0,
+        "page_start": 0,
+        "page_end": 0,
+        "content": "We demonstrate the application of the u-net to three different segmentation tasks. The first task is the segmentation of neuronal structures in electron microscopic recordings. An example of the data set and our obtained segmentation is displayed in Figure 2. We provide the full result as Supplementary Material. The data set is provided by the EM segmentation challenge [14] that was started at ISBI 2012 and is still open for new contributions. The training data is a set of 30 images (512x512 pixels) from serial section transmission electron microscopy of the Drosophila first instar larva ventral nerve cord (VNC). Each image comes with a corresponding fully annotated ground truth segmentation map for cells (white) and membranes (black). The test set is publicly available, but its segmentation maps are kept secret. An evaluation can be obtained by sending the predicted membrane probability map to the organizers. The evaluation is done by thresholding the map at 10 different levels and computation of the \"warping error\", the \"Rand error\" and the \"pixel error\" [14].\n\nThe u-net (averaged over 7 rotated versions of the input data) achieves without any further pre-or postprocessing a warping error of 0.0003529 (the new best score, see Table 1) and a rand-error of 0.0382. This is significantly better than the sliding-window convolutional network result by Ciresan et al. [1], whose best submission had a warping error of 0.000420 and a rand error of 0.0504. In terms of rand error the only better performing   algorithms on this data set use highly data set specific post-processing methods 1 applied to the probability map of Ciresan et al. [1].\n\nWe also applied the u-net to a cell segmentation task in light microscopic images. This segmenation task is part of the ISBI cell tracking challenge 2014 and 2015 [10,13]. The first data set \"PhC-U373\" 2 contains Glioblastoma-astrocytoma U373 cells on a polyacrylimide substrate recorded by phase contrast microscopy (see Figure 4a,b and Supp. Material). It contains 35 partially annotated training images. Here we achieve an average IOU (\"intersection over union\") of 92%, which is significantly better than the second best algorithm with 83% (see Table 2). The second data set \"DIC-HeLa\" 3 are HeLa cells on a flat glass recorded by differential interference contrast (DIC) microscopy (see Figure 3, Figure 4c,d and Supp. Material). It contains 20 partially annotated training images. Here we achieve an average IOU of 77.5% which is significantly better than the second best algorithm with 46%."
+      },
+      {
+        "section_id": "sec_006",
+        "parent_section_id": null,
+        "level": 1,
+        "position": 5,
+        "original_header": "Conclusion",
+        "canonical_label": "conclusion",
+        "label_confidence": 1.0,
+        "page_start": 0,
+        "page_end": 0,
+        "content": "The u-net architecture achieves very good performance on very different biomedical segmentation applications. Thanks to data augmentation with elastic defor- 1 The authors of this algorithm have submitted 78 different solutions to achieve this result. The Netherlands mations, it only needs very few annotated images and has a very reasonable training time of only 10 hours on a NVidia Titan GPU (6 GB). We provide the full Caffe [6]-based implementation and the trained networks 4 . We are sure that the u-net architecture can be applied easily to many more tasks."
+      }
+    ],
+    "chunks": [
+      {
+        "chunk_id": "chk_000",
+        "text": "In the last two years, deep convolutional networks have outperformed the state of the art in many visual recognition tasks, e.g. [7,3]. While convolutional networks have already existed for a long time [8], their success was limited due to the size of the available training sets and the size of the considered networks. The breakthrough by Krizhevsky et al. [7] was due to supervised training of a large network with 8 layers and millions of parameters on the ImageNet dataset with 1 million training images. Since then, even larger and deeper networks have been trained [12].\n\nThe typical use of convolutional networks is on classification tasks, where the output to an image is a single class label. However, in many visual tasks, especially in biomedical image processing, the desired output should include localization, i.e., a class label is supposed to be assigned to each pixel. Moreover, thousands of training images are usually beyond reach in biomedical tasks. Hence, Ciresan et al. [1] trained a network in a sliding-window setup to predict the class label of each pixel by providing a local region (patch)   as input. First, this network can localize. Secondly, the training data in terms of patches is much larger than the number of training images. The resulting network won the EM segmentation challenge at ISBI 2012 by a large margin.",
+        "word_count": 222,
+        "section_id": "sec_001",
+        "canonical_label": "introduction",
+        "page_start": 0,
+        "page_end": 0,
+        "paragraph_index": 0,
+        "reading_order": 0,
+        "extraction_method": "grobid",
+        "extraction_confidence": 1.0,
+        "entity_ids": [
+          "ent_001",
+          "ent_002",
+          "ent_003",
+          "ent_004",
+          "ent_046",
+          "ent_047"
+        ],
+        "claim_ids": [
+          "clm_001",
+          "clm_002",
+          "clm_003"
+        ]
+      },
+      {
+        "chunk_id": "chk_001",
+        "text": "Obviously, the strategy in Ciresan et al. [1] has two drawbacks. First, it is quite slow because the network must be run separately for each patch, and there is a lot of redundancy due to overlapping patches. Secondly, there is a trade-off between localization accuracy and the use of context. Larger patches require more max-pooling layers that reduce the localization accuracy, while small patches allow the network to see only little context. More recent approaches [11,4] proposed a classifier output that takes into account the features from multiple layers. Good localization and the use of context are possible at the same time.\n\nIn this paper, we build upon a more elegant architecture, the so-called \"fully convolutional network\" [9]. We modify and extend this architecture such that it works with very few training images and yields more precise segmentations; see Figure 1. The main idea in [9] is to supplement a usual contracting network by successive layers, where pooling operators are replaced by upsampling operators. Hence, these layers increase the resolution of the output. In order to localize, high resolution features from the contracting path are combined with the upsampled Fig. 2. Overlap-tile strategy for seamless segmentation of arbitrary large images (here segmentation of neuronal structures in EM stacks). Prediction of the segmentation in the yellow area, requires image data within the blue area as input. Missing input data is extrapolated by mirroring output. A successive convolution layer can then learn to assemble a more precise output based on this information.",
+        "word_count": 250,
+        "section_id": "sec_001",
+        "canonical_label": "introduction",
+        "page_start": 0,
+        "page_end": 0,
+        "paragraph_index": 1,
+        "reading_order": 1,
+        "extraction_method": "grobid",
+        "extraction_confidence": 1.0,
+        "entity_ids": [
+          "ent_005",
+          "ent_006",
+          "ent_007",
+          "ent_008",
+          "ent_048",
+          "ent_049",
+          "ent_050"
+        ],
+        "claim_ids": [
+          "clm_004"
+        ]
+      },
+      {
+        "chunk_id": "chk_002",
+        "text": "One important modification in our architecture is that in the upsampling part we have also a large number of feature channels, which allow the network to propagate context information to higher resolution layers. As a consequence, the expansive path is more or less symmetric to the contracting path, and yields a u-shaped architecture. The network does not have any fully connected layers and only uses the valid part of each convolution, i.e., the segmentation map only contains the pixels, for which the full context is available in the input image. This strategy allows the seamless segmentation of arbitrarily large images by an overlap-tile strategy (see Figure 2). To predict the pixels in the border region of the image, the missing context is extrapolated by mirroring the input image. This tiling strategy is important to apply the network to large images, since otherwise the resolution would be limited by the GPU memory.",
+        "word_count": 151,
+        "section_id": "sec_001",
+        "canonical_label": "introduction",
+        "page_start": 0,
+        "page_end": 0,
+        "paragraph_index": 2,
+        "reading_order": 2,
+        "extraction_method": "grobid",
+        "extraction_confidence": 1.0,
+        "entity_ids": [
+          "ent_009"
+        ],
+        "claim_ids": []
+      },
+      {
+        "chunk_id": "chk_003",
+        "text": "As for our tasks there is very little training data available, we use excessive data augmentation by applying elastic deformations to the available training images. This allows the network to learn invariance to such deformations, without the need to see these transformations in the annotated image corpus. This is particularly important in biomedical segmentation, since deformation used to be the most common variation in tissue and realistic deformations can be simulated efficiently. The value of data augmentation for learning invariance has been shown in Dosovitskiy et al. [2] in the scope of unsupervised feature learning.\n\nAnother challenge in many cell segmentation tasks is the separation of touching objects of the same class; see Figure 3. To this end, we propose the use of a weighted loss, where the separating background labels between touching cells obtain a large weight in the loss function.\n\nThe resulting network is applicable to various biomedical segmentation problems. In this paper, we show results on the segmentation of neuronal structures in EM stacks (an ongoing competition started at ISBI 2012), where we out-performed the network of Ciresan et al. [1]. Furthermore, we show results for cell segmentation in light microscopy images from the ISBI cell tracking challenge 2015. Here we won with a large margin on the two most challenging 2D transmitted light datasets.",
+        "word_count": 218,
+        "section_id": "sec_001",
+        "canonical_label": "introduction",
+        "page_start": 0,
+        "page_end": 0,
+        "paragraph_index": 3,
+        "reading_order": 3,
+        "extraction_method": "grobid",
+        "extraction_confidence": 1.0,
+        "entity_ids": [
+          "ent_010",
+          "ent_011",
+          "ent_012",
+          "ent_051",
+          "ent_052"
+        ],
+        "claim_ids": [
+          "clm_005",
+          "clm_006",
+          "clm_007"
+        ]
+      },
+      {
+        "chunk_id": "chk_004",
+        "text": "The network architecture is illustrated in Figure 1. It consists of a contracting path (left side) and an expansive path (right side). The contracting path follows the typical architecture of a convolutional network. It consists of the repeated application of two 3x3 convolutions (unpadded convolutions), each followed by a rectified linear unit (ReLU) and a 2x2 max pooling operation with stride 2 for downsampling. At each downsampling step we double the number of feature channels. Every step in the expansive path consists of an upsampling of the feature map followed by a 2x2 convolution (\"up-convolution\") that halves the number of feature channels, a concatenation with the correspondingly cropped feature map from the contracting path, and two 3x3 convolutions, each followed by a ReLU. The cropping is necessary due to the loss of border pixels in every convolution. At the final layer a 1x1 convolution is used to map each 64component feature vector to the desired number of classes. In total the network has 23 convolutional layers.\n\nTo allow a seamless tiling of the output segmentation map (see Figure 2), it is important to select the input tile size such that all 2x2 max-pooling operations are applied to a layer with an even x-and y-size.",
+        "word_count": 204,
+        "section_id": "sec_002",
+        "canonical_label": "methodology",
+        "page_start": 0,
+        "page_end": 0,
+        "paragraph_index": 0,
+        "reading_order": 4,
+        "extraction_method": "grobid",
+        "extraction_confidence": 1.0,
+        "entity_ids": [
+          "ent_013",
+          "ent_014",
+          "ent_015",
+          "ent_016"
+        ],
+        "claim_ids": [
+          "clm_008"
+        ]
+      },
+      {
+        "chunk_id": "chk_005",
+        "text": "The input images and their corresponding segmentation maps are used to train the network with the stochastic gradient descent implementation of Caffe [6]. Due to the unpadded convolutions, the output image is smaller than the input by a constant border width. To minimize the overhead and make maximum use of the GPU memory, we favor large input tiles over a large batch size and hence reduce the batch to a single image. Accordingly we use a high momentum (0.99) such that a large number of the previously seen training samples determine the update in the current optimization step.\n\nThe energy function is computed by a pixel-wise soft-max over the final feature map combined with the cross entropy loss function. The soft-max is defined as\n\n) where a k (x) denotes the activation in feature channel k at the pixel position x ∈ Ω with Ω ⊂ Z 2 . K is the number of classes and p k (x) is the approximated maximum-function. I.e. p k (x) ≈ 1 for the k that has the maximum activation a k (x) and p k (x) ≈ 0 for all other k. The cross entropy then penalizes at each position the deviation of p (x) (x) from 1 using where : Ω → {1, . . . , K} is the true label of each pixel and w : Ω → R is a weight map that we introduced to give some pixels more importance in the training.",
+        "word_count": 246,
+        "section_id": "sec_003",
+        "canonical_label": "methodology",
+        "page_start": 0,
+        "page_end": 0,
+        "paragraph_index": 0,
+        "reading_order": 5,
+        "extraction_method": "grobid",
+        "extraction_confidence": 1.0,
+        "entity_ids": [
+          "ent_017",
+          "ent_018",
+          "ent_019",
+          "ent_020",
+          "ent_053",
+          "ent_054"
+        ],
+        "claim_ids": [
+          "clm_009",
+          "clm_010"
+        ]
+      },
+      {
+        "chunk_id": "chk_006",
+        "text": "We pre-compute the weight map for each ground truth segmentation to compensate the different frequency of pixels from a certain class in the training data set, and to force the network to learn the small separation borders that we introduce between touching cells (See Figure 3c andd).\n\nThe separation border is computed using morphological operations. The weight map is then computed as\n\nwhere w c : Ω → R is the weight map to balance the class frequencies, d 1 : Ω → R denotes the distance to the border of the nearest cell and d 2 : Ω → R the distance to the border of the second nearest cell. In our experiments we set w 0 = 10 and σ ≈ 5 pixels.\n\nIn deep networks with many convolutional layers and different paths through the network, a good initialization of the weights is extremely important. Otherwise, parts of the network might give excessive activations, while other parts never contribute. Ideally the initial weights should be adapted such that each feature map in the network has approximately unit variance. For a network with our architecture (alternating convolution and ReLU layers) this can be achieved by drawing the initial weights from a Gaussian distribution with a standard deviation of 2/N , where N denotes the number of incoming nodes of one neuron [5]. E.g. for a 3x3 convolution and 64 feature channels in the previous layer N = 9 • 64 = 576.",
+        "word_count": 243,
+        "section_id": "sec_003",
+        "canonical_label": "methodology",
+        "page_start": 0,
+        "page_end": 0,
+        "paragraph_index": 1,
+        "reading_order": 6,
+        "extraction_method": "grobid",
+        "extraction_confidence": 1.0,
+        "entity_ids": [
+          "ent_021",
+          "ent_022",
+          "ent_023",
+          "ent_024",
+          "ent_055",
+          "ent_056",
+          "ent_057"
+        ],
+        "claim_ids": [
+          "clm_011"
+        ]
+      },
+      {
+        "chunk_id": "chk_007",
+        "text": "Data augmentation is essential to teach the network the desired invariance and robustness properties, when only few training samples are available. In case of microscopical images we primarily need shift and rotation invariance as well as robustness to deformations and gray value variations. Especially random elastic deformations of the training samples seem to be the key concept to train a segmentation network with very few annotated images. We generate smooth deformations using random displacement vectors on a coarse 3 by 3 grid. The displacements are sampled from a Gaussian distribution with 10 pixels standard deviation. Per-pixel displacements are then computed using bicubic interpolation. Drop-out layers at the end of the contracting path perform further implicit data augmentation.",
+        "word_count": 117,
+        "section_id": "sec_004",
+        "canonical_label": "methodology",
+        "page_start": 0,
+        "page_end": 0,
+        "paragraph_index": 0,
+        "reading_order": 7,
+        "extraction_method": "grobid",
+        "extraction_confidence": 1.0,
+        "entity_ids": [
+          "ent_025",
+          "ent_026",
+          "ent_058",
+          "ent_059"
+        ],
+        "claim_ids": []
+      },
+      {
+        "chunk_id": "chk_008",
+        "text": "We demonstrate the application of the u-net to three different segmentation tasks. The first task is the segmentation of neuronal structures in electron microscopic recordings. An example of the data set and our obtained segmentation is displayed in Figure 2. We provide the full result as Supplementary Material. The data set is provided by the EM segmentation challenge [14] that was started at ISBI 2012 and is still open for new contributions. The training data is a set of 30 images (512x512 pixels) from serial section transmission electron microscopy of the Drosophila first instar larva ventral nerve cord (VNC). Each image comes with a corresponding fully annotated ground truth segmentation map for cells (white) and membranes (black). The test set is publicly available, but its segmentation maps are kept secret. An evaluation can be obtained by sending the predicted membrane probability map to the organizers. The evaluation is done by thresholding the map at 10 different levels and computation of the \"warping error\", the \"Rand error\" and the \"pixel error\" [14].",
+        "word_count": 171,
+        "section_id": "sec_005",
+        "canonical_label": "results",
+        "page_start": 0,
+        "page_end": 0,
+        "paragraph_index": 0,
+        "reading_order": 8,
+        "extraction_method": "grobid",
+        "extraction_confidence": 1.0,
+        "entity_ids": [
+          "ent_027",
+          "ent_028",
+          "ent_029",
+          "ent_030",
+          "ent_060"
+        ],
+        "claim_ids": [
+          "clm_012"
+        ]
+      },
+      {
+        "chunk_id": "chk_009",
+        "text": "The u-net (averaged over 7 rotated versions of the input data) achieves without any further pre-or postprocessing a warping error of 0.0003529 (the new best score, see Table 1) and a rand-error of 0.0382. This is significantly better than the sliding-window convolutional network result by Ciresan et al. [1], whose best submission had a warping error of 0.000420 and a rand error of 0.0504. In terms of rand error the only better performing   algorithms on this data set use highly data set specific post-processing methods 1 applied to the probability map of Ciresan et al. [1].\n\nWe also applied the u-net to a cell segmentation task in light microscopic images. This segmenation task is part of the ISBI cell tracking challenge 2014 and 2015 [10,13]. The first data set \"PhC-U373\" 2 contains Glioblastoma-astrocytoma U373 cells on a polyacrylimide substrate recorded by phase contrast microscopy (see Figure 4a,b and Supp. Material). It contains 35 partially annotated training images. Here we achieve an average IOU (\"intersection over union\") of 92%, which is significantly better than the second best algorithm with 83% (see Table 2). The second data set \"DIC-HeLa\" 3 are HeLa cells on a flat glass recorded by differential interference contrast (DIC) microscopy (see Figure 3, Figure 4c,d and Supp. Material). It contains 20 partially annotated training images. Here we achieve an average IOU of 77.5% which is significantly better than the second best algorithm with 46%.",
+        "word_count": 236,
+        "section_id": "sec_005",
+        "canonical_label": "results",
+        "page_start": 0,
+        "page_end": 0,
+        "paragraph_index": 1,
+        "reading_order": 9,
+        "extraction_method": "grobid",
+        "extraction_confidence": 1.0,
+        "entity_ids": [
+          "ent_031",
+          "ent_032",
+          "ent_033",
+          "ent_034",
+          "ent_035",
+          "ent_036",
+          "ent_037",
+          "ent_038",
+          "ent_039",
+          "ent_040",
+          "ent_041"
+        ],
+        "claim_ids": [
+          "clm_013",
+          "clm_014",
+          "clm_015"
+        ]
+      },
+      {
+        "chunk_id": "chk_010",
+        "text": "The u-net architecture achieves very good performance on very different biomedical segmentation applications. Thanks to data augmentation with elastic defor- 1 The authors of this algorithm have submitted 78 different solutions to achieve this result. The Netherlands mations, it only needs very few annotated images and has a very reasonable training time of only 10 hours on a NVidia Titan GPU (6 GB). We provide the full Caffe [6]-based implementation and the trained networks 4 . We are sure that the u-net architecture can be applied easily to many more tasks.",
+        "word_count": 91,
+        "section_id": "sec_006",
+        "canonical_label": "conclusion",
+        "page_start": 0,
+        "page_end": 0,
+        "paragraph_index": 0,
+        "reading_order": 10,
+        "extraction_method": "grobid",
+        "extraction_confidence": 1.0,
+        "entity_ids": [
+          "ent_042",
+          "ent_043",
+          "ent_044",
+          "ent_045",
+          "ent_061"
+        ],
+        "claim_ids": []
+      }
+    ],
+    "tables": [
+      {
+        "table_id": "tbl_001",
+        "caption": "around that pixel",
+        "section_id": "sec_006",
+        "page": 0,
+        "extraction_confidence": 1.0,
+        "raw_content": "1 | 64 | 64 |  |  |  |  |  |  |  |  |  |  | \n |  |  |  |  |  |  |  |  |  |  |  |  |  |  | 128 | 64 | 64 2\ninput image tile 572 x 572 | 570 x 570 | 568 x 568 |  |  |  |  |  |  |  |  |  |  |  |  | 392 x 392 | 390 x 390 | 388 x 388 | 388 x 388 | output segmentation map\n |  |  | 128 | 128 |  |  |  |  |  |  |  | \n |  |  |  |  |  |  |  |  |  |  |  |  |  |  | 256 128\n |  | 284² | 282² | 280² |  |  |  |  |  |  |  |  |  | 200² | 198² | 196²\n |  |  |  |  |  | 256 | 256 |  |  |  |  |  |  |  | 512 256\n |  |  |  | 140² | 138² | 136² 68² | 66² | 512 | 64² | 512 | 1024 | 56² | 1024 | 54² | 104² 52² 512 | 102² | 100² | conv 3x3, ReLU copy and crop up-conv 2x2 max pool 2x2\n |  |  |  |  |  |  |  |  |  | 32² | 30² |  |  | 28² | conv 1x1"
+      },
+      {
+        "table_id": "tbl_002",
+        "caption": "Table 1 .",
+        "section_id": "sec_006",
+        "page": 0,
+        "extraction_confidence": 1.0,
+        "raw_content": "Rank Group name | Warping Error Rand Error Pixel Error\n** human values ** | 0.000005 | 0.0021 | 0.0010\n1. u-net | 0.000353 | 0.0382 | 0.0611\n2. DIVE-SCI | 0.000355 | 0.0305 | 0.0584\n3. IDSIA [1] | 0.000420 | 0.0504 | 0.0613\n4. DIVE | 0.000430 | 0.0545 | 0.0582\n. . . |  |  | "
+      },
+      {
+        "table_id": "tbl_003",
+        "caption": "Table 2 .",
+        "section_id": "sec_006",
+        "page": 0,
+        "extraction_confidence": 1.0,
+        "raw_content": "Name | PhC-U373 DIC-HeLa\nIMCB-SG (2014) 0.2669 | 0.2935\nKTH-SE (2014) | 0.7953 | 0.4607\nHOUS-US (2014) 0.5323 | -\nsecond-best 2015 0.83 | 0.46\nu-net (2015) | 0.9203 | 0.7756"
+      }
+    ],
+    "figures": [
+      {
+        "figure_id": "fig_001",
+        "caption": "Fig. 1 .",
+        "section_id": "sec_006",
+        "page": 0,
+        "image_path": null
+      },
+      {
+        "figure_id": "fig_002",
+        "caption": "Fig. 3 .",
+        "section_id": "sec_006",
+        "page": 0,
+        "image_path": null
+      },
+      {
+        "figure_id": "fig_003",
+        "caption": "Fig. 4 .",
+        "section_id": "sec_006",
+        "page": 0,
+        "image_path": null
+      },
+      {
+        "figure_id": "fig_004",
+        "caption": "2",
+        "section_id": "sec_006",
+        "page": 0,
+        "image_path": null
+      }
+    ]
+  },
+  "references": [
+    {
+      "ref_id": "ref_001",
+      "raw_text": "Deep neural networks segment neuronal membranes in electron microscopy images\n\t\t\n\t\t\tDCCiresan\n\t\t\n\t\t\n\t\t\tLMGambardella\n\t\t\n\t\t\n\t\t\tAGiusti\n\t\t\n\t\t\n\t\t\tJSchmidhuber\n\t\t\n\t\n\t\n\t\tNIPS\n\t\t\n\t\t\t2012",
+      "resolution_status": "resolved",
+      "ref_confidence": 1.0,
+      "title": "Deep neural networks segment neuronal membranes in electron microscopy images",
+      "authors": [
+        "Ciresan, DC",
+        "Gambardella, LM",
+        "Giusti, A",
+        "Schmidhuber, J"
+      ],
+      "year": "2012",
+      "venue": "NIPS",
+      "doi": "10.1109/cvpr.2012.6248110",
+      "url": null,
+      "resolution_source": "crossref_lookup"
+    },
+    {
+      "ref_id": "ref_002",
+      "raw_text": "Discriminative unsupervised feature learning with convolutional neural networks\n\t\t\n\t\t\tADosovitskiy\n\t\t\n\t\t\n\t\t\tJTSpringenberg\n\t\t\n\t\t\n\t\t\tMRiedmiller\n\t\t\n\t\t\n\t\t\tTBrox\n\t\t\n\t\n\t\n\t\tNIPS\n\t\t\n\t\t\t2014",
+      "resolution_status": "resolved",
+      "ref_confidence": 1.0,
+      "title": "Discriminative unsupervised feature learning with convolutional neural networks",
+      "authors": [
+        "Dosovitskiy, A",
+        "Springenberg, JT",
+        "Riedmiller, M",
+        "Brox, T"
+      ],
+      "year": "2014",
+      "venue": "NIPS",
+      "doi": "10.1109/tpami.2015.2496141",
+      "url": null,
+      "resolution_source": "crossref_lookup"
+    },
+    {
+      "ref_id": "ref_003",
+      "raw_text": "Rich feature hierarchies for accurate object detection and semantic segmentation\n\t\t\n\t\t\tRGirshick\n\t\t\n\t\t\n\t\t\tJDonahue\n\t\t\n\t\t\n\t\t\tTDarrell\n\t\t\n\t\t\n\t\t\tJMalik\n\t\t\n\t\n\t\n\t\tProceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR)\n\t\tthe IEEE Conference on Computer Vision and Pattern Recognition (CVPR)\n\t\t\n\t\t\t2014",
+      "resolution_status": "resolved",
+      "ref_confidence": 1.0,
+      "title": "Rich feature hierarchies for accurate object detection and semantic segmentation",
+      "authors": [
+        "Girshick, R",
+        "Donahue, J",
+        "Darrell, T",
+        "Malik, J"
+      ],
+      "year": "2014",
+      "venue": "Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR)",
+      "doi": "10.1109/cvpr.2014.81",
+      "url": null,
+      "resolution_source": "crossref_lookup"
+    },
+    {
+      "ref_id": "ref_004",
+      "raw_text": "Hypercolumns for object segmentation and fine-grained localization\n\t\t\n\t\t\tBharathHariharan\n\t\t\n\t\t\n\t\t\tPabloArbelaez\n\t\t\n\t\t\n\t\t\tRossGirshick\n\t\t\n\t\t\n\t\t\tJitendraMalik\n\t\t\n\t\t10.1109/cvpr.2015.7298642\n\t\tarXiv:1411.5752[cs.CV\n\t\n\t\n\t\t2015 IEEE Conference on Computer Vision and Pattern Recognition (CVPR)\n\t\t\n\t\t\tIEEE\n\t\t\t2014",
+      "resolution_status": "resolved",
+      "ref_confidence": 1.0,
+      "title": "Hypercolumns for object segmentation and fine-grained localization",
+      "authors": [
+        "Hariharan, Bharath",
+        "Arbelaez, Pablo",
+        "Girshick, Ross",
+        "Malik, Jitendra"
+      ],
+      "year": "2014",
+      "venue": "2015 IEEE Conference on Computer Vision and Pattern Recognition (CVPR)",
+      "doi": "10.1109/cvpr.2015.7298642",
+      "url": null,
+      "resolution_source": "grobid_consolidation"
+    },
+    {
+      "ref_id": "ref_005",
+      "raw_text": "Delving Deep into Rectifiers: Surpassing Human-Level Performance on ImageNet Classification\n\t\t\n\t\t\tKaimingHe\n\t\t\n\t\t\n\t\t\tXiangyuZhang\n\t\t\n\t\t\n\t\t\tShaoqingRen\n\t\t\n\t\t\n\t\t\tJianSun\n\t\t\n\t\t10.1109/iccv.2015.123\n\t\tarXiv:1502.01852[cs.CV\n\t\n\t\n\t\t2015 IEEE International Conference on Computer Vision (ICCV)\n\t\t\n\t\t\tIEEE\n\t\t\t2015",
+      "resolution_status": "resolved",
+      "ref_confidence": 1.0,
+      "title": "Delving Deep into Rectifiers: Surpassing Human-Level Performance on ImageNet Classification",
+      "authors": [
+        "He, Kaiming",
+        "Zhang, Xiangyu",
+        "Ren, Shaoqing",
+        "Sun, Jian"
+      ],
+      "year": "2015",
+      "venue": "2015 IEEE International Conference on Computer Vision (ICCV)",
+      "doi": "10.1109/iccv.2015.123",
+      "url": null,
+      "resolution_source": "grobid_consolidation"
+    },
+    {
+      "ref_id": "ref_006",
+      "raw_text": "YJia\n\t\t\n\t\t\n\t\t\tEShelhamer\n\t\t\n\t\t\n\t\t\tJDonahue\n\t\t\n\t\t\n\t\t\tSKarayev\n\t\t\n\t\t\n\t\t\tJLong\n\t\t\n\t\t\n\t\t\tRGirshick\n\t\t\n\t\t\n\t\t\tSGuadarrama\n\t\t\n\t\t\n\t\t\tTDarrell\n\t\t\n\t\tarXiv:1408.5093[cs.CV\n\t\tCaffe: Convolutional architecture for fast feature embedding\n\t\t\n\t\t\t2014",
+      "resolution_status": "resolved",
+      "ref_confidence": 1.0,
+      "title": "Caffe: Convolutional architecture for fast feature embedding",
+      "authors": [
+        "Jia, Y",
+        "Shelhamer, E",
+        "Donahue, J",
+        "Karayev, S",
+        "Long, J",
+        "Girshick, R",
+        "Guadarrama, S",
+        "Darrell, T"
+      ],
+      "year": "2014",
+      "venue": "Caffe: Convolutional architecture for fast feature embedding",
+      "doi": "10.1145/2647868.2654889",
+      "url": null,
+      "resolution_source": "crossref_lookup"
+    },
+    {
+      "ref_id": "ref_007",
+      "raw_text": "Imagenet classification with deep convolutional neural networks\n\t\t\n\t\t\tAKrizhevsky\n\t\t\n\t\t\n\t\t\tISutskever\n\t\t\n\t\t\n\t\t\tGEHinton\n\t\t\n\t\n\t\n\t\tNIPS\n\t\t\n\t\t\t2012",
+      "resolution_status": "resolved",
+      "ref_confidence": 1.0,
+      "title": "Imagenet classification with deep convolutional neural networks",
+      "authors": [
+        "Krizhevsky, A",
+        "Sutskever, I",
+        "Hinton, GE"
+      ],
+      "year": "2012",
+      "venue": "NIPS",
+      "doi": "10.1145/3065386",
+      "url": null,
+      "resolution_source": "crossref_lookup"
+    },
+    {
+      "ref_id": "ref_008",
+      "raw_text": "Backpropagation applied to handwritten zip code recognition\n\t\t\n\t\t\tYLecun\n\t\t\n\t\t\n\t\t\tBBoser\n\t\t\n\t\t\n\t\t\tJSDenker\n\t\t\n\t\t\n\t\t\tDHenderson\n\t\t\n\t\t\n\t\t\tREHoward\n\t\t\n\t\t\n\t\t\tWHubbard\n\t\t\n\t\t\n\t\t\tLDJackel\n\t\t\n\t\n\t\n\t\tNeural Computation\n\t\t\n\t\t\t1\n\t\t\t4\n\t\t\t\n\t\t\t1989",
+      "resolution_status": "resolved",
+      "ref_confidence": 1.0,
+      "title": "Backpropagation applied to handwritten zip code recognition",
+      "authors": [
+        "Lecun, Y",
+        "Boser, B",
+        "Denker, JS",
+        "Henderson, D",
+        "Howard, RE",
+        "Hubbard, W",
+        "Jackel, LD"
+      ],
+      "year": "1989",
+      "venue": "Neural Computation",
+      "doi": "10.1162/neco.1989.1.4.541",
+      "url": null,
+      "resolution_source": "crossref_lookup"
+    },
+    {
+      "ref_id": "ref_009",
+      "raw_text": "JLong\n\t\t\n\t\t\n\t\t\tEShelhamer\n\t\t\n\t\t\n\t\t\tTDarrell\n\t\t\n\t\tarXiv:1411.4038[cs.CV\n\t\tFully convolutional networks for semantic segmentation\n\t\t\n\t\t\t2014",
+      "resolution_status": "resolved",
+      "ref_confidence": 1.0,
+      "title": "Fully convolutional networks for semantic segmentation",
+      "authors": [
+        "Long, J",
+        "Shelhamer, E",
+        "Darrell, T"
+      ],
+      "year": "2014",
+      "venue": "Fully convolutional networks for semantic segmentation",
+      "doi": "10.1109/cvpr.2015.7298965",
+      "url": null,
+      "resolution_source": "crossref_lookup"
+    },
+    {
+      "ref_id": "ref_010",
+      "raw_text": "A benchmark for comparison of cell tracking algorithms\n\t\t\n\t\t\tMMaska\n\t\t\n\t\t\n\t\t\t(. )De Solorzano\n\t\t\n\t\t\n\t\t\tCO\n\t\t\n\t\n\t\n\t\tBioinformatics\n\t\t\n\t\t\t30\n\t\t\t\n\t\t\t2014",
+      "resolution_status": "ambiguous",
+      "ref_confidence": 0.7,
+      "title": "A benchmark for comparison of cell tracking algorithms",
+      "authors": [
+        "Maska, M",
+        "Solorzano, (. )De",
+        "CO"
+      ],
+      "year": "2014",
+      "venue": "Bioinformatics",
+      "doi": "10.1109/iccvw.2017.8",
+      "url": null,
+      "resolution_source": "crossref_lookup"
+    },
+    {
+      "ref_id": "ref_011",
+      "raw_text": "Image segmentation with cascaded hierarchical models and logistic disjunctive normal networks\n\t\t\n\t\t\tMSeyedhosseini\n\t\t\n\t\t\n\t\t\tMSajjadi\n\t\t\n\t\t\n\t\t\tTTasdizen\n\t\t\n\t\n\t\n\t\tIEEE International Conference\n\t\t\n\t\t\t2013. 2013\n\t\t\t\n\t\t\n\t\n\tComputer Vision (ICCV)",
+      "resolution_status": "resolved",
+      "ref_confidence": 1.0,
+      "title": "Image segmentation with cascaded hierarchical models and logistic disjunctive normal networks",
+      "authors": [
+        "Seyedhosseini, M",
+        "Sajjadi, M",
+        "Tasdizen, T"
+      ],
+      "year": "2013",
+      "venue": "IEEE International Conference",
+      "doi": "10.1109/iccv.2013.269",
+      "url": null,
+      "resolution_source": "crossref_lookup"
+    },
+    {
+      "ref_id": "ref_012",
+      "raw_text": "KSimonyan\n\t\t\n\t\t\n\t\t\tAZisserman\n\t\t\n\t\tarXiv:1409.1556[cs.CV\n\t\tVery deep convolutional networks for large-scale image recognition\n\t\t\n\t\t\t2014",
+      "resolution_status": "resolved",
+      "ref_confidence": 1.0,
+      "title": "Very deep convolutional networks for large-scale image recognition",
+      "authors": [
+        "Simonyan, K",
+        "Zisserman, A"
+      ],
+      "year": "2014",
+      "venue": "Very deep convolutional networks for large-scale image recognition",
+      "doi": "10.5244/c.28.6",
+      "url": null,
+      "resolution_source": "crossref_lookup"
+    },
+    {
+      "ref_id": "ref_013",
+      "raw_text": "HTTP, HTML, CSS – Aufbauhelfer im Web\n\t\t\n\t\t\tChristophMeinel\n\t\t\n\t\t\n\t\t\tMaximAsjoma\n\t\t\n\t\t10.1007/978-3-662-63701-2_27\n\t\t\n\t\n\t\n\t\tDie neue digitale Welt verstehen\n\t\t\n\t\t\tSpringer Berlin Heidelberg",
+      "resolution_status": "resolved",
+      "ref_confidence": 1.0,
+      "title": "HTTP, HTML, CSS – Aufbauhelfer im Web",
+      "authors": [
+        "Meinel, Christoph",
+        "Asjoma, Maxim"
+      ],
+      "year": "2021",
+      "venue": "Die neue digitale Welt verstehen",
+      "doi": "10.1007/978-3-662-63701-2_27",
+      "url": "http://www.codesolorzano.com/celltrackingchallenge/Cell_Tracking_Challenge/Welcome.html",
+      "resolution_source": "grobid_consolidation"
+    },
+    {
+      "ref_id": "ref_014",
+      "raw_text": "WWW: Web page of the em segmentation challenge",
+      "resolution_status": "ambiguous",
+      "ref_confidence": 0.45,
+      "title": "WWW: Web page of the em segmentation challenge",
+      "authors": [],
+      "year": null,
+      "venue": "WWW: Web page of the em segmentation challenge",
+      "doi": "10.1145/3184558.3192301",
+      "url": "http://brainiac2.mit.edu/isbi_challenge/",
+      "resolution_source": "crossref_lookup"
+    }
+  ],
+  "citations": [
+    {
+      "citation_id": "cit_001",
+      "ref_id": "ref_007",
+      "chunk_id": "chk_000",
+      "section_id": "sec_001",
+      "context_sentence": "In the last two years, deep convolutional networks have outperformed the state of the art in many visual recognition tasks, e.g. [7,3]. While convolutional networks have already existed for a long time [8], their success was limited due to the size of the available training sets and the size of the considered networks. The breakthrough by Krizhevsky et al. [7] was due to supervised training of a large network with 8 layers and millions of parameters on the ImageNet dataset with 1 million trainin",
+      "page": 0,
+      "citation_intent": "compares",
+      "intent_confidence": 0.6
+    },
+    {
+      "citation_id": "cit_002",
+      "ref_id": "ref_003",
+      "chunk_id": "chk_000",
+      "section_id": "sec_001",
+      "context_sentence": "In the last two years, deep convolutional networks have outperformed the state of the art in many visual recognition tasks, e.g. [7,3]. While convolutional networks have already existed for a long time [8], their success was limited due to the size of the available training sets and the size of the considered networks. The breakthrough by Krizhevsky et al. [7] was due to supervised training of a large network with 8 layers and millions of parameters on the ImageNet dataset with 1 million trainin",
+      "page": 0,
+      "citation_intent": "compares",
+      "intent_confidence": 0.6
+    },
+    {
+      "citation_id": "cit_003",
+      "ref_id": "ref_008",
+      "chunk_id": "chk_000",
+      "section_id": "sec_001",
+      "context_sentence": "In the last two years, deep convolutional networks have outperformed the state of the art in many visual recognition tasks, e.g. [7,3]. While convolutional networks have already existed for a long time [8], their success was limited due to the size of the available training sets and the size of the considered networks. The breakthrough by Krizhevsky et al. [7] was due to supervised training of a large network with 8 layers and millions of parameters on the ImageNet dataset with 1 million trainin",
+      "page": 0,
+      "citation_intent": "compares",
+      "intent_confidence": 0.6
+    },
+    {
+      "citation_id": "cit_004",
+      "ref_id": "ref_007",
+      "chunk_id": "chk_000",
+      "section_id": "sec_001",
+      "context_sentence": "In the last two years, deep convolutional networks have outperformed the state of the art in many visual recognition tasks, e.g. [7,3]. While convolutional networks have already existed for a long time [8], their success was limited due to the size of the available training sets and the size of the considered networks. The breakthrough by Krizhevsky et al. [7] was due to supervised training of a large network with 8 layers and millions of parameters on the ImageNet dataset with 1 million trainin",
+      "page": 0,
+      "citation_intent": "compares",
+      "intent_confidence": 0.6
+    },
+    {
+      "citation_id": "cit_005",
+      "ref_id": "ref_012",
+      "chunk_id": "chk_000",
+      "section_id": "sec_001",
+      "context_sentence": "In the last two years, deep convolutional networks have outperformed the state of the art in many visual recognition tasks, e.g. [7,3]. While convolutional networks have already existed for a long time [8], their success was limited due to the size of the available training sets and the size of the considered networks. The breakthrough by Krizhevsky et al. [7] was due to supervised training of a large network with 8 layers and millions of parameters on the ImageNet dataset with 1 million trainin",
+      "page": 0,
+      "citation_intent": "compares",
+      "intent_confidence": 0.6
+    },
+    {
+      "citation_id": "cit_006",
+      "ref_id": "ref_001",
+      "chunk_id": "chk_000",
+      "section_id": "sec_001",
+      "context_sentence": "The typical use of convolutional networks is on classification tasks, where the output to an image is a single class label. However, in many visual tasks, especially in biomedical image processing, the desired output should include localization, i.e., a class label is supposed to be assigned to each pixel. Moreover, thousands of training images are usually beyond reach in biomedical tasks. Hence, Ciresan et al. [1] trained a network in a sliding-window setup to predict the class label of each pi",
+      "page": 0,
+      "citation_intent": "background",
+      "intent_confidence": 0.4
+    },
+    {
+      "citation_id": "cit_007",
+      "ref_id": null,
+      "chunk_id": "chk_000",
+      "section_id": "sec_001",
+      "context_sentence": "The typical use of convolutional networks is on classification tasks, where the output to an image is a single class label. However, in many visual tasks, especially in biomedical image processing, the desired output should include localization, i.e., a class label is supposed to be assigned to each pixel. Moreover, thousands of training images are usually beyond reach in biomedical tasks. Hence, Ciresan et al. [1] trained a network in a sliding-window setup to predict the class label of each pi",
+      "page": 0,
+      "citation_intent": null,
+      "intent_confidence": null
+    },
+    {
+      "citation_id": "cit_008",
+      "ref_id": "ref_001",
+      "chunk_id": "chk_001",
+      "section_id": "sec_001",
+      "context_sentence": "Obviously, the strategy in Ciresan et al. [1] has two drawbacks. First, it is quite slow because the network must be run separately for each patch, and there is a lot of redundancy due to overlapping patches. Secondly, there is a trade-off between localization accuracy and the use of context. Larger patches require more max-pooling layers that reduce the localization accuracy, while small patches allow the network to see only little context. More recent approaches [11,4] proposed a classifier ou",
+      "page": 0,
+      "citation_intent": "background",
+      "intent_confidence": 0.4
+    },
+    {
+      "citation_id": "cit_009",
+      "ref_id": "ref_011",
+      "chunk_id": "chk_001",
+      "section_id": "sec_001",
+      "context_sentence": "Obviously, the strategy in Ciresan et al. [1] has two drawbacks. First, it is quite slow because the network must be run separately for each patch, and there is a lot of redundancy due to overlapping patches. Secondly, there is a trade-off between localization accuracy and the use of context. Larger patches require more max-pooling layers that reduce the localization accuracy, while small patches allow the network to see only little context. More recent approaches [11,4] proposed a classifier ou",
+      "page": 0,
+      "citation_intent": "background",
+      "intent_confidence": 0.4
+    },
+    {
+      "citation_id": "cit_010",
+      "ref_id": "ref_004",
+      "chunk_id": "chk_001",
+      "section_id": "sec_001",
+      "context_sentence": "Obviously, the strategy in Ciresan et al. [1] has two drawbacks. First, it is quite slow because the network must be run separately for each patch, and there is a lot of redundancy due to overlapping patches. Secondly, there is a trade-off between localization accuracy and the use of context. Larger patches require more max-pooling layers that reduce the localization accuracy, while small patches allow the network to see only little context. More recent approaches [11,4] proposed a classifier ou",
+      "page": 0,
+      "citation_intent": "background",
+      "intent_confidence": 0.4
+    },
+    {
+      "citation_id": "cit_011",
+      "ref_id": "ref_009",
+      "chunk_id": "chk_001",
+      "section_id": "sec_001",
+      "context_sentence": "In this paper, we build upon a more elegant architecture, the so-called \"fully convolutional network\" [9]. We modify and extend this architecture such that it works with very few training images and yields more precise segmentations; see Figure 1. The main idea in [9] is to supplement a usual contracting network by successive layers, where pooling operators are replaced by upsampling operators. Hence, these layers increase the resolution of the output. In order to localize, high resolution featu",
+      "page": 0,
+      "citation_intent": "extends",
+      "intent_confidence": 0.6
+    },
+    {
+      "citation_id": "cit_012",
+      "ref_id": "ref_009",
+      "chunk_id": "chk_001",
+      "section_id": "sec_001",
+      "context_sentence": "In this paper, we build upon a more elegant architecture, the so-called \"fully convolutional network\" [9]. We modify and extend this architecture such that it works with very few training images and yields more precise segmentations; see Figure 1. The main idea in [9] is to supplement a usual contracting network by successive layers, where pooling operators are replaced by upsampling operators. Hence, these layers increase the resolution of the output. In order to localize, high resolution featu",
+      "page": 0,
+      "citation_intent": "extends",
+      "intent_confidence": 0.6
+    },
+    {
+      "citation_id": "cit_013",
+      "ref_id": "ref_002",
+      "chunk_id": "chk_003",
+      "section_id": "sec_001",
+      "context_sentence": "As for our tasks there is very little training data available, we use excessive data augmentation by applying elastic deformations to the available training images. This allows the network to learn invariance to such deformations, without the need to see these transformations in the annotated image corpus. This is particularly important in biomedical segmentation, since deformation used to be the most common variation in tissue and realistic deformations can be simulated efficiently. The value o",
+      "page": 0,
+      "citation_intent": "background",
+      "intent_confidence": 0.4
+    },
+    {
+      "citation_id": "cit_014",
+      "ref_id": "ref_001",
+      "chunk_id": "chk_003",
+      "section_id": "sec_001",
+      "context_sentence": "The resulting network is applicable to various biomedical segmentation problems. In this paper, we show results on the segmentation of neuronal structures in EM stacks (an ongoing competition started at ISBI 2012), where we out-performed the network of Ciresan et al. [1]. Furthermore, we show results for cell segmentation in light microscopy images from the ISBI cell tracking challenge 2015. Here we won with a large margin on the two most challenging 2D transmitted light datasets.",
+      "page": 0,
+      "citation_intent": "background",
+      "intent_confidence": 0.4
+    },
+    {
+      "citation_id": "cit_015",
+      "ref_id": "ref_006",
+      "chunk_id": "chk_005",
+      "section_id": "sec_003",
+      "context_sentence": "The input images and their corresponding segmentation maps are used to train the network with the stochastic gradient descent implementation of Caffe [6]. Due to the unpadded convolutions, the output image is smaller than the input by a constant border width. To minimize the overhead and make maximum use of the GPU memory, we favor large input tiles over a large batch size and hence reduce the batch to a single image. Accordingly we use a high momentum (0.99) such that a large number of the prev",
+      "page": 0,
+      "citation_intent": "background",
+      "intent_confidence": 0.4
+    },
+    {
+      "citation_id": "cit_016",
+      "ref_id": "ref_005",
+      "chunk_id": "chk_006",
+      "section_id": "sec_003",
+      "context_sentence": "In deep networks with many convolutional layers and different paths through the network, a good initialization of the weights is extremely important. Otherwise, parts of the network might give excessive activations, while other parts never contribute. Ideally the initial weights should be adapted such that each feature map in the network has approximately unit variance. For a network with our architecture (alternating convolution and ReLU layers) this can be achieved by drawing the initial weigh",
+      "page": 0,
+      "citation_intent": "background",
+      "intent_confidence": 0.4
+    },
+    {
+      "citation_id": "cit_017",
+      "ref_id": "ref_014",
+      "chunk_id": "chk_008",
+      "section_id": "sec_005",
+      "context_sentence": "We demonstrate the application of the u-net to three different segmentation tasks. The first task is the segmentation of neuronal structures in electron microscopic recordings. An example of the data set and our obtained segmentation is displayed in Figure 2. We provide the full result as Supplementary Material. The data set is provided by the EM segmentation challenge [14] that was started at ISBI 2012 and is still open for new contributions. The training data is a set of 30 images (512x512 pix",
+      "page": 0,
+      "citation_intent": "background",
+      "intent_confidence": 0.4
+    },
+    {
+      "citation_id": "cit_018",
+      "ref_id": "ref_014",
+      "chunk_id": "chk_008",
+      "section_id": "sec_005",
+      "context_sentence": "We demonstrate the application of the u-net to three different segmentation tasks. The first task is the segmentation of neuronal structures in electron microscopic recordings. An example of the data set and our obtained segmentation is displayed in Figure 2. We provide the full result as Supplementary Material. The data set is provided by the EM segmentation challenge [14] that was started at ISBI 2012 and is still open for new contributions. The training data is a set of 30 images (512x512 pix",
+      "page": 0,
+      "citation_intent": "background",
+      "intent_confidence": 0.4
+    },
+    {
+      "citation_id": "cit_019",
+      "ref_id": "ref_001",
+      "chunk_id": "chk_009",
+      "section_id": "sec_005",
+      "context_sentence": "The u-net (averaged over 7 rotated versions of the input data) achieves without any further pre-or postprocessing a warping error of 0.0003529 (the new best score, see Table 1) and a rand-error of 0.0382. This is significantly better than the sliding-window convolutional network result by Ciresan et al. [1], whose best submission had a warping error of 0.000420 and a rand error of 0.0504. In terms of rand error the only better performing   algorithms on this data set use highly data set specific",
+      "page": 0,
+      "citation_intent": "background",
+      "intent_confidence": 0.4
+    },
+    {
+      "citation_id": "cit_020",
+      "ref_id": "ref_001",
+      "chunk_id": "chk_009",
+      "section_id": "sec_005",
+      "context_sentence": "The u-net (averaged over 7 rotated versions of the input data) achieves without any further pre-or postprocessing a warping error of 0.0003529 (the new best score, see Table 1) and a rand-error of 0.0382. This is significantly better than the sliding-window convolutional network result by Ciresan et al. [1], whose best submission had a warping error of 0.000420 and a rand error of 0.0504. In terms of rand error the only better performing   algorithms on this data set use highly data set specific",
+      "page": 0,
+      "citation_intent": "background",
+      "intent_confidence": 0.4
+    },
+    {
+      "citation_id": "cit_021",
+      "ref_id": "ref_010",
+      "chunk_id": "chk_009",
+      "section_id": "sec_005",
+      "context_sentence": "We also applied the u-net to a cell segmentation task in light microscopic images. This segmenation task is part of the ISBI cell tracking challenge 2014 and 2015 [10,13]. The first data set \"PhC-U373\" 2 contains Glioblastoma-astrocytoma U373 cells on a polyacrylimide substrate recorded by phase contrast microscopy (see Figure 4a,b and Supp. Material). It contains 35 partially annotated training images. Here we achieve an average IOU (\"intersection over union\") of 92%, which is significantly bet",
+      "page": 0,
+      "citation_intent": "background",
+      "intent_confidence": 0.4
+    },
+    {
+      "citation_id": "cit_022",
+      "ref_id": "ref_013",
+      "chunk_id": "chk_009",
+      "section_id": "sec_005",
+      "context_sentence": "We also applied the u-net to a cell segmentation task in light microscopic images. This segmenation task is part of the ISBI cell tracking challenge 2014 and 2015 [10,13]. The first data set \"PhC-U373\" 2 contains Glioblastoma-astrocytoma U373 cells on a polyacrylimide substrate recorded by phase contrast microscopy (see Figure 4a,b and Supp. Material). It contains 35 partially annotated training images. Here we achieve an average IOU (\"intersection over union\") of 92%, which is significantly bet",
+      "page": 0,
+      "citation_intent": "background",
+      "intent_confidence": 0.4
+    },
+    {
+      "citation_id": "cit_023",
+      "ref_id": "ref_006",
+      "chunk_id": "chk_010",
+      "section_id": "sec_006",
+      "context_sentence": "The u-net architecture achieves very good performance on very different biomedical segmentation applications. Thanks to data augmentation with elastic defor- 1 The authors of this algorithm have submitted 78 different solutions to achieve this result. The Netherlands mations, it only needs very few annotated images and has a very reasonable training time of only 10 hours on a NVidia Titan GPU (6 GB). We provide the full Caffe [6]-based implementation and the trained networks 4 . We are sure that",
+      "page": 0,
+      "citation_intent": "background",
+      "intent_confidence": 0.4
+    }
+  ],
+  "entities": [
+    {
+      "entity_id": "ent_001",
+      "text": "Krizhevsky et al",
+      "label": "person",
+      "chunk_id": "chk_000",
+      "sentence": "The breakthrough by Krizhevsky et al.",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_002",
+      "text": "ImageNet",
+      "label": "organization",
+      "chunk_id": "chk_000",
+      "sentence": "[7] was due to supervised training of a large network with 8 layers and millions of parameters on the ImageNet dataset with 1 million training images.",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_003",
+      "text": "Ciresan",
+      "label": "person",
+      "chunk_id": "chk_000",
+      "sentence": "Hence, Ciresan et al.",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_004",
+      "text": "EM",
+      "label": "organization",
+      "chunk_id": "chk_000",
+      "sentence": "The resulting network won the EM segmentation challenge at ISBI 2012 by a large margin.",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_005",
+      "text": "Ciresan",
+      "label": "organization",
+      "chunk_id": "chk_001",
+      "sentence": "Obviously, the strategy in Ciresan et al.",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_006",
+      "text": "max",
+      "label": "person",
+      "chunk_id": "chk_001",
+      "sentence": "Larger patches require more max-pooling layers that reduce the localization accuracy, while small patches allow the network to see only little context.",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_007",
+      "text": "Fig",
+      "label": "person",
+      "chunk_id": "chk_001",
+      "sentence": "In order to localize, high resolution features from the contracting path are combined with the upsampled Fig.",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_008",
+      "text": "EM",
+      "label": "organization",
+      "chunk_id": "chk_001",
+      "sentence": "Overlap-tile strategy for seamless segmentation of arbitrary large images (here segmentation of neuronal structures in EM stacks).",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_009",
+      "text": "GPU",
+      "label": "organization",
+      "chunk_id": "chk_002",
+      "sentence": "This tiling strategy is important to apply the network to large images, since otherwise the resolution would be limited by the GPU memory.",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_010",
+      "text": "Dosovitskiy et al",
+      "label": "person",
+      "chunk_id": "chk_003",
+      "sentence": "The value of data augmentation for learning invariance has been shown in Dosovitskiy et al.",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_011",
+      "text": "EM",
+      "label": "organization",
+      "chunk_id": "chk_003",
+      "sentence": "In this paper, we show results on the segmentation of neuronal structures in EM stacks (an ongoing competition started at ISBI 2012), where we out-performed the network of Ciresan et al.",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_012",
+      "text": "Ciresan",
+      "label": "person",
+      "chunk_id": "chk_003",
+      "sentence": "In this paper, we show results on the segmentation of neuronal structures in EM stacks (an ongoing competition started at ISBI 2012), where we out-performed the network of Ciresan et al.",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_013",
+      "text": "linear",
+      "label": "organization",
+      "chunk_id": "chk_004",
+      "sentence": "It consists of the repeated application of two 3x3 convolutions (unpadded convolutions), each followed by a rectified linear unit (ReLU) and a 2x2 max pooling operation with stride 2 for downsampling.",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_014",
+      "text": "ReLU",
+      "label": "organization",
+      "chunk_id": "chk_004",
+      "sentence": "It consists of the repeated application of two 3x3 convolutions (unpadded convolutions), each followed by a rectified linear unit (ReLU) and a 2x2 max pooling operation with stride 2 for downsampling.",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_015",
+      "text": "max",
+      "label": "person",
+      "chunk_id": "chk_004",
+      "sentence": "It consists of the repeated application of two 3x3 convolutions (unpadded convolutions), each followed by a rectified linear unit (ReLU) and a 2x2 max pooling operation with stride 2 for downsampling.",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_016",
+      "text": "ReLU",
+      "label": "location",
+      "chunk_id": "chk_004",
+      "sentence": "Every step in the expansive path consists of an upsampling of the feature map followed by a 2x2 convolution (\"up-convolution\") that halves the number of feature channels, a concatenation with the correspondingly cropped feature map from the contracting path, and two 3x3 convolutions, each followed by a ReLU.",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_017",
+      "text": "Caffe",
+      "label": "organization",
+      "chunk_id": "chk_005",
+      "sentence": "The input images and their corresponding segmentation maps are used to train the network with the stochastic gradient descent implementation of Caffe [6].",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_018",
+      "text": "GPU",
+      "label": "organization",
+      "chunk_id": "chk_005",
+      "sentence": "To minimize the overhead and make maximum use of the GPU memory, we favor large input tiles over a large batch size and hence reduce the batch to a single image.",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_019",
+      "text": "max",
+      "label": "person",
+      "chunk_id": "chk_005",
+      "sentence": "The soft-max is defined as",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_020",
+      "text": "I.e. p k",
+      "label": "organization",
+      "chunk_id": "chk_005",
+      "sentence": "I.e. p k (x) ≈ 1 for the k that has the maximum activation a k (x) and p k (x) ≈ 0 for all other k.",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_021",
+      "text": "ReLU",
+      "label": "organization",
+      "chunk_id": "chk_006",
+      "sentence": "For a network with our architecture (alternating convolution and ReLU layers) this can be achieved by drawing the initial weights from a Gaussian distribution with a standard deviation of 2/N , where N denotes the number of incoming nodes of one neuron [5].",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_022",
+      "text": "Gaussian",
+      "label": "organization",
+      "chunk_id": "chk_006",
+      "sentence": "For a network with our architecture (alternating convolution and ReLU layers) this can be achieved by drawing the initial weights from a Gaussian distribution with a standard deviation of 2/N , where N denotes the number of incoming nodes of one neuron [5].",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_023",
+      "text": "2/N",
+      "label": "organization",
+      "chunk_id": "chk_006",
+      "sentence": "For a network with our architecture (alternating convolution and ReLU layers) this can be achieved by drawing the initial weights from a Gaussian distribution with a standard deviation of 2/N , where N denotes the number of incoming nodes of one neuron [5].",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_024",
+      "text": "• 64",
+      "label": "tool",
+      "chunk_id": "chk_006",
+      "sentence": "for a 3x3 convolution and 64 feature channels in the previous layer N = 9 • 64 = 576.",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_025",
+      "text": "Gaussian",
+      "label": "organization",
+      "chunk_id": "chk_007",
+      "sentence": "The displacements are sampled from a Gaussian distribution with 10 pixels standard deviation.",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_026",
+      "text": "Drop",
+      "label": "person",
+      "chunk_id": "chk_007",
+      "sentence": "Drop-out layers at the end of the contracting path perform further implicit data augmentation.",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_027",
+      "text": "Supplementary Material",
+      "label": "person",
+      "chunk_id": "chk_008",
+      "sentence": "We provide the full result as Supplementary Material.",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_028",
+      "text": "EM",
+      "label": "organization",
+      "chunk_id": "chk_008",
+      "sentence": "The data set is provided by the EM segmentation challenge [14] that was started at ISBI 2012 and is still open for new contributions.",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_029",
+      "text": "Drosophila",
+      "label": "organization",
+      "chunk_id": "chk_008",
+      "sentence": "The training data is a set of 30 images (512x512 pixels) from serial section transmission electron microscopy of the Drosophila first instar larva ventral nerve cord (VNC).",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_030",
+      "text": "VNC",
+      "label": "organization",
+      "chunk_id": "chk_008",
+      "sentence": "The training data is a set of 30 images (512x512 pixels) from serial section transmission electron microscopy of the Drosophila first instar larva ventral nerve cord (VNC).",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_031",
+      "text": "Table 1",
+      "label": "other",
+      "chunk_id": "chk_009",
+      "sentence": "0003529 (the new best score, see Table 1) and a rand-error of 0.",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_032",
+      "text": "Ciresan",
+      "label": "person",
+      "chunk_id": "chk_009",
+      "sentence": "This is significantly better than the sliding-window convolutional network result by Ciresan et al.",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_033",
+      "text": "Ciresan et al",
+      "label": "person",
+      "chunk_id": "chk_009",
+      "sentence": "In terms of rand error the only better performing   algorithms on this data set use highly data set specific post-processing methods 1 applied to the probability map of Ciresan et al.",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_034",
+      "text": "PhC-U373",
+      "label": "other",
+      "chunk_id": "chk_009",
+      "sentence": "The first data set \"PhC-U373\" 2 contains Glioblastoma-astrocytoma U373 cells on a polyacrylimide substrate recorded by phase contrast microscopy (see Figure 4a,b and Supp.",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_035",
+      "text": "U373",
+      "label": "tool",
+      "chunk_id": "chk_009",
+      "sentence": "The first data set \"PhC-U373\" 2 contains Glioblastoma-astrocytoma U373 cells on a polyacrylimide substrate recorded by phase contrast microscopy (see Figure 4a,b and Supp.",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_036",
+      "text": "Supp",
+      "label": "organization",
+      "chunk_id": "chk_009",
+      "sentence": "The first data set \"PhC-U373\" 2 contains Glioblastoma-astrocytoma U373 cells on a polyacrylimide substrate recorded by phase contrast microscopy (see Figure 4a,b and Supp.",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_037",
+      "text": "IOU",
+      "label": "organization",
+      "chunk_id": "chk_009",
+      "sentence": "Here we achieve an average IOU (\"intersection over union\") of 92%, which is significantly better than the second best algorithm with 83% (see Table 2).",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_038",
+      "text": "Table 2",
+      "label": "other",
+      "chunk_id": "chk_009",
+      "sentence": "Here we achieve an average IOU (\"intersection over union\") of 92%, which is significantly better than the second best algorithm with 83% (see Table 2).",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_039",
+      "text": "DIC-HeLa",
+      "label": "organization",
+      "chunk_id": "chk_009",
+      "sentence": "The second data set \"DIC-HeLa\" 3 are HeLa cells on a flat glass recorded by differential interference contrast (DIC) microscopy (see Figure 3, Figure 4c,d and Supp.",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_040",
+      "text": "HeLa",
+      "label": "location",
+      "chunk_id": "chk_009",
+      "sentence": "The second data set \"DIC-HeLa\" 3 are HeLa cells on a flat glass recorded by differential interference contrast (DIC) microscopy (see Figure 3, Figure 4c,d and Supp.",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_041",
+      "text": "DIC",
+      "label": "organization",
+      "chunk_id": "chk_009",
+      "sentence": "The second data set \"DIC-HeLa\" 3 are HeLa cells on a flat glass recorded by differential interference contrast (DIC) microscopy (see Figure 3, Figure 4c,d and Supp.",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_042",
+      "text": "Netherlands",
+      "label": "location",
+      "chunk_id": "chk_010",
+      "sentence": "The Netherlands mations, it only needs very few annotated images and has a very reasonable training time of only 10 hours on a NVidia Titan GPU (6 GB).",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_043",
+      "text": "NVidia Titan",
+      "label": "organization",
+      "chunk_id": "chk_010",
+      "sentence": "The Netherlands mations, it only needs very few annotated images and has a very reasonable training time of only 10 hours on a NVidia Titan GPU (6 GB).",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_044",
+      "text": "GPU",
+      "label": "organization",
+      "chunk_id": "chk_010",
+      "sentence": "The Netherlands mations, it only needs very few annotated images and has a very reasonable training time of only 10 hours on a NVidia Titan GPU (6 GB).",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_045",
+      "text": "Caffe",
+      "label": "organization",
+      "chunk_id": "chk_010",
+      "sentence": "We provide the full Caffe [6]-based implementation and the trained networks 4 .",
+      "confidence": 0.75,
+      "source": "spacy"
+    },
+    {
+      "entity_id": "ent_046",
+      "text": "ImageNet",
+      "label": "dataset",
+      "chunk_id": "chk_000",
+      "sentence": "[7] was due to supervised training of a large network with 8 layers and millions of parameters on the ImageNet dataset with 1 million training images.",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_047",
+      "text": "layers and millions of parameters on the ImageNet",
+      "label": "dataset",
+      "chunk_id": "chk_000",
+      "sentence": "[7] was due to supervised training of a large network with 8 layers and millions of parameters on the ImageNet dataset with 1 million training images.",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_048",
+      "text": "accuracy",
+      "label": "metric",
+      "chunk_id": "chk_001",
+      "sentence": "Secondly, there is a trade-off between localization accuracy and the use of context.",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_049",
+      "text": "classifier output that takes into account the features from multiple layers",
+      "label": "method",
+      "chunk_id": "chk_001",
+      "sentence": "More recent approaches [11,4] proposed a classifier output that takes into account the features from multiple layers.",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_050",
+      "text": "this information",
+      "label": "method",
+      "chunk_id": "chk_001",
+      "sentence": "A successive convolution layer can then learn to assemble a more precise output based on this information.",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_051",
+      "text": "without the need to see these transformations in the annotated image",
+      "label": "dataset",
+      "chunk_id": "chk_003",
+      "sentence": "This allows the network to learn invariance to such deformations, without the need to see these transformations in the annotated image corpus.",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_052",
+      "text": "use of a weighted loss",
+      "label": "method",
+      "chunk_id": "chk_003",
+      "sentence": "To this end, we propose the use of a weighted loss, where the separating background labels between touching cells obtain a large weight in the loss function.",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_053",
+      "text": "Caffe",
+      "label": "tool",
+      "chunk_id": "chk_005",
+      "sentence": "The input images and their corresponding segmentation maps are used to train the network with the stochastic gradient descent implementation of Caffe [6].",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_054",
+      "text": "R",
+      "label": "tool",
+      "chunk_id": "chk_005",
+      "sentence": ", K} is the true label of each pixel and w : Ω → R is a weight map that we introduced to give some pixels more importance in the training.",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_055",
+      "text": "R",
+      "label": "tool",
+      "chunk_id": "chk_006",
+      "sentence": "where w c : Ω → R is the weight map to balance the class frequencies, d 1 : Ω → R denotes the distance to the border of the nearest cell and d 2 : Ω → R the distance to the border of the second nearest cell.",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_056",
+      "text": "between touching cells",
+      "label": "method",
+      "chunk_id": "chk_006",
+      "sentence": "We pre-compute the weight map for each ground truth segmentation to compensate the different frequency of pixels from a certain class in the training data set, and to force the network to learn the small separation borders that we introduce between touching cells (See Figure 3c andd).",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_057",
+      "text": "morphological operations",
+      "label": "method",
+      "chunk_id": "chk_006",
+      "sentence": "The separation border is computed using morphological operations.",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_058",
+      "text": "random displacement vectors on a coarse",
+      "label": "method",
+      "chunk_id": "chk_007",
+      "sentence": "We generate smooth deformations using random displacement vectors on a coarse 3 by 3 grid.",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_059",
+      "text": "bicubic interpolation",
+      "label": "method",
+      "chunk_id": "chk_007",
+      "sentence": "Per-pixel displacements are then computed using bicubic interpolation.",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_060",
+      "text": "The",
+      "label": "dataset",
+      "chunk_id": "chk_008",
+      "sentence": "The test set is publicly available, but its segmentation maps are kept secret.",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    },
+    {
+      "entity_id": "ent_061",
+      "text": "Caffe",
+      "label": "tool",
+      "chunk_id": "chk_010",
+      "sentence": "We provide the full Caffe [6]-based implementation and the trained networks 4 .",
+      "confidence": 0.6,
+      "source": "pattern_match"
+    }
+  ],
+  "candidate_claims": [
+    {
+      "claim_id": "clm_001",
+      "sentence": "In the last two years, deep convolutional networks have outperformed the state of the art in many visual recognition tasks, e.g.",
+      "chunk_id": "chk_000",
+      "section_id": "sec_001",
+      "canonical_label": "introduction",
+      "claim_type": "comparative",
+      "matched_patterns": [
+        "outperforms?",
+        "state[- ]of[- ]the[- ]art"
+      ],
+      "confidence": 0.8,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_002",
+      "sentence": "While convolutional networks have already existed for a long time [8], their success was limited due to the size of the available training sets and the size of the considered networks.",
+      "chunk_id": "chk_000",
+      "section_id": "sec_001",
+      "canonical_label": "introduction",
+      "claim_type": "causal",
+      "matched_patterns": [
+        "due\\s+to"
+      ],
+      "confidence": 0.4,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_003",
+      "sentence": "[7] was due to supervised training of a large network with 8 layers and millions of parameters on the ImageNet dataset with 1 million training images.",
+      "chunk_id": "chk_000",
+      "section_id": "sec_001",
+      "canonical_label": "introduction",
+      "claim_type": "causal",
+      "matched_patterns": [
+        "due\\s+to"
+      ],
+      "confidence": 0.4,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_004",
+      "sentence": "First, it is quite slow because the network must be run separately for each patch, and there is a lot of redundancy due to overlapping patches.",
+      "chunk_id": "chk_001",
+      "section_id": "sec_001",
+      "canonical_label": "introduction",
+      "claim_type": "causal",
+      "matched_patterns": [
+        "(?:causes?|caused)\\s+",
+        "due\\s+to"
+      ],
+      "confidence": 0.8,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_005",
+      "sentence": "To this end, we propose the use of a weighted loss, where the separating background labels between touching cells obtain a large weight in the loss function.",
+      "chunk_id": "chk_003",
+      "section_id": "sec_001",
+      "canonical_label": "introduction",
+      "claim_type": "methodological",
+      "matched_patterns": [
+        "we\\s+(?:propose|introduce|present|develop)"
+      ],
+      "confidence": 0.4,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_006",
+      "sentence": "In this paper, we show results on the segmentation of neuronal structures in EM stacks (an ongoing competition started at ISBI 2012), where we out-performed the network of Ciresan et al.",
+      "chunk_id": "chk_003",
+      "section_id": "sec_001",
+      "canonical_label": "introduction",
+      "claim_type": "existence",
+      "matched_patterns": [
+        "we\\s+(?:find|found|observe|show|demonstrate)"
+      ],
+      "confidence": 0.4,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_007",
+      "sentence": "Furthermore, we show results for cell segmentation in light microscopy images from the ISBI cell tracking challenge 2015.",
+      "chunk_id": "chk_003",
+      "section_id": "sec_001",
+      "canonical_label": "introduction",
+      "claim_type": "existence",
+      "matched_patterns": [
+        "we\\s+(?:find|found|observe|show|demonstrate)"
+      ],
+      "confidence": 0.4,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_008",
+      "sentence": "The cropping is necessary due to the loss of border pixels in every convolution.",
+      "chunk_id": "chk_004",
+      "section_id": "sec_002",
+      "canonical_label": "methodology",
+      "claim_type": "causal",
+      "matched_patterns": [
+        "due\\s+to"
+      ],
+      "confidence": 0.65,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_009",
+      "sentence": "Due to the unpadded convolutions, the output image is smaller than the input by a constant border width.",
+      "chunk_id": "chk_005",
+      "section_id": "sec_003",
+      "canonical_label": "methodology",
+      "claim_type": "causal",
+      "matched_patterns": [
+        "due\\s+to"
+      ],
+      "confidence": 0.65,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_010",
+      "sentence": ", K} is the true label of each pixel and w : Ω → R is a weight map that we introduced to give some pixels more importance in the training.",
+      "chunk_id": "chk_005",
+      "section_id": "sec_003",
+      "canonical_label": "methodology",
+      "claim_type": "methodological",
+      "matched_patterns": [
+        "we\\s+(?:propose|introduce|present|develop)"
+      ],
+      "confidence": 0.65,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_011",
+      "sentence": "We pre-compute the weight map for each ground truth segmentation to compensate the different frequency of pixels from a certain class in the training data set, and to force the network to learn the small separation borders that we introduce between touching cells (See Figure 3c andd).",
+      "chunk_id": "chk_006",
+      "section_id": "sec_003",
+      "canonical_label": "methodology",
+      "claim_type": "methodological",
+      "matched_patterns": [
+        "we\\s+(?:propose|introduce|present|develop)"
+      ],
+      "confidence": 0.65,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_012",
+      "sentence": "We demonstrate the application of the u-net to three different segmentation tasks.",
+      "chunk_id": "chk_008",
+      "section_id": "sec_005",
+      "canonical_label": "results",
+      "claim_type": "existence",
+      "matched_patterns": [
+        "we\\s+(?:find|found|observe|show|demonstrate)"
+      ],
+      "confidence": 0.7,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_013",
+      "sentence": "This is significantly better than the sliding-window convolutional network result by Ciresan et al.",
+      "chunk_id": "chk_009",
+      "section_id": "sec_005",
+      "canonical_label": "results",
+      "claim_type": "comparative",
+      "matched_patterns": [
+        "(?:better|worse|superior|inferior)\\s+(?:than|to)"
+      ],
+      "confidence": 0.7,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_014",
+      "sentence": "Here we achieve an average IOU (\"intersection over union\") of 92%, which is significantly better than the second best algorithm with 83% (see Table 2).",
+      "chunk_id": "chk_009",
+      "section_id": "sec_005",
+      "canonical_label": "results",
+      "claim_type": "comparative",
+      "matched_patterns": [
+        "(?:better|worse|superior|inferior)\\s+(?:than|to)"
+      ],
+      "confidence": 0.7,
+      "page": 0
+    },
+    {
+      "claim_id": "clm_015",
+      "sentence": "Here we achieve an average IOU of 77.5% which is significantly better than the second best algorithm with 46%.",
+      "chunk_id": "chk_009",
+      "section_id": "sec_005",
+      "canonical_label": "results",
+      "claim_type": "comparative",
+      "matched_patterns": [
+        "(?:better|worse|superior|inferior)\\s+(?:than|to)"
+      ],
+      "confidence": 0.7,
+      "page": 0
+    }
+  ],
+  "quality": {
+    "overall_confidence": 0.9509782106109619,
+    "field_scores": {
+      "title": 0.95,
+      "authors": 1.0,
+      "abstract": 1.0,
+      "sections": 1.0,
+      "references": 0.9199999999999999,
+      "citations": 0.9739130434782609,
+      "entities": 0.7784047919293823,
+      "claims": 0.7333333333333333
+    },
+    "extraction_completeness": {
+      "total_pages": 8,
+      "pages_with_text_extracted": 1,
+      "sections_detected": 6,
+      "references_total": 14,
+      "references_resolved": 12,
+      "citations_total": 23,
+      "citations_linked": 22,
+      "chunks_total": 11,
+      "entities_total": 61,
+      "claims_total": 15
+    },
+    "validation_errors": [],
+    "validation_warnings": [],
+    "requires_manual_review": false,
+    "manual_review_reasons": [],
+    "pipeline_log": [
+      {
+        "stage": "intake",
+        "status": "success",
+        "started_at": "2026-06-09T08:47:11.468908Z",
+        "completed_at": "2026-06-09T08:47:11.489468Z",
+        "duration_ms": 20,
+        "warnings": [],
+        "errors": [],
+        "details": {
+          "sha256": "a3172b2124f38e260dc2c7ed968d87c31bc94dbc19a42a7ab3dcbd7534319c44",
+          "page_count": 8,
+          "route": "grobid_primary",
+          "has_text_layer": true
+        }
+      },
+      {
+        "stage": "extraction",
+        "status": "success",
+        "started_at": "2026-06-09T08:47:11.489468Z",
+        "completed_at": "2026-06-09T08:47:19.824759Z",
+        "duration_ms": 8335,
+        "warnings": [],
+        "errors": [],
+        "details": {
+          "method": "grobid_primary",
+          "fallback_used": false,
+          "grobid_quality": 1.0,
+          "sections_extracted": 6,
+          "references_extracted": 14
+        }
+      },
+      {
+        "stage": "structuring",
+        "status": "success",
+        "started_at": "2026-06-09T08:47:19.824759Z",
+        "completed_at": "2026-06-09T08:47:40.983473Z",
+        "duration_ms": 21158,
+        "warnings": [],
+        "errors": [],
+        "details": {
+          "sections": 6,
+          "chunks": 11,
+          "references": 14,
+          "citations": 23,
+          "tables": 3,
+          "figures": 4
+        }
+      },
+      {
+        "stage": "enrichment",
+        "status": "success",
+        "started_at": "2026-06-09T08:47:40.983473Z",
+        "completed_at": "2026-06-09T08:47:41.423931Z",
+        "duration_ms": 440,
+        "warnings": [],
+        "errors": [],
+        "details": {
+          "entities": 61,
+          "claims": 15
+        }
+      },
+      {
+        "stage": "quality",
+        "status": "success",
+        "started_at": "2026-06-09T08:47:41.423931Z",
+        "completed_at": "2026-06-09T08:47:41.423931Z",
+        "duration_ms": 0,
+        "warnings": [],
+        "errors": [],
+        "details": {
+          "overall_confidence": 0.9509782106109619,
+          "requires_review": false
+        }
+      }
+    ],
+    "llm_calls": []
+  }
+}

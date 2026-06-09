@@ -1,0 +1,51 @@
+grobid:
+  url: "http://localhost:8070"
+  timeout_seconds: 120
+  consolidate_header: true
+  consolidate_citations: true
+  retry_attempts: 3
+  retry_backoff_initial_seconds: 2
+  retry_backoff_max_seconds: 30
+  retry_status_codes: [408, 429, 500, 502, 503, 504]
+
+extraction:
+  fallback_threshold: 0.5
+  ocr_engine: "tesseract"           # "surya" or "tesseract"
+  ocr_dpi: 300
+  max_pages: 200
+  page_size_warning: 80
+  text_density_threshold: 50        # chars per page to consider as having text
+
+chunking:
+  min_words: 150
+  max_words: 600
+  sentence_tokenizer: "nltk"        # "nltk" or "spacy"
+
+ner:
+  general_model: "en_core_web_trf"
+  biomedical_model: "en_core_sci_lg"
+  enable_biomedical: false
+  enable_custom_patterns: true
+
+crossref:
+  enabled: true
+  rate_limit: 10
+  mailto: ""                         # Set to your email for polite pool
+  retry_attempts: 2
+  retry_backoff_seconds: 2.0
+  resolve_threshold: 0.70
+  ambiguous_threshold: 0.50
+
+llm_fallback:
+  enabled: false
+  model: "gemini-2.0-flash"
+  max_calls_per_paper: 5
+  api_key_env: "GEMINI_API_KEY"
+
+quality:
+  manual_review_threshold: 0.5
+  citation_unlinked_warning: 0.3
+
+storage:
+  output_dir: "./output"
+  db_path: "./researchmind.db"
