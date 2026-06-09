@@ -14,6 +14,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from pydantic import BaseModel
+
 from researchmind.models.enums import (
     CanonicalLabel,
     CitationIntent,
@@ -73,6 +75,30 @@ from researchmind.enrichment.ner_extractor import extract_entities
 from researchmind.enrichment.claim_detector import detect_claims
 from researchmind.quality.confidence_scorer import compute_quality
 from researchmind.quality.validator import validate_sro, compute_derived_indices
+
+# Module 2 — Understanding Engine
+from researchmind.understanding.fact_extractor import (  # noqa: E402
+    FactExtractionResult,
+    extract_facts,
+)
+from researchmind.understanding.triple_extractor import (  # noqa: E402
+    TripleExtractionResult,
+    extract_triples,
+)
+from researchmind.understanding.evidence_builder import (  # noqa: E402
+    EvidenceBuildResult,
+    build_evidence,
+)
+from researchmind.understanding.knowledge_graph import (  # noqa: E402
+    KnowledgeGraph,
+    build_knowledge_graph,
+)
+
+# Module 3 — Conversion
+from researchmind.conversion.sro_to_ruo import (  # noqa: E402
+    ConversionResult,
+    convert_sro_to_ruo,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -233,6 +259,27 @@ def _parse_structured_abstract(raw: str) -> tuple[bool, SROStructuredAbstract | 
 # ---------------------------------------------------------------------------
 
 
+# ---------------------------------------------------------------------------
+# Pipeline result model (returned by process_with_understanding)
+# ---------------------------------------------------------------------------
+
+
+class PipelineResult(BaseModel):
+    """Complete pipeline output including Module 1 SRO, Module 2 Understanding,
+    optional Knowledge Graph, and optional RUO conversion.
+
+    ``sro`` is always populated.  The remaining fields are ``None`` unless the
+    understanding stage was enabled.
+    """
+
+    sro: StructuredResearchObject
+    fact_result: FactExtractionResult | None = None
+    triple_result: TripleExtractionResult | None = None
+    evidence_result: EvidenceBuildResult | None = None
+    knowledge_graph: KnowledgeGraph | None = None
+    conversion_result: ConversionResult | None = None
+
+
 class IngestionPipeline:
     """Orchestrates the five-stage paper ingestion pipeline.
 
@@ -244,6 +291,10 @@ class IngestionPipeline:
         4. **Quality** — confidence scoring, validation, derived indices
 
     The resulting :class:`StructuredResearchObject` is returned to the caller.
+
+    Call :meth:`process_with_understanding` to also run Module 2 (fact
+    extraction, triple extraction, evidence/provenance), optional knowledge
+    graph construction, and optional RUO conversion.
     """
 
     def __init__(self, config: PipelineConfig) -> None:
@@ -774,6 +825,214 @@ class IngestionPipeline:
 
         stage_logs.append(log)
         return sro
+
+    # ==================================================================
+    # Stage 5 — Understanding (Module 2)
+    # ==================================================================
+
+    def _stage_understanding(
+        self,
+        sro: StructuredResearchObject,
+        stage_logs: list[StageLog],
+    ) -> tuple[FactExtractionResult, TripleExtractionResult, EvidenceBuildResult]:
+        """Stage 5 — Fact extraction, triple extraction, evidence/provenance.
+
+        Operates on the fully-assembled SRO.  Each sub-step is deterministic
+        and uses no LLMs, embeddings, or external APIs.
+        """
+        log = _make_stage_log("understanding")
+        fact_result = FactExtractionResult(facts=[])
+        triple_result = TripleExtractionResult(triples=[])
+        evidence_result = EvidenceBuildResult(
+            evidence_records=[], evidence_chains=[],
+            provenance_records=[], coverage=None,  # type: ignore[arg-type]
+        )
+        warnings: list[str] = []
+        errors: list[str] = []
+
+        # --- 5a. Fact extraction ---
+        try:
+            fact_result = extract_facts(sro)
+            logger.info("Facts extracted: %d total", len(fact_result.facts))
+        except Exception as exc:
+            logger.error("Fact extraction failed: %s", exc, exc_info=True)
+            warnings.append(f"Fact extraction: {exc}")
+            errors.append(str(exc))
+
+        # --- 5b. Triple extraction ---
+        try:
+            triple_result = extract_triples(sro, fact_result)
+            logger.info("Triples extracted: %d total", len(triple_result.triples))
+        except Exception as exc:
+            logger.error("Triple extraction failed: %s", exc, exc_info=True)
+            warnings.append(f"Triple extraction: {exc}")
+            errors.append(str(exc))
+
+        # --- 5c. Evidence / provenance ---
+        try:
+            evidence_result = build_evidence(sro, fact_result, triple_result)
+            logger.info(
+                "Evidence built: %d records, %d chains, %d provenance",
+                len(evidence_result.evidence_records),
+                len(evidence_result.evidence_chains),
+                len(evidence_result.provenance_records),
+            )
+        except Exception as exc:
+            logger.error("Evidence building failed: %s", exc, exc_info=True)
+            warnings.append(f"Evidence building: {exc}")
+            errors.append(str(exc))
+
+        status = StageStatus.FAILED if (
+            errors and not fact_result.facts and not triple_result.triples
+            and not evidence_result.evidence_records
+        ) else (StageStatus.PARTIAL if errors else StageStatus.SUCCESS)
+
+        _finish_stage(log, status, warnings=warnings, errors=errors, details={
+            "facts": len(fact_result.facts),
+            "triples": len(triple_result.triples),
+            "evidence_records": len(evidence_result.evidence_records),
+            "evidence_chains": len(evidence_result.evidence_chains),
+            "provenance_records": len(evidence_result.provenance_records),
+        })
+        stage_logs.append(log)
+        return fact_result, triple_result, evidence_result
+
+    # ==================================================================
+    # Stage 6 — Conversion (Module 3, optional)
+    # ==================================================================
+
+    def _stage_conversion(
+        self,
+        sro: StructuredResearchObject,
+        fact_result: FactExtractionResult,
+        triple_result: TripleExtractionResult,
+        evidence_result: EvidenceBuildResult,
+        stage_logs: list[StageLog],
+    ) -> ConversionResult | None:
+        """Stage 6 — Convert SRO + Module 2 outputs into an RUO document.
+
+        Returns ``None`` if the conversion fails entirely.
+        """
+        log = _make_stage_log("conversion")
+        conversion: ConversionResult | None = None
+        warnings: list[str] = []
+        errors: list[str] = []
+
+        try:
+            conversion = convert_sro_to_ruo(
+                sro,
+                fact_result=fact_result if fact_result.facts else None,
+                triple_result=triple_result if triple_result.triples else None,
+                evidence_result=evidence_result if evidence_result.evidence_records else None,
+            )
+            logger.info(
+                "Conversion complete — RUO document ID=%s",
+                conversion.document.ruo_id,
+            )
+        except Exception as exc:
+            logger.error("SRO→RUO conversion failed: %s", exc, exc_info=True)
+            warnings.append(f"Conversion failed: {exc}")
+            errors.append(str(exc))
+
+        status = StageStatus.FAILED if errors and conversion is None else (
+            StageStatus.PARTIAL if errors else StageStatus.SUCCESS
+        )
+        _finish_stage(log, status, warnings=warnings, errors=errors, details={
+            "ruo_id": conversion.document.ruo_id if conversion else None,
+            "conversion_notes": len(conversion.conversion_notes) if conversion else 0,
+        })
+        stage_logs.append(log)
+        return conversion
+
+    # ==================================================================
+    # End-to-end pipeline with understanding
+    # ==================================================================
+
+    def process_with_understanding(
+        self,
+        pdf_path: Path,
+        include_conversion: bool = True,
+        build_kg: bool = False,
+    ) -> PipelineResult:
+        """Process a single PDF through **all** pipeline stages (0–6).
+
+        Stages
+        ------
+        - 0–4: Standard Module 1 pipeline (intake → extraction → structuring
+          → enrichment → quality).  Produces a :class:`StructuredResearchObject`.
+        - 5:   Understanding Engine — fact extraction, triple extraction,
+          evidence/provenance.
+        - 6:   *(optional)* SRO→RUO conversion producing a validated
+          :class:`RUODocument`.
+
+        Parameters
+        ----------
+        pdf_path:
+            Path to the PDF file on disk.
+        include_conversion:
+            If ``True`` (default), run the SRO→RUO converter after Module 2.
+        build_kg:
+            If ``True``, also build the in-memory :class:`KnowledgeGraph` from
+            the converted RUO document.  Requires ``include_conversion=True``.
+
+        Returns
+        -------
+        PipelineResult
+            Container with the SRO, all Module 2 outputs, optional KG, and
+            optional RUO document.
+        """
+        # --- Stages 0–4: standard Module 1 pipeline ---
+        sro = self.process(pdf_path)
+
+        # Use a fresh list for Module 2/3 stage logs (process() already wrote
+        # its stage logs to sro.quality.pipeline_log as SROPipelineLogEntry).
+        extra_stage_logs: list[StageLog] = []
+
+        # --- Stage 5: Understanding ---
+        fact_result, triple_result, evidence_result = self._stage_understanding(
+            sro, extra_stage_logs,
+        )
+
+        # --- Stage 6: Conversion (optional) ---
+        conversion_result: ConversionResult | None = None
+        if include_conversion:
+            conversion_result = self._stage_conversion(
+                sro, fact_result, triple_result, evidence_result,
+                extra_stage_logs,
+            )
+
+        # --- Optional: Knowledge Graph ---
+        kg: KnowledgeGraph | None = None
+        if build_kg and conversion_result is not None:
+            ruo = conversion_result.document
+            try:
+                kg = build_knowledge_graph(
+                    entities=ruo.entities,
+                    claims=ruo.claims,
+                    chunks=ruo.body.chunks if ruo.body else None,
+                    facts=fact_result.facts if fact_result.facts else None,
+                    triples=triple_result.triples if triple_result.triples else None,
+                )
+                logger.info(
+                    "Knowledge graph built: %d nodes, %d edges",
+                    kg.node_count(), kg.edge_count(),
+                )
+            except Exception as exc:
+                logger.error("Knowledge graph build failed: %s", exc, exc_info=True)
+
+        # Append new stage logs to the SRO's pipeline log
+        sro.quality.pipeline_log.extend(
+            _to_pipeline_log_entry(sl) for sl in extra_stage_logs
+        )
+
+        return PipelineResult(
+            sro=sro,
+            fact_result=fact_result,
+            triple_result=triple_result,
+            evidence_result=evidence_result,
+            knowledge_graph=kg,
+            conversion_result=conversion_result,
+        )
 
     # ==================================================================
     # Helper builders

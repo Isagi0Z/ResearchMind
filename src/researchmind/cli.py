@@ -29,7 +29,7 @@ from rich.table import Table
 
 from researchmind.models.intermediates import PipelineConfig, PipelineError
 from researchmind.models.sro import StructuredResearchObject
-from researchmind.pipeline import IngestionPipeline
+from researchmind.pipeline import IngestionPipeline, PipelineResult
 from researchmind.storage.registry import PaperRegistry
 
 logger = logging.getLogger(__name__)
@@ -75,6 +75,22 @@ def _save_sro(sro: StructuredResearchObject, output_dir: str) -> str:
     return str(filepath)
 
 
+def _save_ruo(ruo_document, output_dir: str) -> str:
+    """Serialise an RUO document to a JSON file and return the file path."""
+    from researchmind.models.ruo import RUODocument
+
+    out = Path(output_dir)
+    out.mkdir(parents=True, exist_ok=True)
+
+    filename = f"{ruo_document.ruo_id}.json"
+    filepath = out / filename
+
+    json_str = ruo_document.model_dump_json(indent=2)
+    filepath.write_text(json_str, encoding="utf-8")
+    logger.info("RUO document saved to %s", filepath)
+    return str(filepath)
+
+
 def _load_sro_from_json(json_path: str) -> StructuredResearchObject:
     """Load an SRO from a JSON file."""
     path = Path(json_path)
@@ -115,7 +131,24 @@ def cli(verbose: bool) -> None:
     default=None,
     help=f"Path to pipeline config YAML.  [default: '{_DEFAULT_CONFIG}']",
 )
-def ingest(pdf_path: str, output_dir: str | None, config_path: str | None) -> None:
+@click.option(
+    "--understand", "-u",
+    is_flag=True,
+    default=False,
+    help="Also run Module 2 (Understanding Engine) and RUO conversion.",
+)
+@click.option(
+    "--output-ruo",
+    default=None,
+    help="Directory for RUO document JSON (default: same as --output-dir).",
+)
+def ingest(
+    pdf_path: str,
+    output_dir: str | None,
+    config_path: str | None,
+    understand: bool,
+    output_ruo: str | None,
+) -> None:
     """Ingest a single PDF and produce a Structured Research Object."""
     config = _load_config(config_path)
     out_dir = output_dir or config.storage.output_dir or _DEFAULT_OUTPUT
@@ -145,15 +178,29 @@ def ingest(pdf_path: str, output_dir: str | None, config_path: str | None) -> No
             TaskProgressColumn(),
             console=console,
         ) as progress:
-            task = progress.add_task("Ingesting...", total=5)
-            sro = pipeline.process(pdf)
-            progress.update(task, completed=5)
+            if understand:
+                task = progress.add_task("Ingesting + Understanding...", total=7)
+                result = pipeline.process_with_understanding(
+                    pdf, include_conversion=True, build_kg=True,
+                )
+                sro = result.sro
+                progress.update(task, completed=7)
+            else:
+                task = progress.add_task("Ingesting...", total=5)
+                sro = pipeline.process(pdf)
+                progress.update(task, completed=5)
 
         json_path = _save_sro(sro, out_dir)
         registry.register(sro, json_path)
 
+        # Save RUO document if understanding was enabled
+        ruo_path = None
+        if understand and result.conversion_result is not None:
+            ruo_dir = output_ruo or out_dir
+            ruo_path = _save_ruo(result.conversion_result.document, ruo_dir)
+
         # Print summary
-        _print_ingest_summary(sro, json_path)
+        _print_ingest_summary(sro, json_path, ruo_path)
 
     except PipelineError as exc:
         console.print(f"\n[red bold]Pipeline error[/red bold] ({exc.stage}): {exc.message}")
@@ -166,7 +213,11 @@ def ingest(pdf_path: str, output_dir: str | None, config_path: str | None) -> No
         registry.close()
 
 
-def _print_ingest_summary(sro: StructuredResearchObject, json_path: str) -> None:
+def _print_ingest_summary(
+    sro: StructuredResearchObject,
+    json_path: str,
+    ruo_path: str | None = None,
+) -> None:
     """Print a formatted summary after successful ingestion."""
     console.print("\n[bold green]✓ Ingestion complete[/bold green]\n")
 
@@ -188,6 +239,9 @@ def _print_ingest_summary(sro: StructuredResearchObject, json_path: str) -> None
     table.add_row("Confidence", f"{sro.quality.overall_confidence:.2%}")
     table.add_row("Review needed", "Yes" if sro.quality.requires_manual_review else "No")
     table.add_row("Output", json_path)
+
+    if ruo_path:
+        table.add_row("RUO output", ruo_path)
 
     if sro.quality.validation_errors:
         table.add_row(
@@ -212,11 +266,24 @@ def _print_ingest_summary(sro: StructuredResearchObject, json_path: str) -> None
 )
 @click.option("--output-dir", "-o", default=None, help="Directory for SRO JSON files.")
 @click.option("--config-path", "-c", default=None, help="Path to pipeline config YAML.")
+@click.option(
+    "--understand", "-u",
+    is_flag=True,
+    default=False,
+    help="Also run Module 2 (Understanding Engine) and RUO conversion.",
+)
+@click.option(
+    "--output-ruo",
+    default=None,
+    help="Directory for RUO document JSON (default: same as --output-dir).",
+)
 def ingest_batch(
     directory: str,
     skip_duplicates: bool,
     output_dir: str | None,
     config_path: str | None,
+    understand: bool,
+    output_ruo: str | None,
 ) -> None:
     """Ingest all PDF files in a directory."""
     config = _load_config(config_path)
@@ -261,9 +328,21 @@ def ingest_batch(
                             progress.advance(task)
                             continue
 
-                    sro = pipeline.process(pdf)
-                    json_path = _save_sro(sro, out_dir)
-                    registry.register(sro, json_path)
+                    if understand:
+                        result = pipeline.process_with_understanding(
+                            pdf, include_conversion=True, build_kg=False,
+                        )
+                        sro = result.sro
+                        json_path = _save_sro(sro, out_dir)
+                        registry.register(sro, json_path)
+                        if result.conversion_result is not None:
+                            ruo_dir = output_ruo or out_dir
+                            _save_ruo(result.conversion_result.document, ruo_dir)
+                    else:
+                        sro = pipeline.process(pdf)
+                        json_path = _save_sro(sro, out_dir)
+                        registry.register(sro, json_path)
+
                     successes += 1
                     logger.info("✓ %s → %s (confidence=%.2f)", pdf.name, sro.meta.sro_id, sro.quality.overall_confidence)
 

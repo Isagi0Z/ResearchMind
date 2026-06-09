@@ -1,0 +1,578 @@
+# Entity alias dictionary for cross-document entity resolution.
+# Each entry maps known variant surface forms to a canonical name + entity label.
+aliases:
+  # ---- Methods ----
+  - canonical: "batch normalization"
+    variants:
+      - "batch norm"
+      - "batchnorm"
+      - "batch_normalization"
+    label: method
+
+  - canonical: "generative adversarial network"
+    variants:
+      - "gan"
+      - "generative adversarial nets"
+      - "gans"
+      - "generative adversarial network"
+    label: method
+
+  - canonical: "convolutional neural network"
+    variants:
+      - "cnn"
+      - "convnet"
+      - "convolutional neural networks"
+    label: method
+
+  - canonical: "recurrent neural network"
+    variants:
+      - "rnn"
+      - "recurrent neural networks"
+    label: method
+
+  - canonical: "long short-term memory"
+    variants:
+      - "lstm"
+      - "long short term memory"
+      - "lstm network"
+    label: method
+
+  - canonical: "graph neural network"
+    variants:
+      - "gnn"
+      - "graph neural networks"
+      - "graph network"
+    label: method
+
+  - canonical: "multi-layer perceptron"
+    variants:
+      - "mlp"
+      - "multilayer perceptron"
+    label: method
+
+  - canonical: "deep learning"
+    variants:
+      - "deep neural network"
+      - "dnn"
+      - "deep net"
+    label: method
+
+  - canonical: "bidirectional encoder representations from transformers"
+    variants:
+      - "bert"
+      - "berts"
+    label: method
+
+  - canonical: "word2vec"
+    variants:
+      - "word to vector"
+      - "word2vec embedding"
+    label: method
+
+  - canonical: "backpropagation"
+    variants:
+      - "backprop"
+    label: method
+
+  - canonical: "natural language processing"
+    variants:
+      - "nlp"
+    label: method
+
+  - canonical: "computer vision"
+    variants:
+      - "cv"
+    label: method
+
+  - canonical: "principal component analysis"
+    variants:
+      - "pca"
+    label: method
+
+  - canonical: "singular value decomposition"
+    variants:
+      - "svd"
+    label: method
+
+  - canonical: "support vector machine"
+    variants:
+      - "svm"
+      - "support vector machines"
+    label: method
+
+  - canonical: "k-means"
+    variants:
+      - "kmeans"
+      - "k-means clustering"
+    label: method
+
+  - canonical: "transformer"
+    variants:
+      - "transformers"
+      - "transformer model"
+      - "transformer architecture"
+    label: method
+
+  - canonical: "attention mechanism"
+    variants:
+      - "attention"
+      - "self-attention"
+      - "multi-head attention"
+      - "self attention"
+    label: method
+
+  - canonical: "dropout"
+    variants:
+      - "dropout layer"
+      - "dropout regularization"
+    label: method
+
+  - canonical: "residual network"
+    variants:
+      - "resnet"
+      - "residual neural network"
+      - "resnets"
+    label: method
+
+  - canonical: "u-net"
+    variants:
+      - "unet"
+      - "u net"
+      - "u-net architecture"
+    label: method
+
+  - canonical: "adam optimizer"
+    variants:
+      - "adam"
+      - "adaptive moment estimation"
+    label: method
+
+  - canonical: "stochastic gradient descent"
+    variants:
+      - "sgd"
+    label: method
+
+  - canonical: "rectified linear unit"
+    variants:
+      - "relu"
+      - "relu activation"
+      - "relu function"
+    label: method
+
+  - canonical: "embedding"
+    variants:
+      - "embeddings"
+      - "word embedding"
+      - "word embeddings"
+    label: method
+
+  - canonical: "autoencoder"
+    variants:
+      - "auto-encoder"
+      - "auto encoders"
+      - "autoencoder model"
+    label: method
+
+  - canonical: "variational autoencoder"
+    variants:
+      - "vae"
+      - "variational auto-encoder"
+    label: method
+
+  - canonical: "generative pre-trained transformer"
+    variants:
+      - "gpt"
+      - "gpts"
+    label: method
+
+  - canonical: "contrastive language-image pre-training"
+    variants:
+      - "clip"
+    label: method
+
+  - canonical: "latent diffusion model"
+    variants:
+      - "ldm"
+      - "latent diffusion"
+    label: method
+
+  - canonical: "denoising diffusion probabilistic model"
+    variants:
+      - "ddpm"
+      - "denoising diffusion"
+    label: method
+
+  - canonical: "reinforcement learning"
+    variants:
+      - "rl"
+    label: method
+
+  - canonical: "transfer learning"
+    variants:
+      - "fine-tuning"
+      - "fine tuning"
+      - "finetuning"
+    label: method
+
+  - canonical: "data augmentation"
+    variants:
+      - "augmentation"
+      - "data augmentations"
+    label: method
+
+  - canonical: "normalization"
+    variants:
+      - "layer normalization"
+      - "layernorm"
+      - "layer norm"
+    label: method
+
+  - canonical: "pooling"
+    variants:
+      - "max pooling"
+      - "average pooling"
+      - "max-pooling"
+      - "avg pooling"
+    label: method
+
+  - canonical: "convolution"
+    variants:
+      - "convolutions"
+      - "convolutional layer"
+      - "conv layer"
+    label: method
+
+  # ---- Datasets ----
+  - canonical: "imagenet"
+    variants:
+      - "image net"
+      - "imagenet dataset"
+      - "ilsvrc 2012"
+    label: dataset
+
+  - canonical: "coco"
+    variants:
+      - "common objects in context"
+      - "ms coco"
+      - "mscoco"
+      - "coco dataset"
+    label: dataset
+
+  - canonical: "mnist"
+    variants:
+      - "mnist dataset"
+      - "modified national institute of standards and technology"
+    label: dataset
+
+  - canonical: "cifar-10"
+    variants:
+      - "cifar10"
+      - "cifar 10"
+      - "cifar-10 dataset"
+    label: dataset
+
+  - canonical: "cifar-100"
+    variants:
+      - "cifar100"
+      - "cifar 100"
+      - "cifar-100 dataset"
+    label: dataset
+
+  - canonical: "squad"
+    variants:
+      - "stanford question answering dataset"
+      - "squad dataset"
+    label: dataset
+
+  - canonical: "glue"
+    variants:
+      - "general language understanding evaluation"
+      - "glue benchmark"
+    label: dataset
+
+  - canonical: "wikitext"
+    variants:
+      - "wiki text"
+      - "wikitext dataset"
+    label: dataset
+
+  - canonical: "pascal voc"
+    variants:
+      - "pascal visual object classes"
+      - "voc"
+      - "pascal voc dataset"
+    label: dataset
+
+  - canonical: "cityscapes"
+    variants:
+      - "cityscapes dataset"
+    label: dataset
+
+  - canonical: "svhn"
+    variants:
+      - "street view house numbers"
+      - "svhn dataset"
+    label: dataset
+
+  # ---- Metrics ----
+  - canonical: "area under the curve"
+    variants:
+      - "auc"
+      - "area under curve"
+    label: metric
+
+  - canonical: "receiver operating characteristic"
+    variants:
+      - "roc"
+      - "roc curve"
+      - "roc auc"
+      - "roc-auc"
+    label: metric
+
+  - canonical: "f1 score"
+    variants:
+      - "f1"
+      - "f1-score"
+      - "f1-measure"
+      - "f1 measure"
+      - "f1 score"
+    label: metric
+
+  - canonical: "precision"
+    variants:
+      - "precision score"
+    label: metric
+
+  - canonical: "recall"
+    variants:
+      - "recall score"
+      - "sensitivity"
+    label: metric
+
+  - canonical: "mean average precision"
+    variants:
+      - "map"
+      - "mean ap"
+    label: metric
+
+  - canonical: "intersection over union"
+    variants:
+      - "iou"
+      - "jaccard index"
+    label: metric
+
+  - canonical: "mean squared error"
+    variants:
+      - "mse"
+    label: metric
+
+  - canonical: "root mean squared error"
+    variants:
+      - "rmse"
+    label: metric
+
+  - canonical: "peak signal-to-noise ratio"
+    variants:
+      - "psnr"
+      - "peak signal to noise ratio"
+    label: metric
+
+  - canonical: "structural similarity index"
+    variants:
+      - "ssim"
+      - "structural similarity"
+      - "ssim index"
+    label: metric
+
+  - canonical: "perplexity"
+    variants:
+      - "ppl"
+    label: metric
+
+  - canonical: "bleu score"
+    variants:
+      - "bleu"
+      - "bilingual evaluation understudy"
+    label: metric
+
+  - canonical: "accuracy"
+    variants:
+      - "acc"
+      - "top-1 accuracy"
+      - "top1 accuracy"
+    label: metric
+
+  - canonical: "top-5 accuracy"
+    variants:
+      - "top5 accuracy"
+      - "top 5 accuracy"
+    label: metric
+
+  # ---- Generic (other) ----
+  - canonical: "input"
+    variants:
+      - "inputs"
+      - "input data"
+    label: other
+
+  - canonical: "output"
+    variants:
+      - "outputs"
+      - "output data"
+    label: other
+
+  - canonical: "parameter"
+    variants:
+      - "parameters"
+      - "params"
+    label: other
+
+  - canonical: "feature"
+    variants:
+      - "features"
+    label: other
+
+  - canonical: "layer"
+    variants:
+      - "layers"
+      - "network layer"
+    label: other
+
+  - canonical: "model"
+    variants:
+      - "models"
+      - "network model"
+    label: other
+
+  - canonical: "weight"
+    variants:
+      - "weights"
+    label: other
+
+  - canonical: "bias"
+    variants:
+      - "biases"
+    label: other
+
+  - canonical: "loss function"
+    variants:
+      - "loss"
+      - "objective function"
+      - "cost function"
+    label: other
+
+  - canonical: "learning rate"
+    variants:
+      - "lr"
+      - "learning_rate"
+    label: other
+
+  - canonical: "epoch"
+    variants:
+      - "epochs"
+      - "training epoch"
+    label: other
+
+  - canonical: "batch size"
+    variants:
+      - "batch_size"
+      - "batchsize"
+    label: other
+
+  - canonical: "gradient"
+    variants:
+      - "gradients"
+    label: other
+
+  - canonical: "hidden state"
+    variants:
+      - "hidden states"
+      - "hidden representation"
+    label: other
+
+  - canonical: "activation function"
+    variants:
+      - "activation"
+      - "activations"
+      - "activation layer"
+    label: other
+
+  - canonical: "regularization"
+    variants:
+      - "regularization term"
+      - "regularization loss"
+    label: other
+
+  - canonical: "latent space"
+    variants:
+      - "latent representation"
+      - "latent variable"
+      - "latent vector"
+    label: other
+
+  - canonical: "embedding dimension"
+    variants:
+      - "embedding size"
+      - "hidden dimension"
+      - "hidden size"
+      - "d model"
+    label: other
+
+  - canonical: "vocabulary"
+    variants:
+      - "vocab"
+      - "vocabulary size"
+    label: other
+
+  - canonical: "token"
+    variants:
+      - "tokens"
+      - "word piece"
+      - "subword"
+    label: other
+
+  - canonical: "training data"
+    variants:
+      - "training set"
+      - "train data"
+      - "train set"
+    label: other
+
+  - canonical: "test data"
+    variants:
+      - "test set"
+      - "testing data"
+    label: other
+
+  - canonical: "validation data"
+    variants:
+      - "validation set"
+      - "val data"
+      - "val set"
+      - "dev set"
+    label: other
+
+  - canonical: "ground truth"
+    variants:
+      - "groundtruth"
+      - "gt"
+    label: other
+
+  - canonical: "prediction"
+    variants:
+      - "predictions"
+      - "predicted label"
+    label: other
+
+  - canonical: "label"
+    variants:
+      - "labels"
+      - "class label"
+      - "target label"
+    label: other
+
+  - canonical: "state of the art"
+    variants:
+      - "sota"
+      - "state-of-the-art"
+    label: other
