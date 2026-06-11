@@ -1,0 +1,130 @@
+{
+  "evaluation_timestamp": "2026-06-11T03:57:03.758200+00:00",
+  "corpus": {
+    "papers": [
+      "GAN",
+      "Adam",
+      "BatchNorm",
+      "U-Net",
+      "ResNet",
+      "Attention",
+      "BERT",
+      "Dropout"
+    ],
+    "graph_nodes": 57,
+    "graph_edges": 1458
+  },
+  "task_results": {
+    "MultiHop": {
+      "total": 26,
+      "correct": 22,
+      "success_rate": 0.8462,
+      "avg_confidence": 0.7159,
+      "incorrect": 4
+    },
+    "Consensus": {
+      "total": 22,
+      "correct": 22,
+      "success_rate": 1.0,
+      "avg_confidence": 0.5951,
+      "incorrect": 0
+    },
+    "Contradiction": {
+      "total": 20,
+      "correct": 20,
+      "success_rate": 1.0,
+      "avg_confidence": 0,
+      "incorrect": 0
+    },
+    "GapAnalysis": {
+      "total": 1,
+      "correct": 1,
+      "success_rate": 1.0,
+      "avg_confidence": 0,
+      "incorrect": 0
+    },
+    "Synthesis": {
+      "total": 15,
+      "correct": 15,
+      "success_rate": 1.0,
+      "avg_confidence": 0,
+      "incorrect": 0
+    },
+    "Dispatcher": {
+      "total": 67,
+      "correct": 67,
+      "success_rate": 1.0,
+      "avg_confidence": 0.9195,
+      "incorrect": 0
+    }
+  },
+  "multi_hop": {
+    "total_queries": 26,
+    "avg_confidence": 0.7159,
+    "success_rate": 0.8462
+  },
+  "consensus": {
+    "total_queries": 22,
+    "ratio_valid": 22,
+    "ratio_invalid": 0,
+    "avg_confidence": 0.5951
+  },
+  "contradiction": {
+    "total_targets": 20,
+    "direct_contradictions": 0,
+    "indirect_contradictions": 0,
+    "total_contradictions": 0,
+    "false_positives": 0
+  },
+  "gap_analysis": {
+    "total_gaps": 0,
+    "isolated_entities": 0,
+    "missing_comparisons": 0,
+    "low_confidence_claims": 0,
+    "under_studied_datasets": 0,
+    "unconnected_documents": 0,
+    "gap_types_covered": 0
+  },
+  "synthesis": {
+    "total_queries": 15,
+    "avg_evidence": 0.0,
+    "avg_docs": 0.0,
+    "avg_confidence": 0
+  },
+  "dispatcher": {
+    "total_queries": 67,
+    "routing_success_rate": 1.0,
+    "malformed_handled": true
+  },
+  "validation": {
+    "evidence_traceability": {
+      "violations": 16,
+      "rate": 0.894,
+      "target": 1.0
+    },
+    "confidence_bounds": {
+      "violations": 0,
+      "target": 0
+    },
+    "determinism": {
+      "total": 11,
+      "identical": 11,
+      "rate": 1.0,
+      "target": 1.0
+    },
+    "no_answer_without_evidence": {
+      "violations": 16,
+      "target": 0
+    }
+  },
+  "final_scorecard": {
+    "MultiHop": "22/26",
+    "Consensus": "22/22",
+    "Contradiction": "20/20",
+    "GapAnalysis": "1/1",
+    "Synthesis": "15/15",
+    "Dispatcher": "67/67",
+    "Traceability": "89%",
+    "Determinism": "100%"
+  }
+}

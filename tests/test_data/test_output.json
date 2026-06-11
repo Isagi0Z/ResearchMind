@@ -1,9 +1,9 @@
 {
   "meta": {
-    "sro_id": "c800aabd-5f04-4336-addc-c12baa80b273",
+    "sro_id": "0e19584f-da46-4a2f-80e3-3b3faad31394",
     "schema_version": "1.0.0",
-    "created_at": "2026-06-11T01:25:16.356444Z",
-    "updated_at": "2026-06-11T01:25:19.269584Z",
+    "created_at": "2026-06-11T03:27:22.996433Z",
+    "updated_at": "2026-06-11T03:27:25.549401Z",
     "pipeline_version": "0.1.0",
     "extraction_route": "grobid_primary",
     "source_file": {
@@ -14,7 +14,7 @@
       "is_scanned": false,
       "size_bytes": 8265
     },
-    "processing_time_ms": 2906
+    "processing_time_ms": 2562
   },
   "header": {
     "title": "Attention Is All You Need",
@@ -380,9 +380,9 @@
       {
         "stage": "intake",
         "status": "success",
-        "started_at": "2026-06-11T01:25:16.356444Z",
-        "completed_at": "2026-06-11T01:25:16.372436Z",
-        "duration_ms": 15,
+        "started_at": "2026-06-11T03:27:22.996433Z",
+        "completed_at": "2026-06-11T03:27:22.996433Z",
+        "duration_ms": 0,
         "warnings": [],
         "errors": [],
         "details": {
@@ -395,9 +395,9 @@
       {
         "stage": "extraction",
         "status": "success",
-        "started_at": "2026-06-11T01:25:16.372436Z",
-        "completed_at": "2026-06-11T01:25:19.220234Z",
-        "duration_ms": 2847,
+        "started_at": "2026-06-11T03:27:22.996433Z",
+        "completed_at": "2026-06-11T03:27:25.493774Z",
+        "duration_ms": 2497,
         "warnings": [],
         "errors": [],
         "details": {
@@ -411,9 +411,9 @@
       {
         "stage": "structuring",
         "status": "success",
-        "started_at": "2026-06-11T01:25:19.220234Z",
-        "completed_at": "2026-06-11T01:25:19.236084Z",
-        "duration_ms": 15,
+        "started_at": "2026-06-11T03:27:25.493774Z",
+        "completed_at": "2026-06-11T03:27:25.514461Z",
+        "duration_ms": 20,
         "warnings": [],
         "errors": [],
         "details": {
@@ -428,9 +428,9 @@
       {
         "stage": "enrichment",
         "status": "success",
-        "started_at": "2026-06-11T01:25:19.236084Z",
-        "completed_at": "2026-06-11T01:25:19.269584Z",
-        "duration_ms": 33,
+        "started_at": "2026-06-11T03:27:25.514461Z",
+        "completed_at": "2026-06-11T03:27:25.549401Z",
+        "duration_ms": 34,
         "warnings": [],
         "errors": [],
         "details": {
@@ -441,8 +441,8 @@
       {
         "stage": "quality",
         "status": "success",
-        "started_at": "2026-06-11T01:25:19.269584Z",
-        "completed_at": "2026-06-11T01:25:19.269584Z",
+        "started_at": "2026-06-11T03:27:25.549401Z",
+        "completed_at": "2026-06-11T03:27:25.549401Z",
         "duration_ms": 0,
         "warnings": [],
         "errors": [],
