@@ -57,6 +57,8 @@ from researchmind.models.ruo_enums import (
     ProvenanceAction,
     ProvenanceAgentType,
     RelationType,
+    ResolutionSource,
+    ResolutionStatus,
     StageStatus,
 )
 from researchmind.storage.corpus import (
@@ -1225,3 +1227,398 @@ class TestCorpusEdgeCases:
         d = tempfile.mkdtemp()
         yield Path(d)
         shutil.rmtree(d)
+
+
+# ===================================================================
+# CorpusGraph integration — cached property on CorpusManager
+# ===================================================================
+
+
+class TestCorpusManagerGraphCache:
+    """Part A: corpus_graph cached property — lazy build, cache hit,
+    invalidation, empty/single/multi-document scenarios."""
+
+    def _make_mgr(self, docs, corpus_id="test-graph") -> CorpusManager:
+        return CorpusManager.from_documents(docs, corpus_id)
+
+    @staticmethod
+    def _graph_doc(
+        ruo_id: str = "d1",
+        entities: list[tuple[str, EntityLabel]] | None = None,
+        references: list[str | tuple[str, str]] | None = None,
+    ) -> RUODocument:
+        """Create a document with unique entity IDs for graph testing."""
+        doc = make_doc(ruo_id, entities=entities, references=references)
+        # Override entities with unique entity IDs per document
+        doc.entities = [
+            RUOEntity(
+                entity_id=f"{ruo_id}_e{i}",
+                text=text, label=label,
+                chunk_id=doc.entities[i].chunk_id if i < len(doc.entities) else "c1",
+                sentence=f"Sentence about {text}.",
+                confidence=0.9,
+                source="ner",
+            ) for i, (text, label) in enumerate(entities or [])
+        ]
+        # Override references
+        from researchmind.models.ruo_enums import ResolutionStatus, ResolutionSource
+        refs = []
+        if references:
+            for i, ref in enumerate(references):
+                if isinstance(ref, tuple):
+                    rid, target = ref
+                    refs.append(
+                        RUOReference(
+                            ref_id=rid, target_ruo_id=target,
+                            raw_text="Ref: " + target,
+                            title="Referenced Paper", year="2023",
+                            resolution_status=ResolutionStatus.RESOLVED,
+                            resolution_source=ResolutionSource.CROSSREF_LOOKUP,
+                            ref_confidence=0.9,
+                        )
+                    )
+                else:
+                    refs.append(
+                        RUOReference(
+                            ref_id=f"r{i}", target_ruo_id=ref,
+                            raw_text="Ref: " + ref,
+                            title="Referenced Paper", year="2023",
+                            resolution_status=ResolutionStatus.RESOLVED,
+                            resolution_source=ResolutionSource.CROSSREF_LOOKUP,
+                            ref_confidence=0.9,
+                        )
+                    )
+        doc.references = refs
+        return doc
+
+    # -- lazy build ---------------------------------------------------
+
+    def test_graph_not_built_on_construction(self):
+        mgr = self._make_mgr([self._graph_doc("d1", entities=[("BERT", EntityLabel.METHOD)])])
+        assert mgr._graph_cache is None
+
+    def test_graph_built_on_first_access(self):
+        mgr = self._make_mgr([self._graph_doc("d1", entities=[("BERT", EntityLabel.METHOD)])])
+        g = mgr.corpus_graph
+        assert g is not None
+        assert g.total_nodes_found > 0
+
+    def test_graph_still_not_built_if_unaccessed(self):
+        mgr = self._make_mgr([self._graph_doc("d1", entities=[("BERT", EntityLabel.METHOD)])])
+        _ = mgr.indexes  # touch indexes, not graph
+        assert mgr._graph_cache is None
+
+    # -- cache hit ----------------------------------------------------
+
+    def test_graph_cache_hit_same_object(self):
+        mgr = self._make_mgr([self._graph_doc("d1", entities=[("BERT", EntityLabel.METHOD)])])
+        g1 = mgr.corpus_graph
+        g2 = mgr.corpus_graph
+        assert g1 is g2
+
+    def test_graph_cache_hit_same_total_nodes(self):
+        mgr = self._make_mgr([self._graph_doc("d1", entities=[("BERT", EntityLabel.METHOD)])])
+        g1 = mgr.corpus_graph
+        g2 = mgr.corpus_graph
+        assert g1.total_nodes_found == g2.total_nodes_found
+
+    # -- cache invalidation on add_document ---------------------------
+
+    def test_graph_cache_invalidation_on_add(self):
+        mgr = self._make_mgr([self._graph_doc("d1", entities=[("BERT", EntityLabel.METHOD)])])
+        g1 = mgr.corpus_graph
+        mgr.add_document(self._graph_doc("d2", entities=[("GPT", EntityLabel.METHOD)]))
+        g2 = mgr.corpus_graph
+        assert g1 is not g2
+        assert g2.total_nodes_found > g1.total_nodes_found
+
+    # -- cache invalidation on remove_document ------------------------
+
+    def test_graph_cache_invalidation_on_remove(self):
+        mgr = self._make_mgr([
+            self._graph_doc("d1", entities=[("BERT", EntityLabel.METHOD)]),
+            self._graph_doc("d2", entities=[("GPT", EntityLabel.METHOD)]),
+        ])
+        g1 = mgr.corpus_graph
+        mgr.remove_document("d2")
+        g2 = mgr.corpus_graph
+        assert g1 is not g2
+        nodes_d2_doc = [n for n in g2.nodes if n.node_type == "document"]
+        assert len(nodes_d2_doc) == 1
+
+    # -- cache invalidation on clear ----------------------------------
+
+    def test_graph_cache_invalidation_on_clear(self):
+        mgr = self._make_mgr([
+            self._graph_doc("d1", entities=[("BERT", EntityLabel.METHOD)]),
+            self._graph_doc("d2", entities=[("GPT", EntityLabel.METHOD)]),
+        ])
+        g1 = mgr.corpus_graph
+        mgr.clear()
+        g2 = mgr.corpus_graph
+        assert g1 is not g2
+        assert g2.total_nodes_found == 0
+        assert g2.total_edges_found == 0
+
+    # -- rebuild after invalidation -----------------------------------
+
+    def test_graph_rebuild_after_invalidation(self):
+        mgr = self._make_mgr([self._graph_doc("d1", entities=[("BERT", EntityLabel.METHOD)])])
+        g1 = mgr.corpus_graph
+        mgr.add_document(self._graph_doc("d2", entities=[("GPT", EntityLabel.METHOD)]))
+        g2 = mgr.corpus_graph
+        assert g2.total_nodes_found > g1.total_nodes_found
+        # Cache hit again returns the new cached object
+        g3 = mgr.corpus_graph
+        assert g3 is g2
+
+    # -- cache independent of indexes / statistics --------------------
+
+    def test_graph_cache_independent_of_indexes(self):
+        mgr = self._make_mgr([self._graph_doc("d1", entities=[("BERT", EntityLabel.METHOD)])])
+        g = mgr.corpus_graph
+        _ = mgr.indexes  # touch indexes
+        assert mgr.corpus_graph is g  # graph should still be cached
+
+    def test_graph_cache_independent_of_statistics(self):
+        mgr = self._make_mgr([self._graph_doc("d1", entities=[("BERT", EntityLabel.METHOD)])])
+        g = mgr.corpus_graph
+        _ = mgr.statistics  # touch statistics
+        assert mgr.corpus_graph is g
+
+    # -- empty corpus -------------------------------------------------
+
+    def test_empty_corpus_graph_returns_empty(self):
+        mgr = CorpusManager.create("empty", store=InMemoryDocumentStore())
+        g = mgr.corpus_graph
+        assert g.total_nodes_found == 0
+        assert g.total_edges_found == 0
+
+    def test_empty_corpus_graph_has_statistics(self):
+        mgr = CorpusManager.create("empty", store=InMemoryDocumentStore())
+        g = mgr.corpus_graph
+        assert g.statistics is not None
+        assert g.statistics.total_nodes == 0
+
+    # -- single document ----------------------------------------------
+
+    def test_single_document_graph_has_doc_node(self):
+        mgr = self._make_mgr([self._graph_doc("d1", entities=[("BERT", EntityLabel.METHOD)])])
+        g = mgr.corpus_graph
+        doc_nodes = [n for n in g.nodes if n.node_type == "document"]
+        assert len(doc_nodes) == 1
+        assert doc_nodes[0].node_id == "d1"
+
+    def test_single_document_no_entity_clusters(self):
+        # Single entity with no match -> unresolved -> no cluster node
+        mgr = self._make_mgr([self._graph_doc("d1", entities=[("BERT", EntityLabel.METHOD)])])
+        g = mgr.corpus_graph
+        ec_nodes = [n for n in g.nodes if n.node_type == "entity_cluster"]
+        assert len(ec_nodes) == 0
+
+    def test_single_document_no_edges_without_cluster(self):
+        mgr = self._make_mgr([self._graph_doc("d1", entities=[("BERT", EntityLabel.METHOD)])])
+        g = mgr.corpus_graph
+        # No cluster means no doc->entity edges
+        assert g.total_edges_found == 0
+
+    def test_single_document_without_entities(self):
+        mgr = self._make_mgr([self._graph_doc("d1", entities=[])])
+        g = mgr.corpus_graph
+        doc_nodes = [n for n in g.nodes if n.node_type == "document"]
+        assert len(doc_nodes) == 1
+
+    # -- multi-document -----------------------------------------------
+
+    def test_two_documents_both_have_doc_nodes(self):
+        docs = [
+            self._graph_doc("d1", entities=[("BERT", EntityLabel.METHOD)]),
+            self._graph_doc("d2", entities=[("GPT", EntityLabel.METHOD)]),
+        ]
+        mgr = self._make_mgr(docs)
+        g = mgr.corpus_graph
+        doc_nodes = [n for n in g.nodes if n.node_type == "document"]
+        assert len(doc_nodes) == 2
+
+    def test_two_documents_shared_entity_single_cluster(self):
+        docs = [
+            self._graph_doc("d1", entities=[("BERT", EntityLabel.METHOD)]),
+            self._graph_doc("d2", entities=[("BERT", EntityLabel.METHOD)]),
+        ]
+        mgr = self._make_mgr(docs)
+        g = mgr.corpus_graph
+        ec_nodes = [n for n in g.nodes if n.node_type == "entity_cluster"]
+        assert len(ec_nodes) == 1
+
+    def test_two_documents_shared_entity_has_edges(self):
+        docs = [
+            self._graph_doc("d1", entities=[("BERT", EntityLabel.METHOD)]),
+            self._graph_doc("d2", entities=[("BERT", EntityLabel.METHOD)]),
+        ]
+        mgr = self._make_mgr(docs)
+        g = mgr.corpus_graph
+        # Each doc connects to the shared cluster via EXTENDS edge
+        extends_edges = [e for e in g.edges if e.relation_type == RelationType.EXTENDS]
+        assert len(extends_edges) >= 2
+
+    # -- invalidation on attach_store ---------------------------------
+
+    def test_graph_invalidated_on_attach_store(self):
+        mgr = self._make_mgr([self._graph_doc("d1", entities=[("BERT", EntityLabel.METHOD)])])
+        g1 = mgr.corpus_graph
+        mgr.attach_store(InMemoryDocumentStore())
+        mgr.add_document(self._graph_doc("d2", entities=[("GPT", EntityLabel.METHOD)]))
+        g2 = mgr.corpus_graph
+        assert g1 is not g2
+
+    # -- graph has correct structure ----------------------------------
+
+    def test_graph_node_types_with_multidoc(self):
+        docs = [
+            self._graph_doc("d1", entities=[("BERT", EntityLabel.METHOD)]),
+            self._graph_doc("d2", entities=[("BERT", EntityLabel.METHOD)]),
+        ]
+        mgr = self._make_mgr(docs)
+        g = mgr.corpus_graph
+        types = {n.node_type for n in g.nodes}
+        assert "document" in types
+        assert "entity_cluster" in types
+
+    def test_graph_edge_types_with_multidoc(self):
+        docs = [
+            self._graph_doc("d1", entities=[("ImageNet", EntityLabel.DATASET)]),
+            self._graph_doc("d2", entities=[("ImageNet", EntityLabel.DATASET),
+                                             ("BERT", EntityLabel.METHOD)]),
+        ]
+        mgr = self._make_mgr(docs)
+        g = mgr.corpus_graph
+        doc_nodes = [n for n in g.nodes if n.node_type == "document"]
+        ec_nodes = [n for n in g.nodes if n.node_type == "entity_cluster"]
+        if doc_nodes and ec_nodes:
+            doc_id = doc_nodes[0].node_id
+            ec_id = ec_nodes[0].node_id
+            connecting = [e for e in g.edges
+                          if e.source_id == doc_id and e.target_id == ec_id]
+            assert len(connecting) >= 1
+
+    # -- rebuild between invalidation cycles --------------------------
+
+    def test_multiple_invalidation_cycles(self):
+        mgr = self._make_mgr([self._graph_doc("d1", entities=[("BERT", EntityLabel.METHOD)])])
+        graphs = []
+        for _ in range(3):
+            graphs.append(mgr.corpus_graph)
+            mgr.add_document(self._graph_doc(f"d{_+2}", entities=[("GPT", EntityLabel.METHOD)]))
+        assert len({id(g) for g in graphs}) == 3  # each cycle new object
+
+    # -- cache persists without invalidation --------------------------
+
+    def test_cache_persists_across_multiple_accesses(self):
+        mgr = self._make_mgr([self._graph_doc("d1", entities=[("BERT", EntityLabel.METHOD)])])
+        g = mgr.corpus_graph
+        for _ in range(10):
+            assert mgr.corpus_graph is g
+
+    # -- graph with relations -----------------------------------------
+
+    def test_graph_with_citation_edges(self):
+        docs = [
+            self._graph_doc("d1", entities=[("BERT", EntityLabel.METHOD)],
+                            references=[("r1", "d2")]),
+            self._graph_doc("d2", entities=[("GPT", EntityLabel.METHOD)]),
+        ]
+        mgr = self._make_mgr(docs)
+        g = mgr.corpus_graph
+        # Should have citation-related edges (d1 -> d2) from references
+        doc_doc_edges = [e for e in g.edges
+                         if e.source_id == "d1" and e.target_id == "d2"]
+        assert len(doc_doc_edges) > 0
+
+    # -- attach_store after graph built --------------------------------
+
+    def test_attach_store_after_graph_creates_new_cache(self):
+        mgr = self._make_mgr([self._graph_doc("d1", entities=[("BERT", EntityLabel.METHOD)])])
+        g1 = mgr.corpus_graph
+        new_store = InMemoryDocumentStore()
+        new_store.put(self._graph_doc("d2", entities=[("GPT", EntityLabel.METHOD)]))
+        mgr.attach_store(new_store)
+        g2 = mgr.corpus_graph
+        assert g1 is not g2
+
+    # -- load invalidates cache ---------------------------------------
+
+    def test_graph_cache_is_none_after_load(self):
+        import tempfile, shutil
+        mgr = self._make_mgr([self._graph_doc("d1", entities=[("BERT", EntityLabel.METHOD)])])
+        _ = mgr.corpus_graph
+        d = tempfile.mkdtemp()
+        try:
+            mgr.save(d)
+            loaded = CorpusManager.load(d, store=InMemoryDocumentStore())
+            loaded.add_document(self._graph_doc("d1", entities=[("BERT", EntityLabel.METHOD)]))
+            g = loaded.corpus_graph
+            assert g.total_nodes_found >= 1
+        finally:
+            shutil.rmtree(d)
+
+    # -- graph quality checks -----------------------------------------
+
+    def test_graph_node_weights_positive(self):
+        mgr = self._make_mgr([self._graph_doc("d1", entities=[("BERT", EntityLabel.METHOD)])])
+        g = mgr.corpus_graph
+        for n in g.nodes:
+            assert n.weight >= 0
+
+    def test_graph_edge_confidences_valid(self):
+        docs = [
+            self._graph_doc("d1", entities=[("BERT", EntityLabel.METHOD)]),
+            self._graph_doc("d2", entities=[("BERT", EntityLabel.METHOD)]),
+        ]
+        mgr = self._make_mgr(docs)
+        g = mgr.corpus_graph
+        for e in g.edges:
+            assert 0.0 <= e.confidence <= 1.0
+
+    def test_graph_statistics_connected_components(self):
+        docs = [
+            self._graph_doc("d1", entities=[("BERT", EntityLabel.METHOD)]),
+            self._graph_doc("d2", entities=[("GPT", EntityLabel.METHOD)]),
+        ]
+        mgr = self._make_mgr(docs)
+        g = mgr.corpus_graph
+        assert g.statistics.connected_components >= 2  # disconnected docs
+
+    def test_graph_density_non_negative(self):
+        mgr = self._make_mgr([self._graph_doc("d1", entities=[("BERT", EntityLabel.METHOD)])])
+        g = mgr.corpus_graph
+        assert g.statistics.density >= 0.0
+
+    def test_graph_density_at_most_one(self):
+        docs = [
+            self._graph_doc("d1", entities=[("BERT", EntityLabel.METHOD)]),
+            self._graph_doc("d2", entities=[("BERT", EntityLabel.METHOD)]),
+        ]
+        mgr = self._make_mgr(docs)
+        g = mgr.corpus_graph
+        assert g.statistics.density <= 1.0
+
+    def test_add_duplicate_document_invalidates(self):
+        mgr = self._make_mgr([self._graph_doc("d1", entities=[("BERT", EntityLabel.METHOD)])])
+        g1 = mgr.corpus_graph
+        mgr.add_document(self._graph_doc("d1", entities=[("BERT", EntityLabel.METHOD)]))
+        g2 = mgr.corpus_graph
+        assert g1 is not g2
+
+    def test_remove_nonexistent_does_not_invalidate(self):
+        mgr = self._make_mgr([self._graph_doc("d1", entities=[("BERT", EntityLabel.METHOD)])])
+        g1 = mgr.corpus_graph
+        mgr.remove_document("nonexistent")
+        assert mgr.corpus_graph is g1  # no invalidation
+
+    def test_clear_rebuilds_empty_graph(self):
+        mgr = self._make_mgr([self._graph_doc("d1", entities=[("BERT", EntityLabel.METHOD)])])
+        _ = mgr.corpus_graph
+        mgr.clear()
+        g = mgr.corpus_graph
+        assert g.total_nodes_found == 0
+        assert g.total_edges_found == 0

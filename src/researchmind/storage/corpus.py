@@ -131,6 +131,7 @@ class CorpusManager:
         self._store = store
         self._indexes: CorpusIndexes | None = None
         self._statistics: CorpusStatistics | None = None
+        self._graph_cache: Any | None = None
 
     # -- properties ----------------------------------------------------
 
@@ -199,12 +200,62 @@ class CorpusManager:
 
     # -- store management ----------------------------------------------
 
+    # -- corpus graph --------------------------------------------------
+
+    @property
+    def corpus_graph(self) -> Any:
+        """Lazily built corpus knowledge graph.
+
+        The graph is built on first access by running the full pipeline:
+        entity resolution → document relations → graph builder.
+        Subsequent accesses return the cached result until invalidated.
+        """
+        if self._graph_cache is not None:
+            return self._graph_cache
+
+        from researchmind.corpus.entity_resolution import EntityResolver
+        from researchmind.corpus.document_relations import DocumentRelationEngine
+        from researchmind.corpus.graph import CorpusGraphBuilder
+
+        documents = self.get_documents()
+
+        # Collect all entities across all documents
+        all_entities: list[Any] = []
+        for doc in documents:
+            all_entities.extend(doc.entities)
+
+        # Step 1: entity resolution
+        resolver = EntityResolver()
+        resolution = resolver.resolve(all_entities) if all_entities else None
+
+        # Step 2: document relations
+        relations_result = None
+        if resolution is not None and len(documents) > 1:
+            rel_engine = DocumentRelationEngine(resolution_result=resolution)
+            relations_result = rel_engine.detect_relations(
+                documents=documents, corpus_manager=self,
+            )
+
+        # Step 3: build graph
+        relations = (
+            relations_result.relations
+            if relations_result is not None
+            else self._corpus.relations
+        )
+        builder = CorpusGraphBuilder(resolution_result=resolution)
+        graph = builder.build(documents=documents, relations=relations)
+        self._graph_cache = graph
+        return graph
+
+    # -- store management ----------------------------------------------
+
     def attach_store(self, store: DocumentStore) -> None:
         """Attach (or replace) a :class:`DocumentStore` for lazy loading."""
         self._store = store
         self._corpus.attach_store(store)
         self._indexes = None
         self._statistics = None
+        self._graph_cache = None
 
     # -- document management -------------------------------------------
 
@@ -224,6 +275,7 @@ class CorpusManager:
         self._corpus.updated_at = datetime.now(timezone.utc)
         self._indexes = None
         self._statistics = None
+        self._graph_cache = None
 
     def remove_document(self, ruo_id: str) -> bool:
         """Remove a document from the corpus by ID.
@@ -243,7 +295,20 @@ class CorpusManager:
         self._corpus.updated_at = datetime.now(timezone.utc)
         self._indexes = None
         self._statistics = None
+        self._graph_cache = None
         return True
+
+    def clear(self) -> None:
+        """Remove all documents and relations from the corpus.
+
+        Invalidates indexes, statistics, and graph cache.
+        """
+        self._corpus.document_ids.clear()
+        self._corpus.relations.clear()
+        self._corpus.updated_at = datetime.now(timezone.utc)
+        self._indexes = None
+        self._statistics = None
+        self._graph_cache = None
 
     def get_document(self, ruo_id: str) -> RUODocument | None:
         """Load a single document (lazy, from the attached store)."""

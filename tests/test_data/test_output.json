@@ -1,9 +1,9 @@
 {
   "meta": {
-    "sro_id": "3922aaf1-9473-42ea-84b0-d3041a677c2a",
+    "sro_id": "c800aabd-5f04-4336-addc-c12baa80b273",
     "schema_version": "1.0.0",
-    "created_at": "2026-06-09T18:26:32.022029Z",
-    "updated_at": "2026-06-09T18:26:43.525952Z",
+    "created_at": "2026-06-11T01:25:16.356444Z",
+    "updated_at": "2026-06-11T01:25:19.269584Z",
     "pipeline_version": "0.1.0",
     "extraction_route": "grobid_primary",
     "source_file": {
@@ -14,7 +14,7 @@
       "is_scanned": false,
       "size_bytes": 8265
     },
-    "processing_time_ms": 11500
+    "processing_time_ms": 2906
   },
   "header": {
     "title": "Attention Is All You Need",
@@ -380,9 +380,9 @@
       {
         "stage": "intake",
         "status": "success",
-        "started_at": "2026-06-09T18:26:32.022029Z",
-        "completed_at": "2026-06-09T18:26:32.048187Z",
-        "duration_ms": 26,
+        "started_at": "2026-06-11T01:25:16.356444Z",
+        "completed_at": "2026-06-11T01:25:16.372436Z",
+        "duration_ms": 15,
         "warnings": [],
         "errors": [],
         "details": {
@@ -395,9 +395,9 @@
       {
         "stage": "extraction",
         "status": "success",
-        "started_at": "2026-06-09T18:26:32.048187Z",
-        "completed_at": "2026-06-09T18:26:43.364769Z",
-        "duration_ms": 11316,
+        "started_at": "2026-06-11T01:25:16.372436Z",
+        "completed_at": "2026-06-11T01:25:19.220234Z",
+        "duration_ms": 2847,
         "warnings": [],
         "errors": [],
         "details": {
@@ -411,9 +411,9 @@
       {
         "stage": "structuring",
         "status": "success",
-        "started_at": "2026-06-09T18:26:43.364769Z",
-        "completed_at": "2026-06-09T18:26:43.417900Z",
-        "duration_ms": 53,
+        "started_at": "2026-06-11T01:25:19.220234Z",
+        "completed_at": "2026-06-11T01:25:19.236084Z",
+        "duration_ms": 15,
         "warnings": [],
         "errors": [],
         "details": {
@@ -428,9 +428,9 @@
       {
         "stage": "enrichment",
         "status": "success",
-        "started_at": "2026-06-09T18:26:43.417900Z",
-        "completed_at": "2026-06-09T18:26:43.525952Z",
-        "duration_ms": 108,
+        "started_at": "2026-06-11T01:25:19.236084Z",
+        "completed_at": "2026-06-11T01:25:19.269584Z",
+        "duration_ms": 33,
         "warnings": [],
         "errors": [],
         "details": {
@@ -441,9 +441,9 @@
       {
         "stage": "quality",
         "status": "success",
-        "started_at": "2026-06-09T18:26:43.525952Z",
-        "completed_at": "2026-06-09T18:26:43.527968Z",
-        "duration_ms": 2,
+        "started_at": "2026-06-11T01:25:19.269584Z",
+        "completed_at": "2026-06-11T01:25:19.269584Z",
+        "duration_ms": 0,
         "warnings": [],
         "errors": [],
         "details": {
