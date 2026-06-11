@@ -1081,14 +1081,18 @@ class CorpusGraphBuilder:
                 seen_nodes[nid] = node
         self._nodes = seen_nodes
 
-        # Edge dedup: if two edges share the same edge_id, keep the more
-        # confident one.
-        seen_edges: dict[str, CorpusGraphEdge] = {}
+        # Edge dedup: if two edges share the same source_id, target_id,
+        # and relation_type, keep the more confident one.  This fixes a
+        # bug where Stage 3 creates one edge per entity occurrence (not
+        # per unique doc→cluster pair), flooding the graph with semantic
+        # duplicates that differ only by random edge_id.
+        seen_edges: dict[tuple[str, str, RelationType], CorpusGraphEdge] = {}
         for eid, edge in self._edges.items():
-            existing = seen_edges.get(eid)
+            key = (edge.source_id, edge.target_id, edge.relation_type)
+            existing = seen_edges.get(key)
             if existing is None or edge.confidence > existing.confidence:
-                seen_edges[eid] = edge
-        self._edges = seen_edges
+                seen_edges[key] = edge
+        self._edges = {e.edge_id: e for e in seen_edges.values()}
 
     # ------------------------------------------------------------------
     # Internal helpers
