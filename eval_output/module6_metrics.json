@@ -1,0 +1,407 @@
+{
+  "theme_detection": {
+    "theme_count": 2,
+    "classification_accuracy": 1.0,
+    "deterministic": true,
+    "confidence_violations": 0,
+    "cluster_ids": [
+      "theme_0000e8dc5439",
+      "theme_0000ceb0a1b5"
+    ],
+    "labels": [
+      "method",
+      "metric"
+    ],
+    "types": [
+      "method",
+      "metric"
+    ],
+    "confidences": [
+      0.8517,
+      0.81
+    ]
+  },
+  "evidence_collection": {
+    "bundles": 2,
+    "evidence_items": 9,
+    "duplicates_removed": 0,
+    "bundle_ids": [
+      "bnd_0000908a62c3",
+      "bnd_000055bfcf15"
+    ],
+    "theme_labels": [
+      "method",
+      "metric"
+    ]
+  },
+  "finding_generation": {
+    "findings_generated": 2,
+    "by_type": {
+      "supporting": 2
+    },
+    "finding_ids": [
+      "finding_00004d0f7751",
+      "finding_0000b8ed1f69"
+    ],
+    "confidences": [
+      0.95,
+      0.85
+    ]
+  },
+  "section_construction": {
+    "sections_generated": 51,
+    "mandatory_present": true,
+    "by_type": {
+      "general": {
+        "count": 8,
+        "types": [
+          "abstract",
+          "introduction",
+          "methods_landscape",
+          "datasets",
+          "consensus",
+          "contradictions",
+          "research_gaps",
+          "conclusion"
+        ],
+        "mandatory_present": true,
+        "confidences": [
+          0.0,
+          0.0,
+          0.85,
+          0.85,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "method": {
+        "count": 7,
+        "types": [
+          "abstract",
+          "introduction",
+          "methods_landscape",
+          "datasets",
+          "comparative",
+          "research_gaps",
+          "conclusion"
+        ],
+        "mandatory_present": true,
+        "confidences": [
+          0.0,
+          0.0,
+          0.85,
+          0.85,
+          0.85,
+          0.0,
+          0.0
+        ]
+      },
+      "dataset": {
+        "count": 6,
+        "types": [
+          "abstract",
+          "introduction",
+          "methods_landscape",
+          "datasets",
+          "research_gaps",
+          "conclusion"
+        ],
+        "mandatory_present": true,
+        "confidences": [
+          0.0,
+          0.0,
+          0.85,
+          0.85,
+          0.0,
+          0.0
+        ]
+      },
+      "consensus": {
+        "count": 5,
+        "types": [
+          "abstract",
+          "introduction",
+          "methods_landscape",
+          "consensus",
+          "conclusion"
+        ],
+        "mandatory_present": true,
+        "confidences": [
+          0.0,
+          0.0,
+          0.85,
+          0.0,
+          0.0
+        ]
+      },
+      "contradiction": {
+        "count": 5,
+        "types": [
+          "abstract",
+          "introduction",
+          "methods_landscape",
+          "contradictions",
+          "conclusion"
+        ],
+        "mandatory_present": true,
+        "confidences": [
+          0.0,
+          0.0,
+          0.85,
+          0.0,
+          0.0
+        ]
+      },
+      "research_gap": {
+        "count": 6,
+        "types": [
+          "abstract",
+          "introduction",
+          "methods_landscape",
+          "research_gaps",
+          "future_work",
+          "conclusion"
+        ],
+        "mandatory_present": true,
+        "confidences": [
+          0.0,
+          0.0,
+          0.85,
+          0.0,
+          0.85,
+          0.0
+        ]
+      },
+      "comparative": {
+        "count": 6,
+        "types": [
+          "abstract",
+          "introduction",
+          "methods_landscape",
+          "datasets",
+          "comparative",
+          "conclusion"
+        ],
+        "mandatory_present": true,
+        "confidences": [
+          0.0,
+          0.0,
+          0.85,
+          0.85,
+          0.85,
+          0.0
+        ]
+      },
+      "landscape": {
+        "count": 8,
+        "types": [
+          "abstract",
+          "introduction",
+          "methods_landscape",
+          "datasets",
+          "consensus",
+          "contradictions",
+          "research_gaps",
+          "conclusion"
+        ],
+        "mandatory_present": true,
+        "confidences": [
+          0.0,
+          0.0,
+          0.85,
+          0.85,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    }
+  },
+  "traceability": {
+    "traceability_pass_rate": 1.0,
+    "violations": 0,
+    "findings_checked": 4,
+    "warnings": [],
+    "orchestrator_traceability_verified": true
+  },
+  "confidence": {
+    "confidence_violations": 0,
+    "average_confidence": 0.5857,
+    "violation_details": []
+  },
+  "end_to_end": {
+    "reviews_generated": 8,
+    "generation_success_rate": 1.0,
+    "by_type": {
+      "general": {
+        "success": true,
+        "sections": 8,
+        "findings": 4,
+        "confidence": 0.85,
+        "warnings": 0,
+        "errors": 0
+      },
+      "method": {
+        "success": true,
+        "sections": 7,
+        "findings": 6,
+        "confidence": 0.85,
+        "warnings": 0,
+        "errors": 0
+      },
+      "dataset": {
+        "success": true,
+        "sections": 6,
+        "findings": 4,
+        "confidence": 0.85,
+        "warnings": 0,
+        "errors": 0
+      },
+      "consensus": {
+        "success": true,
+        "sections": 5,
+        "findings": 2,
+        "confidence": 0.0,
+        "warnings": 0,
+        "errors": 0
+      },
+      "contradiction": {
+        "success": true,
+        "sections": 5,
+        "findings": 2,
+        "confidence": 0.0,
+        "warnings": 0,
+        "errors": 0
+      },
+      "research_gap": {
+        "success": true,
+        "sections": 6,
+        "findings": 4,
+        "confidence": 0.0,
+        "warnings": 0,
+        "errors": 0
+      },
+      "comparative": {
+        "success": true,
+        "sections": 6,
+        "findings": 6,
+        "confidence": 0.85,
+        "warnings": 0,
+        "errors": 0
+      },
+      "landscape": {
+        "success": true,
+        "sections": 8,
+        "findings": 4,
+        "confidence": 0.0,
+        "warnings": 0,
+        "errors": 0
+      }
+    }
+  },
+  "determinism": {
+    "runs": 24,
+    "identical_outputs": 24,
+    "determinism_rate": 1.0,
+    "by_type": {
+      "general": {
+        "identical": true,
+        "runs": 3,
+        "confidence_values": [
+          0.85
+        ]
+      },
+      "method": {
+        "identical": true,
+        "runs": 3,
+        "confidence_values": [
+          0.85
+        ]
+      },
+      "dataset": {
+        "identical": true,
+        "runs": 3,
+        "confidence_values": [
+          0.85
+        ]
+      },
+      "consensus": {
+        "identical": true,
+        "runs": 3,
+        "confidence_values": [
+          0.0
+        ]
+      },
+      "contradiction": {
+        "identical": true,
+        "runs": 3,
+        "confidence_values": [
+          0.0
+        ]
+      },
+      "research_gap": {
+        "identical": true,
+        "runs": 3,
+        "confidence_values": [
+          0.0
+        ]
+      },
+      "comparative": {
+        "identical": true,
+        "runs": 3,
+        "confidence_values": [
+          0.85
+        ]
+      },
+      "landscape": {
+        "identical": true,
+        "runs": 3,
+        "confidence_values": [
+          0.0
+        ]
+      }
+    }
+  },
+  "failure_isolation": {
+    "failures_injected": 6,
+    "crashes": 0,
+    "warnings_generated": 0,
+    "stability_rate": 1.0
+  },
+  "acceptance_gates": {
+    "determinism": {
+      "required": "100%",
+      "actual": "100%",
+      "pass": true
+    },
+    "traceability": {
+      "required": "100%",
+      "actual": "100%",
+      "pass": true
+    },
+    "confidence_bounds": {
+      "required": "0 violations",
+      "actual": "0 violations",
+      "pass": true
+    },
+    "pipeline_stability": {
+      "required": "0 crashes",
+      "actual": "0 crashes",
+      "pass": true
+    },
+    "serialization": {
+      "required": "100%",
+      "actual": "PASS",
+      "pass": true
+    },
+    "review_generation": {
+      "required": ">= 90%",
+      "actual": "100%",
+      "pass": true
+    }
+  },
+  "final_verdict": "READY"
+}

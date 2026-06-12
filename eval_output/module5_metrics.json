@@ -1,0 +1,174 @@
+{
+  "evaluation_timestamp": "2026-06-11T13:31:02.261364+00:00",
+  "corpus": {
+    "papers": [
+      "GAN",
+      "Adam",
+      "BatchNorm",
+      "U-Net",
+      "ResNet",
+      "Attention",
+      "BERT",
+      "Dropout"
+    ],
+    "graph_nodes": 57,
+    "graph_edges": 1458,
+    "doc_titles_count": 8,
+    "entity_cluster_count": 44
+  },
+  "task_results": {
+    "ParserAccuracy": {
+      "total": 20,
+      "correct": 10,
+      "success_rate": 0.5,
+      "avg_confidence": 1.0,
+      "incorrect": 10
+    },
+    "PlannerCorrectness": {
+      "total": 8,
+      "correct": 7,
+      "success_rate": 0.875,
+      "avg_confidence": 1.0,
+      "incorrect": 1
+    },
+    "RouterCorrectness": {
+      "total": 8,
+      "correct": 8,
+      "success_rate": 1.0,
+      "avg_confidence": 1.0,
+      "incorrect": 0
+    },
+    "PipelineIntegration": {
+      "total": 22,
+      "correct": 19,
+      "success_rate": 0.8636,
+      "avg_confidence": 0,
+      "incorrect": 3
+    },
+    "Determinism": {
+      "total": 12,
+      "correct": 12,
+      "success_rate": 1.0,
+      "avg_confidence": 0,
+      "incorrect": 0
+    },
+    "ComponentIsolation": {
+      "total": 7,
+      "correct": 7,
+      "success_rate": 1.0,
+      "avg_confidence": 1.0,
+      "incorrect": 0
+    }
+  },
+  "parser": {
+    "total_queries": 20,
+    "factual_detection": {
+      "total": 8,
+      "correct": 3,
+      "rate": 0.375
+    },
+    "type_detection": {
+      "total": 7,
+      "correct": 5,
+      "rate": 0.7143
+    },
+    "edge_cases": {
+      "total": 5,
+      "correct": 2,
+      "rate": 0.4
+    },
+    "avg_confidence": 1.0
+  },
+  "planner": {
+    "total_queries": 8,
+    "correct_plans": 7,
+    "success_rate": 0.875,
+    "types_covered": 7
+  },
+  "router": {
+    "total_queries": 8,
+    "all_valid": 8,
+    "success_rate": 1.0
+  },
+  "pipeline": {
+    "total_queries": 22,
+    "success_rate": 0.8636,
+    "avg_confidence": 0,
+    "type_mismatch_count": 3,
+    "per_type_breakdown": {
+      "COMPARISON": {
+        "count": 1,
+        "correct": 1,
+        "avg_confidence": 0.0
+      },
+      "CONSENSUS": {
+        "count": 2,
+        "correct": 2,
+        "avg_confidence": 0.0
+      },
+      "CONTRADICTION": {
+        "count": 2,
+        "correct": 2,
+        "avg_confidence": 0.0
+      },
+      "EXPLANATION": {
+        "count": 3,
+        "correct": 2,
+        "avg_confidence": 0.0
+      },
+      "EXPLORATION": {
+        "count": 3,
+        "correct": 2,
+        "avg_confidence": 0.0
+      },
+      "FACTUAL": {
+        "count": 8,
+        "correct": 7,
+        "avg_confidence": 0.0
+      },
+      "RESEARCH_GAP": {
+        "count": 1,
+        "correct": 1,
+        "avg_confidence": 0.0
+      }
+    }
+  },
+  "determinism": {
+    "total": 12,
+    "identical": 12,
+    "rate": 1.0,
+    "target": 1.0
+  },
+  "component_isolation": {
+    "total": 7,
+    "correct": 7,
+    "rate": 1.0
+  },
+  "validation": {
+    "evidence_traceability": {
+      "failures": 0,
+      "rate": 1.0,
+      "target": 1.0
+    },
+    "confidence_bounds": {
+      "violations": 0,
+      "target": 0
+    },
+    "no_answer_without_evidence": {
+      "violations": 0,
+      "target": 0
+    }
+  },
+  "final_scorecard": {
+    "ParserAccuracy": "10/20",
+    "PlannerCorrectness": "7/8",
+    "RouterCorrectness": "8/8",
+    "PipelineIntegration": "19/22",
+    "Determinism": "12/12",
+    "ComponentIsolation": "7/7",
+    "Traceability": "100%",
+    "ConfidenceBounds": "PASS",
+    "NoEvidenceRule": "PASS"
+  },
+  "total_queries": 77
+}
