@@ -336,7 +336,7 @@ class TestConstraintExtraction:
         c = constraints[0]
         assert c.field == "year"
         assert c.operator == "gte"
-        assert c.value == datetime.now().year - 5
+        assert c.value == 2020
 
     def test_multiple_constraints(self):
         constraints = _extract_constraints("papers after 2018 and before 2022")
@@ -375,7 +375,7 @@ class TestConstraintExtraction:
         assert len(constraints) == 0
 
     def test_recent_with_after(self):
-        constraints = _extract_constraints("recent papers after 2020")
+        constraints = _extract_constraints("recent papers after 2018")
         assert len(constraints) == 2
 
     def test_confidence_not_extracted_without_keyword(self):

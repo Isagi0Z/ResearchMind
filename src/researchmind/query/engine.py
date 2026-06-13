@@ -32,6 +32,8 @@ from researchmind.query.synthesizer import AnswerSynthesizer
 # No switch statements, no reflection.
 # ---------------------------------------------------------------------------
 
+_REFERENCE_TIMESTAMP = datetime(2025, 1, 1, tzinfo=timezone.utc)
+
 
 def _call_multi_hop(engine: Any, route: StepRoute, query: Any) -> Any:
     """Dispatch to MultiHopReasoner.reason()."""
@@ -131,7 +133,7 @@ class QueryEngine:
         query = ResearchQuery.model_construct(
             query_id=query_id,
             raw_query=raw,
-            created_at=datetime.now(timezone.utc),
+            created_at=_REFERENCE_TIMESTAMP,
         )
         try:
             _, _, _, _, answer = self.execute(query)

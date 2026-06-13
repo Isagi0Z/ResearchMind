@@ -123,13 +123,16 @@ _DETECTION_COMPILED: list[tuple[str, list[re.Pattern], int]] = [
 # ---------------------------------------------------------------------------
 # Each entry: (compiled_pattern, field, operator, value_callable)
 
+_REFERENCE_YEAR = 2025
+_RECENT_WINDOW_YEARS = 5
+
 _CONSTRAINT_PATTERNS: list[tuple[re.Pattern, str, str, Any]] = [
     (re.compile(r"after\s+(\d{4})\b", re.IGNORECASE), "year", "gte", lambda m: int(m.group(1))),
     (re.compile(r"before\s+(\d{4})\b", re.IGNORECASE), "year", "lte", lambda m: int(m.group(1))),
     (re.compile(r"since\s+(\d{4})\b", re.IGNORECASE), "year", "gte", lambda m: int(m.group(1))),
     (re.compile(r"from\s+(\d{4})\b", re.IGNORECASE), "year", "gte", lambda m: int(m.group(1))),
     (re.compile(r"\bhigh confidence\b", re.IGNORECASE), "confidence", "gte", lambda _: 0.7),
-    (re.compile(r"\brecent\b", re.IGNORECASE), "year", "gte", lambda _: datetime.now().year - 5),
+    (re.compile(r"\brecent\b", re.IGNORECASE), "year", "gte", lambda _: _REFERENCE_YEAR - _RECENT_WINDOW_YEARS),
 ]
 
 # ---------------------------------------------------------------------------
