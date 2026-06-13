@@ -96,11 +96,13 @@ try:
     print(f"  Review needed: {sro.quality.requires_manual_review}")
     print(f"  Processing:   {sro.meta.processing_time_ms}ms")
     
-    # Save the SRO
+    # Save the SRO to the temp dir (not tracked by git) to keep working tree clean
     import json
-    out_path = Path(r"D:\RM\tests\test_data\test_output.json")
+    out_path = Path(r"D:\RM\.tmp\test_output.json")
+    out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(sro.model_dump_json(indent=2), encoding="utf-8")
     print(f"\n  SRO saved to: {out_path}")
+
     
     # Check pipeline log
     print(f"\n  Pipeline stages:")

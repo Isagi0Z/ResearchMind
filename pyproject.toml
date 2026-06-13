@@ -70,3 +70,7 @@ packages = ["src/researchmind"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+# Keep all pytest temp/cache artifacts under D:\RM — never use C: paths
+basetemp = "D:/RM/.tmp/pytest"
+cache_dir = "D:/RM/.cache/pytest"
+tmp_path_retention_policy = "failed"

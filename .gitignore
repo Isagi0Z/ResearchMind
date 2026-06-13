@@ -1,7 +1,12 @@
 __pycache__/
+*.pyc
+.pytest_cache/
 .next/
 node_modules/
 coverage/
 dist/
-.pytest_cache/
-*.pyc
+.venv/
+.eval_deps/
+.tmp/
+.cache/
+tmp/
