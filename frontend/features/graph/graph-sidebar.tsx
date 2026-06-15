@@ -1,12 +1,13 @@
 "use client"
 
 import { useGraphStore } from "./graph-store"
-import { MOCK_GRAPH } from "@/services/mock-graph"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { X, Network, FileText, Database, Layers } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
-export function GraphSidebar() {
+import { GraphDataResponse } from '@/services/graph'
+
+export function GraphSidebar({ graphData }: { graphData: GraphDataResponse }) {
   const { selectedNodeId, selectedEdgeId, setSelectedNodeId, setSelectedEdgeId } = useGraphStore()
 
   if (!selectedNodeId && !selectedEdgeId) return null
@@ -14,7 +15,7 @@ export function GraphSidebar() {
   let content = null
 
   if (selectedNodeId) {
-    const node = MOCK_GRAPH.nodes.find(n => n.id === selectedNodeId)
+    const node = graphData.nodes.find(n => n.id === selectedNodeId)
     if (node) {
       const data = node.data
       content = (
@@ -72,10 +73,10 @@ export function GraphSidebar() {
       )
     }
   } else if (selectedEdgeId) {
-    const edge = MOCK_GRAPH.edges.find(e => e.id === selectedEdgeId)
+    const edge = graphData.edges.find(e => e.id === selectedEdgeId)
     if (edge) {
-      const source = MOCK_GRAPH.nodes.find(n => n.id === edge.source)
-      const target = MOCK_GRAPH.nodes.find(n => n.id === edge.target)
+      const source = graphData.nodes.find(n => n.id === edge.source)
+      const target = graphData.nodes.find(n => n.id === edge.target)
       
       content = (
         <div className="space-y-4">

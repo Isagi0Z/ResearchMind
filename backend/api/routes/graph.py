@@ -1,11 +1,17 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
+from backend.api.schemas.graph import GraphDataResponse
+from backend.api.mock_graph import generate_mock_graph
 
 router = APIRouter()
 
-@router.get("/graph")
+@router.get("", response_model=GraphDataResponse)
 async def get_graph():
-    raise HTTPException(status_code=501, detail="Not Implemented")
+    return generate_mock_graph()
 
-@router.get("/graph/node/{id}")
+@router.get("/data", response_model=GraphDataResponse)
+async def get_graph_data():
+    return generate_mock_graph()
+
+@router.get("/node/{id}")
 async def get_graph_node(id: str):
-    raise HTTPException(status_code=501, detail="Not Implemented")
+    return {"message": "Not implemented detail"}

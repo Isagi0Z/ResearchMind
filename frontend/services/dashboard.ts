@@ -1,25 +1,21 @@
-import { MOCK_DOCUMENTS, MOCK_CORPUS_SUMMARY, MOCK_SYSTEM_STATUS, MOCK_RECENT_REVIEWS } from "./mock-data";
+import { apiClient } from "@/lib/api-client";
+import { CorpusSummary, SystemStatus, RecentReview } from "@/types/dashboard";
+import { RUODocument } from "@/types/document";
 
-export async function getCorpusSummary() {
-  // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, 300));
-  return MOCK_CORPUS_SUMMARY;
+export async function getCorpusSummary(): Promise<CorpusSummary> {
+  return await apiClient.get<CorpusSummary>("/api/v1/dashboard/summary");
 }
 
-export async function getRecentDocuments() {
-  await new Promise(resolve => setTimeout(resolve, 400));
-  // Sort by date descending
-  return [...MOCK_DOCUMENTS]
-    .sort((a, b) => new Date(b.meta.created_at).getTime() - new Date(a.meta.created_at).getTime())
-    .slice(0, 10);
+export async function getRecentDocuments(): Promise<RUODocument[]> {
+  // Use documents endpoint to get recent documents
+  const res = await apiClient.get<{data: RUODocument[], total: number}>("/api/v1/documents?pageIndex=0&pageSize=10");
+  return res.data;
 }
 
-export async function getSystemStatus() {
-  await new Promise(resolve => setTimeout(resolve, 200));
-  return MOCK_SYSTEM_STATUS;
+export async function getSystemStatus(): Promise<SystemStatus> {
+  return await apiClient.get<SystemStatus>("/api/v1/dashboard/status");
 }
 
-export async function getRecentReviews() {
-  await new Promise(resolve => setTimeout(resolve, 350));
-  return MOCK_RECENT_REVIEWS;
+export async function getRecentReviews(): Promise<RecentReview[]> {
+  return await apiClient.get<RecentReview[]>("/api/v1/dashboard/recent");
 }

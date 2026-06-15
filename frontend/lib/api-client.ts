@@ -39,6 +39,43 @@ function sanitizeErrorMessage(status: number, detail: unknown, fallback: string)
 }
 
 export const apiClient = {
+  async get<T>(url: string): Promise<T> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+
+    let res: Response;
+    try {
+      res = await fetch(`${getBaseUrl()}${url}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        signal: controller.signal,
+      });
+    } catch (err: unknown) {
+      clearTimeout(timeoutId);
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        throw new ApiError(408, 'Request timed out');
+      }
+      throw new ApiError(0, 'Network error: unable to reach the server.');
+    } finally {
+      clearTimeout(timeoutId);
+    }
+
+    if (!res.ok) {
+      let detail: unknown = res.statusText;
+      try {
+        const errData = await res.json();
+        detail = errData.detail ?? detail;
+      } catch {
+        // Non-JSON error body — keep statusText
+      }
+      throw new ApiError(res.status, sanitizeErrorMessage(res.status, detail, res.statusText));
+    }
+
+    return res.json() as Promise<T>;
+  },
+
   async post<T>(url: string, data: unknown): Promise<T> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT_MS);

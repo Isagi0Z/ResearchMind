@@ -4,9 +4,9 @@ import { useState, useEffect } from "react"
 import { Search } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { useGraphStore } from "./graph-store"
-import { MOCK_GRAPH } from "@/services/mock-graph"
+import { GraphDataResponse } from '@/services/graph'
 
-export function GraphSearch() {
+export function GraphSearch({ data }: { data: GraphDataResponse }) {
   const { searchQuery, setSearchQuery, setHighlightedNodeIds } = useGraphStore()
   const [localValue, setLocalValue] = useState(searchQuery)
 
@@ -18,8 +18,10 @@ export function GraphSearch() {
       if (localValue.trim().length > 0) {
         const query = localValue.toLowerCase()
         const matches = new Set<string>()
-        MOCK_GRAPH.nodes.forEach(n => {
-          if (n.data.label.toLowerCase().includes(query)) {
+
+        data.nodes.forEach(n => {
+          if (n.data.label?.toLowerCase().includes(query) || 
+              n.data.title?.toLowerCase().includes(query)) {
             matches.add(n.id)
           }
         })

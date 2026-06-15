@@ -12,15 +12,24 @@ from researchmind.query.engine import QueryEngine
 from researchmind.synthesis.orchestrator import ReviewOrchestrator
 from researchmind.synthesis.traceability import TraceabilityVerifier
 
-# In a real app these would be proper classes with their own dependencies,
-# but for Phase 2 we provide basic empty/default instances where appropriate.
-class DummyCorpusManager:
-    pass
+from researchmind.storage.corpus import CorpusManager
+from researchmind.storage.document_store import InMemoryDocumentStore
+from backend.api.mock_data import generate_mock_documents
 
 class DummyGraph:
     pass
 
-_corpus_manager = DummyCorpusManager()
+try:
+    _docs = generate_mock_documents()
+    _store = InMemoryDocumentStore()
+    _corpus_manager = CorpusManager.from_documents(_docs, "corpus-1", store=_store)
+except Exception as e:
+    import logging
+    logging.warning(f"Failed to initialize mock CorpusManager: {e}")
+    class DummyCorpusManager:
+        pass
+    _corpus_manager = DummyCorpusManager()
+
 _graph = DummyGraph()
 
 _query_parser = QueryParser(corpus=_corpus_manager)

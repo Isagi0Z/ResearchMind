@@ -4,10 +4,11 @@ import { useMemo, useCallback } from 'react'
 import { ReactFlow, MiniMap, Controls, Background, useNodesState, useEdgesState, BackgroundVariant, NodeTypes, EdgeTypes } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 
-import { MOCK_GRAPH } from '@/services/mock-graph'
 import { EntityNode, DocumentNode, ThemeNode, ClusterNode } from './custom-nodes'
 import { CustomEdge } from './custom-edges'
 import { useGraphStore } from './graph-store'
+
+import { GraphDataResponse } from '@/services/graph'
 
 const nodeTypes: NodeTypes = {
   entity: EntityNode,
@@ -20,9 +21,9 @@ const edgeTypes: EdgeTypes = {
   customEdge: CustomEdge,
 };
 
-export function GraphCanvas() {
-  const [nodes, setNodes, onNodesChange] = useNodesState(MOCK_GRAPH.nodes)
-  const [edges, setEdges, onEdgesChange] = useEdgesState(MOCK_GRAPH.edges)
+export function GraphCanvas({ data }: { data: GraphDataResponse }) {
+  const [nodes, setNodes, onNodesChange] = useNodesState(data.nodes)
+  const [edges, setEdges, onEdgesChange] = useEdgesState(data.edges)
   
   const { setSelectedNodeId, setSelectedEdgeId } = useGraphStore()
 
