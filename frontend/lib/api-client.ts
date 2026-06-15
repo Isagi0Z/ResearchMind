@@ -5,10 +5,27 @@ export class ApiError extends Error {
   }
 }
 
-// In a real app, this would use fetch to call the backend API.
-// Since we have no backend endpoints yet, we'll expose a mock interface 
-// that can be swapped out later.
-
 export const apiClient = {
-  // Add generic fetch methods if needed later
+  async post<T>(url: string, data: any): Promise<T> {
+    const res = await fetch(`http://localhost:8000${url}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!res.ok) {
+      let message = res.statusText;
+      try {
+        const errData = await res.json();
+        message = errData.detail || message;
+      } catch (e) {
+        // ignore
+      }
+      throw new ApiError(res.status, message);
+    }
+
+    return res.json() as Promise<T>;
+  }
 };

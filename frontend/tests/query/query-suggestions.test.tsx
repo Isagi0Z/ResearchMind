@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { QuerySuggestions } from '@/features/query/query-suggestions';
 import { useQueryStore } from '@/features/query/query-store';
-import { MOCK_QUERY_SUGGESTIONS } from '@/services/mock-query';
+import { MOCK_QUERY_SUGGESTIONS } from '@/services/query';
 
 describe('QuerySuggestions Component', () => {
   beforeEach(() => {

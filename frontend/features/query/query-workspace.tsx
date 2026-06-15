@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useQueryStore } from "./query-store"
-import { generateMockAnswer, determineQueryType } from "@/services/mock-query"
+import { generateAnswer, determineQueryType } from "@/services/query"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -49,22 +49,15 @@ export function QueryWorkspace() {
     addToHistory(parsed)
     setCurrentAnswer(null)
 
-    // Simulate progressive loading states
-    setExecutionState('parsing')
-    await new Promise(r => setTimeout(r, 400))
-    
-    setExecutionState('planning')
-    await new Promise(r => setTimeout(r, 600))
-    
-    setExecutionState('reasoning')
-    await new Promise(r => setTimeout(r, 1200))
-    
-    setExecutionState('synthesis')
-    await new Promise(r => setTimeout(r, 800))
-    
-    const mockAnswer = generateMockAnswer(activeQueryText)
-    setCurrentAnswer(mockAnswer)
-    setExecutionState('completed')
+    setExecutionState('synthesis') // Used as a general "running" state
+    try {
+      const answer = await generateAnswer(activeQueryText)
+      setCurrentAnswer(answer)
+      setExecutionState('completed')
+    } catch (error) {
+      console.error(error)
+      setExecutionState('failed')
+    }
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {

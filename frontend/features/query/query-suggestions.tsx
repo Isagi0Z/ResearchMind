@@ -1,7 +1,7 @@
 "use client"
 
 import { useQueryStore } from "./query-store"
-import { MOCK_QUERY_SUGGESTIONS } from "@/services/mock-query"
+import { MOCK_QUERY_SUGGESTIONS } from "@/services/query"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 

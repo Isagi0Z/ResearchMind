@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { generateMockReview } from "@/services/mock-review"
+import { generateReview } from "@/services/review"
 
 // CRC32 helper
 function crc32(str: string): string {
@@ -64,9 +64,14 @@ export function ReviewGeneratorForm() {
       documentScope: reviewConfig.documentScope || 'all'
     }
 
-    const result = generateMockReview(request)
-    setActiveReview(result)
-    setGenerationStage('completed')
+    try {
+      const result = await generateReview(request)
+      setActiveReview(result)
+      setGenerationStage('completed')
+    } catch (error) {
+      console.error(error)
+      setGenerationStage('failed')
+    }
   }
 
   return (

@@ -3,7 +3,7 @@
 import { useReviewStore } from "./review-store"
 import { Button } from "@/components/ui/button"
 import { Download } from "lucide-react"
-import { exportReviewToMarkdown } from "@/services/mock-review"
+import { exportReviewToMarkdown } from "@/services/review"
 
 export function ReviewExportPanel() {
   const { activeReview } = useReviewStore()
