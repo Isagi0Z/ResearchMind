@@ -1,5 +1,5 @@
 import { QueryType, ParsedQuery, ResearchAnswer } from '@/types/query';
-import { apiClient } from '@/lib/api-client';
+import { apiClient, ApiError } from '@/lib/api-client';
 
 // Simple deterministic hash function for IDs
 function crc32(str: string): string {
@@ -44,6 +44,17 @@ export async function generateAnswer(queryText: string): Promise<ResearchAnswer>
     query_id: qId,
     raw_query: queryText
   });
+
+  // Remediation C: Validate mandatory response structures before mapping
+  if (!response || !response.answer || typeof response.answer.text !== 'string') {
+    throw new ApiError(502, 'Invalid response: missing answer payload from backend.');
+  }
+  if (!Array.isArray(response.evidence)) {
+    throw new ApiError(502, 'Invalid response: missing evidence array from backend.');
+  }
+  if (!response.step_route || !Array.isArray(response.step_route.steps)) {
+    throw new ApiError(502, 'Invalid response: missing step_route from backend.');
+  }
 
   return {
     queryId: response.answer.query_id,

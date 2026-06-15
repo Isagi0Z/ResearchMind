@@ -1,5 +1,5 @@
 import { ReviewRequest, ReviewResult, ReviewType } from '@/types/review';
-import { apiClient } from '@/lib/api-client';
+import { apiClient, ApiError } from '@/lib/api-client';
 
 function crc32(str: string): string {
   let crc = 0 ^ (-1);
@@ -14,51 +14,65 @@ function crc32(str: string): string {
 }
 
 export async function generateReview(request: ReviewRequest): Promise<ReviewResult> {
-  // Phase 3A: Replace mock with real FastAPI call
-  // We keep the function name generateMockReview temporarily to minimize UI changes 
-  // as per instructions to preserve existing UI, or we can just rename it and update UI.
-  // Actually, we'll keep the signature, but make it async.
-  
   const response = await apiClient.post<any>('/api/v1/reviews/generate', {
     review_id: request.id,
     topic: request.topic,
     review_type: request.type,
     target_entities: request.targetEntities,
-    document_scope: request.documentScope === 'all' ? [] : [request.documentScope] // Mapping to backend expectations
+    document_scope: request.documentScope === 'all' ? [] : [request.documentScope]
   });
 
+  // Remediation C: Validate mandatory response structures before mapping
+  if (!response || !response.review_result) {
+    throw new ApiError(502, 'Invalid response: missing review_result from backend.');
+  }
+
   const res = response.review_result;
+
+  if (typeof res.abstract !== 'string') {
+    throw new ApiError(502, 'Invalid response: missing abstract in review_result.');
+  }
+  if (!Array.isArray(res.sections)) {
+    throw new ApiError(502, 'Invalid response: missing sections array in review_result.');
+  }
+  if (!Array.isArray(res.findings)) {
+    throw new ApiError(502, 'Invalid response: missing findings array in review_result.');
+  }
 
   return {
     id: res.review_id,
     request,
     abstract: res.abstract,
-    sections: res.sections.map((sec: any) => ({
+    sections: res.sections.map((sec: any, idx: number) => ({
       id: sec.section_id,
-      order: 0, // Backend might not have order, but we can set a default
+      order: idx,
       title: sec.title,
       content: sec.content,
-      findings: sec.findings.map((f: any) => f.finding_id)
+      findings: Array.isArray(sec.findings)
+        ? sec.findings.map((f: any) => f.finding_id)
+        : []
     })),
     findings: res.findings.map((f: any) => ({
       id: f.finding_id,
       type: f.finding_type,
       statement: f.statement,
       confidence: f.confidence,
-      evidence: f.evidence_ids.map((eid: string) => ({
-         id: eid,
-         sourceDocId: "unknown", // Backend findings use evidence_ids strings
-         sourceTitle: "Source Document",
-         excerpt: "Excerpt from source",
-         confidence: 0.8
-      }))
+      evidence: Array.isArray(f.evidence_ids)
+        ? f.evidence_ids.map((eid: string) => ({
+            id: eid,
+            sourceDocId: 'unknown',
+            sourceTitle: 'Source Document',
+            excerpt: 'Excerpt from source',
+            confidence: 0.8
+          }))
+        : []
     })),
     metadata: {
       confidence: res.confidence,
       findingsCount: res.total_findings,
       evidenceCount: res.total_evidence_items,
       sectionsCount: res.sections.length,
-      generationTimeMs: 2500 // Not provided by backend ReviewResult explicitly
+      generationTimeMs: 2500
     }
   };
 }

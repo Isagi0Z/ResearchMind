@@ -10,3 +10,5 @@ dist/
 .tmp/
 .cache/
 tmp/
+.env.local
+.env*.local
