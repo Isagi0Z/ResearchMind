@@ -32,8 +32,33 @@ def create_app() -> FastAPI:
         redoc_url=f"{settings.API_V1_STR}/redoc"
     )
 
-    # Middleware
+    from fastapi.middleware.cors import CORSMiddleware
+    from backend.api.middleware import (
+        RequestContextMiddleware,
+        SecurityHeadersMiddleware,
+        RequestSizeLimitMiddleware,
+        RateLimitMiddleware
+    )
+
+    # Note: Middlewares are executed in reverse order of how they are added.
+    # The last one added is the outermost wrapper.
+    
     app.add_middleware(RequestContextMiddleware)
+    
+    # Optional limits
+    app.add_middleware(RateLimitMiddleware, max_requests=1000)
+    app.add_middleware(RequestSizeLimitMiddleware, max_upload_size=5_000_000)
+    
+    app.add_middleware(SecurityHeadersMiddleware)
+
+    # CORS
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[str(origin) for origin in settings.CORS_ORIGINS],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
     # Exception Handlers
     app.add_exception_handler(Exception, global_exception_handler)

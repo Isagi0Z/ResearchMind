@@ -1,9 +1,9 @@
-"use client"
+﻿"use client"
 
 import * as React from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { LayoutDashboard, Database, Activity, Network, FileSearch, Sparkles, Menu, X, CheckCircle, AlertTriangle, XCircle, Moon, Sun, Monitor } from "lucide-react"
+import { usePathname, useRouter } from "next/navigation"
+import { LayoutDashboard, Database, Activity, Network, FileSearch, Sparkles, Menu, X, CheckCircle, AlertTriangle, XCircle, Moon, Sun, Monitor, LogOut } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -11,6 +11,7 @@ import { useUIStore } from "@/stores/ui-store"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useTheme } from "next-themes"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { apiClient } from "@/lib/api-client"
 
 const NAV_ITEMS: { title: string; href: string; icon: any; disabled: boolean; description?: string }[] = [
   { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard, disabled: false },
@@ -137,6 +138,29 @@ function ThemeToggle() {
 }
 
 export function AppShell({ children }: { children: React.ReactNode }) {
+  const router = useRouter()
+  const [isAuthenticated, setIsAuthenticated] = React.useState(false)
+
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      setIsAuthenticated(!!apiClient.getTokens().access)
+    }
+  }, [])
+
+  const handleLogout = async () => {
+    const { refresh } = apiClient.getTokens()
+    if (refresh) {
+      try {
+        await apiClient.post("/auth/logout", { refresh_token: refresh })
+      } catch (err) {
+        console.error("Logout error", err)
+      }
+    }
+    apiClient.clearTokens()
+    setIsAuthenticated(false)
+    router.push("/login")
+  }
+
   return (
     <div className="flex min-h-screen bg-background">
       <Sidebar />
@@ -151,9 +175,27 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="flex-1" />
           <div className="flex items-center gap-4">
             <ThemeToggle />
-            <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center font-semibold text-secondary-foreground">
-              A
-            </div>
+            
+            {isAuthenticated ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full bg-secondary flex items-center justify-center font-semibold text-secondary-foreground">
+                    U
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={handleLogout}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button variant="outline" size="sm" onClick={() => router.push("/login")}>
+                Log In
+              </Button>
+            )}
+
           </div>
         </header>
         <main className="flex-1 overflow-auto bg-muted/20">

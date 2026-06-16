@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException
+﻿from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Optional
 from researchmind.query.parser import QueryParser
 from researchmind.query.planner import QueryPlanner
 from researchmind.query.router import StepDispatcher
@@ -10,7 +12,11 @@ from backend.api.dependencies import (
     get_query_planner,
     get_step_dispatcher,
     get_query_engine,
+    get_current_user_optional
 )
+from backend.db.session import get_db
+from backend.db.models.query import Query
+from backend.db.models.user import User
 from backend.api.schemas.query import ParseRequest, AnswerRequest
 
 router = APIRouter()
@@ -51,26 +57,39 @@ async def route_query(
 @router.post("/answer")
 async def answer_query(
     request: AnswerRequest,
-    engine: QueryEngine = Depends(get_query_engine)
+    engine: QueryEngine = Depends(get_query_engine),
+    current_user: Optional[User] = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db)
 ):
     try:
         from datetime import datetime, timezone
-        # Reconstruct the ResearchQuery object required by engine.execute
         query = ResearchQuery.model_construct(
             query_id=request.query_id, 
             raw_query=request.raw_query,
             created_at=datetime(2025, 1, 1, tzinfo=timezone.utc)
         )
         
-        # execution returns a tuple of (parsed, plan, route, evidence, answer)
         parsed, plan, route, evidence, answer = engine.execute(query)
         
-        return {
+        result_dump = {
             "parsed_query": parsed.model_dump(),
             "execution_plan": plan.model_dump(),
             "step_route": route.model_dump(),
             "evidence": [e.model_dump() for e in evidence],
             "answer": answer.model_dump(),
         }
+
+        # Persist if user is logged in
+        if current_user:
+            db_query = Query(
+                user_id=current_user.id,
+                raw_query=request.raw_query,
+                query_type=parsed.query_type if parsed else "UNKNOWN",
+                result=result_dump
+            )
+            db.add(db_query)
+            await db.commit()
+
+        return result_dump
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

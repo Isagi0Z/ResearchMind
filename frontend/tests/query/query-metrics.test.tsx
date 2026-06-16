@@ -79,8 +79,8 @@ describe('QueryMetrics Component', () => {
       });
       render(<QueryMetrics />);
       expect(screen.getByText(metrics.timeStr)).toBeInTheDocument();
-      expect(screen.getByText(metrics.evidenceCount.toString())).toBeInTheDocument();
-      expect(screen.getByText(metrics.reasoningSteps.toString())).toBeInTheDocument();
+      expect(screen.getAllByText(metrics.evidenceCount.toString())[0]).toBeInTheDocument();
+      expect(screen.getAllByText(metrics.reasoningSteps.toString())[0]).toBeInTheDocument();
       expect(screen.getByText(metrics.confStr)).toBeInTheDocument();
     });
   });

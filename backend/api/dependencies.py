@@ -1,8 +1,13 @@
-from fastapi import Depends
+﻿from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
-from typing import Any
+from typing import Optional
 from .exceptions import AuthException
 from .auth.security import decode_access_token
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+from backend.db.session import get_db
+from backend.db.models.user import User
+import uuid
 
 # Import M5 and M6 Components
 from researchmind.query.parser import QueryParser
@@ -11,7 +16,6 @@ from researchmind.query.router import StepDispatcher
 from researchmind.query.engine import QueryEngine
 from researchmind.synthesis.orchestrator import ReviewOrchestrator
 from researchmind.synthesis.traceability import TraceabilityVerifier
-
 from researchmind.storage.corpus import CorpusManager
 from researchmind.storage.document_store import InMemoryDocumentStore
 from backend.api.mock_data import generate_mock_documents
@@ -47,25 +51,50 @@ _review_orchestrator = ReviewOrchestrator(
 _traceability_verifier = TraceabilityVerifier()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
+oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login", auto_error=False)
 
-def get_current_user(token: str = Depends(oauth2_scheme)) -> dict:
-    """
-    Validate the JWT token and return the payload.
-    In Phase 1, there is no database. We simply parse the token and return it.
-    """
+async def get_current_user_optional(
+    token: Optional[str] = Depends(oauth2_scheme_optional),
+    db: AsyncSession = Depends(get_db)
+) -> Optional[User]:
+    if not token:
+        return None
+    
     payload = decode_access_token(token)
     if not payload:
-        raise AuthException("Could not validate credentials")
+        return None
     
-    username: str = payload.get("sub")
-    if username is None:
-        raise AuthException("Token payload invalid")
-    
-    return {"username": username}
+    user_id_str = payload.get("sub")
+    if not user_id_str:
+        return None
+        
+    try:
+        user_id = uuid.UUID(user_id_str)
+    except ValueError:
+        return None
+        
+    result = await db.execute(select(User).where(User.id == user_id, User.is_active == True))
+    user = result.scalar_one_or_none()
+    return user
 
-def get_current_active_user(current_user: dict = Depends(get_current_user)) -> dict:
-    # Future placeholder for checking if user is banned/disabled in DB
+async def get_current_user(
+    user: Optional[User] = Depends(get_current_user_optional)
+) -> User:
+    if not user:
+        raise AuthException("Could not validate credentials")
+    return user
+
+async def get_current_active_user(current_user: User = Depends(get_current_user)) -> User:
+    if not current_user.is_active:
+        raise AuthException("Inactive user")
     return current_user
+
+def require_role(required_role: str):
+    async def role_checker(current_user: User = Depends(get_current_user)):
+        if current_user.role != required_role:
+            raise AuthException(f"Missing required role: {required_role}")
+        return current_user
+    return role_checker
 
 def get_query_parser() -> QueryParser:
     return _query_parser

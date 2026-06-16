@@ -95,7 +95,8 @@ describe('FiltersPanel', () => {
     const removeButtons = screen.getAllByRole('button')
     // Badge removal div has role='button'. We'll find it by clicking the first one inside the authors container
     // Since there are Apply/Clear buttons, we get the specific badge close button.
-    const johnDoeBadge = screen.getByText('John Doe').parentElement!
+    // Find the badge containing John Doe. The badge itself contains the text and the button.
+    const johnDoeBadge = screen.getByText('John Doe').closest('div.inline-flex')!
     const closeBtn = within(johnDoeBadge).getByRole('button')
     
     await userEvent.click(closeBtn)
@@ -109,7 +110,7 @@ describe('FiltersPanel', () => {
     const authorInput = screen.getByPlaceholderText('Type and press Enter...')
     await userEvent.type(authorInput, 'John Doe{Enter}')
     
-    const johnDoeBadge = screen.getByText('John Doe').parentElement!
+    const johnDoeBadge = screen.getByText('John Doe').closest('div.inline-flex')!
     const closeBtn = within(johnDoeBadge).getByRole('button')
     
     closeBtn.focus()
