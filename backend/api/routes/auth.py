@@ -14,7 +14,8 @@ from backend.api.auth.security import (
     get_password_hash, 
     create_access_token, 
     create_refresh_token,
-    decode_token
+    decode_token,
+    sha256_digest
 )
 from backend.api.dependencies import get_current_user
 
@@ -84,6 +85,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSessi
     db_token = RefreshToken(
         user_id=user.id,
         hashed_token=hashed_refresh,
+        token_hash_sha256=sha256_digest(raw_refresh_token),
         expires_at=expires_at
     )
     db.add(db_token)
@@ -106,24 +108,16 @@ async def refresh_token(request: RefreshRequest, db: AsyncSession = Depends(get_
     except ValueError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid user ID")
 
-    # Find the refresh token in the DB that matches the hashed token
-    # Since we hashed it with bcrypt, we have to fetch all valid tokens for the user and verify
-    # This is slightly inefficient but safe. We can also store the raw token's hash with SHA256 instead for fast lookup.
-    # To keep it simple and safe based on "Store hashed refresh token" requirement:
+    # Look up the token by SHA256 hash for O(1) fast lookup
+    token_hash = sha256_digest(request.refresh_token)
     result = await db.execute(
         select(RefreshToken).where(
-            RefreshToken.user_id == user_id,
+            RefreshToken.token_hash_sha256 == token_hash,
             RefreshToken.is_revoked == False,
             RefreshToken.expires_at > datetime.now(timezone.utc)
         )
     )
-    tokens = result.scalars().all()
-    
-    matched_token = None
-    for t in tokens:
-        if verify_password(request.refresh_token, t.hashed_token):
-            matched_token = t
-            break
+    matched_token = result.scalar_one_or_none()
             
     if not matched_token:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or revoked refresh token")
@@ -146,6 +140,7 @@ async def refresh_token(request: RefreshRequest, db: AsyncSession = Depends(get_
     new_db_token = RefreshToken(
         user_id=user.id,
         hashed_token=new_hashed_refresh,
+        token_hash_sha256=sha256_digest(new_raw_refresh),
         expires_at=new_expires_at
     )
     db.add(new_db_token)
@@ -181,16 +176,14 @@ async def logout(request: RefreshRequest, db: AsyncSession = Depends(get_db)):
         
     result = await db.execute(
         select(RefreshToken).where(
-            RefreshToken.user_id == user_id,
+            RefreshToken.token_hash_sha256 == sha256_digest(request.refresh_token),
             RefreshToken.is_revoked == False
         )
     )
-    tokens = result.scalars().all()
+    matched_token = result.scalar_one_or_none()
     
-    for t in tokens:
-        if verify_password(request.refresh_token, t.hashed_token):
-            t.is_revoked = True
-            break
+    if matched_token:
+        matched_token.is_revoked = True
             
     await db.commit()
     return {"message": "Logged out successfully"}

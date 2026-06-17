@@ -59,11 +59,21 @@ class RequestSizeLimitMiddleware(BaseHTTPMiddleware):
         return await call_next(request)
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
-    def __init__(self, app, max_requests: int = 1000):
+    def __init__(self, app, max_requests: int = 1000, window_seconds: int = 60, store=None):
         super().__init__(app)
-        self.max_requests = max_requests
+        from backend.api.rate_limiter import RateLimiter, MemoryCounterStore
+        self.limiter = RateLimiter(max_requests, window_seconds, store=store or MemoryCounterStore())
 
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
-        # Phase 4A:
-        # Active rate limiting deferred until Phase 4C.
+        client_ip = request.client.host if request.client else "unknown"
+        forwarded = request.headers.get("X-Forwarded-For")
+        key = forwarded or client_ip
+
+        if not self.limiter.is_allowed(key):
+            from fastapi.responses import JSONResponse
+            return JSONResponse(
+                status_code=429,
+                content={"detail": "Rate limit exceeded. Try again later."}
+            )
+
         return await call_next(request)

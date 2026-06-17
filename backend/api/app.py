@@ -46,7 +46,19 @@ def create_app() -> FastAPI:
     app.add_middleware(RequestContextMiddleware)
     
     # Optional limits
-    app.add_middleware(RateLimitMiddleware, max_requests=1000)
+    rate_limit_store = None
+    if settings.REDIS_URL:
+        try:
+            from backend.api.rate_limiter import RedisCounterStore
+            rate_limit_store = RedisCounterStore(settings.REDIS_URL)
+        except ImportError:
+            pass
+    app.add_middleware(
+        RateLimitMiddleware,
+        max_requests=settings.RATE_LIMIT_REQUESTS,
+        window_seconds=settings.RATE_LIMIT_WINDOW_SECONDS,
+        store=rate_limit_store
+    )
     app.add_middleware(RequestSizeLimitMiddleware, max_upload_size=5_000_000)
     
     app.add_middleware(SecurityHeadersMiddleware)

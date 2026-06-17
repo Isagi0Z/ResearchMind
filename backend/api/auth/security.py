@@ -1,4 +1,5 @@
-﻿import jwt
+﻿import hashlib
+import jwt
 from datetime import datetime, timedelta, timezone
 from passlib.context import CryptContext
 from typing import Optional, Dict, Any
@@ -9,6 +10,9 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 REFRESH_TOKEN_EXPIRE_DAYS = 7
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def sha256_digest(raw: str) -> str:
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)

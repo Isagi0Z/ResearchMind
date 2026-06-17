@@ -11,6 +11,10 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
 
+    RATE_LIMIT_REQUESTS: int = 1000
+    RATE_LIMIT_WINDOW_SECONDS: int = 60
+    REDIS_URL: str = ""
+
     CORS_ORIGINS: List[AnyHttpUrl] = []
 
     @field_validator("CORS_ORIGINS", mode="before")

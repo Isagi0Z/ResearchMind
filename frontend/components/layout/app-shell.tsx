@@ -12,19 +12,26 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { useTheme } from "next-themes"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { apiClient } from "@/lib/api-client"
-
-const NAV_ITEMS: { title: string; href: string; icon: any; disabled: boolean; description?: string }[] = [
-  { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard, disabled: false },
-  { title: "Corpus Manager", href: "/corpus", icon: Database, disabled: false },
-  { title: "Graph Explorer", href: "/graph", icon: Network, disabled: false },
-  { title: "Query Interface", href: "/query", icon: FileSearch, disabled: false },
-  { title: "Review Generator", href: "/reviews", icon: Sparkles, disabled: false },
-  { title: "System Monitoring", href: "/monitoring", icon: Activity, disabled: false },
-]
+import { useAuth } from "@/features/auth/use-auth"
 
 export function Sidebar() {
   const pathname = usePathname()
   const { sidebarCollapsed, setSidebarCollapsed } = useUIStore()
+  const { isAdmin, isLoading } = useAuth()
+
+  const NAV_ITEMS: { title: string; href: string; icon: any; disabled: boolean; adminOnly?: boolean }[] = [
+    { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard, disabled: false },
+    { title: "Corpus Manager", href: "/corpus", icon: Database, disabled: false },
+    { title: "Graph Explorer", href: "/graph", icon: Network, disabled: false },
+    { title: "Query Interface", href: "/query", icon: FileSearch, disabled: false },
+    { title: "Review Generator", href: "/reviews", icon: Sparkles, disabled: false },
+    { title: "System Monitoring", href: "/monitoring", icon: Activity, disabled: false, adminOnly: true },
+  ]
+
+  const visibleItems = NAV_ITEMS.filter(item => {
+    if (!item.adminOnly) return true
+    return !isLoading && isAdmin
+  })
 
   return (
     <aside
@@ -51,7 +58,7 @@ export function Sidebar() {
 
       <ScrollArea className="flex-1 py-4">
         <nav className="flex flex-col gap-2 px-2">
-          {NAV_ITEMS.map((item) => {
+          {visibleItems.map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
             const Icon = item.icon
 
@@ -81,7 +88,7 @@ export function Sidebar() {
             )
 
             if (item.disabled) {
-              return <div key={item.href} title={item.description}>{content}</div>
+              return <div key={item.href}>{content}</div>
             }
 
             return (

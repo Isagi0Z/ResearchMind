@@ -10,6 +10,7 @@ export function useMonitoringData() {
     queryFn: async () => {
       return await getMonitoringData(timeRange)
     },
-    refetchInterval: 10000 // Poll every 10s for real-time feel
+    refetchInterval: 10000,
+    retry: false,
   })
 }

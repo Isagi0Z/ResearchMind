@@ -12,3 +12,7 @@ dist/
 tmp/
 .env.local
 .env*.local
+.env
+test.db
+test_db.py
+test_db2.py
