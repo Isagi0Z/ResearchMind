@@ -11,16 +11,19 @@ export function MetricsOverview() {
   const { metrics } = data
 
   const items = [
-    { label: "Docs Processed", value: metrics.documentsProcessed.toLocaleString() },
-    { label: "Entities Resolved", value: metrics.entitiesResolved.toLocaleString() },
-    { label: "Graph Nodes", value: metrics.graphNodes.toLocaleString() },
-    { label: "Graph Edges", value: metrics.graphEdges.toLocaleString() },
     { label: "Queries Executed", value: metrics.queriesExecuted.toLocaleString() },
+    { label: "Queries Today", value: metrics.queriesToday.toLocaleString() },
+    { label: "Query Success Rate", value: `${(metrics.querySuccessRate * 100).toFixed(1)}%` },
     { label: "Reviews Generated", value: metrics.reviewsGenerated.toLocaleString() },
+    { label: "Reviews Today", value: metrics.reviewsToday.toLocaleString() },
+    { label: "Documents Processed", value: metrics.documentsProcessed.toLocaleString() },
+    { label: "Registered Users", value: metrics.registeredUsers.toLocaleString() },
+    { label: "Active Users", value: metrics.activeUsers.toLocaleString() },
+    { label: "Active Refresh Tokens", value: metrics.refreshTokensActive.toLocaleString() },
   ]
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
       {items.map((item, i) => (
         <Card key={i}>
           <CardContent className="p-4">

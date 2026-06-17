@@ -8,7 +8,8 @@ export function useMonitoringData() {
   return useQuery({
     queryKey: ['monitoring', timeRange],
     queryFn: async () => {
-      return await getMonitoringData(timeRange)
+      const result = await getMonitoringData(timeRange)
+      return result
     },
     refetchInterval: 10000,
     retry: false,

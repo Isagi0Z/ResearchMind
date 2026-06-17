@@ -27,7 +27,7 @@ export interface ErrorEvent {
 }
 
 export interface PerformanceMetric {
-  label: string; // e.g. "10:00 AM" (deterministic string)
+  label: string;
   throughput: number;
   latencyMs: number;
   successRate: number;
@@ -44,12 +44,15 @@ export interface MonitoringSnapshot {
   id: string;
   health: ModuleHealth[];
   metrics: {
-    documentsProcessed: number;
-    entitiesResolved: number;
-    graphNodes: number;
-    graphEdges: number;
     queriesExecuted: number;
+    queriesToday: number;
+    querySuccessRate: number;
     reviewsGenerated: number;
+    reviewsToday: number;
+    registeredUsers: number;
+    activeUsers: number;
+    refreshTokensActive: number;
+    documentsProcessed: number;
   };
   charts: PerformanceMetric[];
   queue: QueueJob[];
