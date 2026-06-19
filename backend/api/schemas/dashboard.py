@@ -6,6 +6,9 @@ class CorpusSummary(BaseModel):
     entityClusters: int
     graphNodes: int
     graphEdges: int
+    activeJobs: int = 0
+    failedJobs: int = 0
+    completedJobs: int = 0
 
 class SystemStatus(BaseModel):
     extraction: Literal["healthy", "warning", "error"]

@@ -3,6 +3,9 @@ export interface CorpusSummary {
   entityClusters: number;
   graphNodes: number;
   graphEdges: number;
+  activeJobs: number;
+  failedJobs: number;
+  completedJobs: number;
 }
 
 export interface SystemStatus {

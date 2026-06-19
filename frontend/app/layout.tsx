@@ -7,6 +7,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { QueryProvider } from "@/providers/query-provider";
 import { AppShell } from "@/components/layout/app-shell";
+import { ErrorBoundary } from "@/components/errors/ErrorBoundary";
 
 export const metadata: Metadata = {
   title: "ResearchMind",
@@ -28,7 +29,9 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <QueryProvider>
-            <AppShell>{children}</AppShell>
+            <ErrorBoundary>
+              <AppShell>{children}</AppShell>
+            </ErrorBoundary>
           </QueryProvider>
         </ThemeProvider>
       </body>

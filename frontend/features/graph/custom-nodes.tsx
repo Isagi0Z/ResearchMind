@@ -2,36 +2,28 @@ import { Handle, Position } from '@xyflow/react';
 import { GraphNodeData } from '@/types/graph';
 import { cn } from '@/lib/utils';
 import { FileText, Database, Layers, Network } from 'lucide-react';
-import { useGraphStore } from './graph-store';
 import { memo } from 'react';
 
-// Common node wrapper to handle highlighting and selection
-function NodeWrapper({ 
-  id, 
-  selected, 
-  data, 
-  children, 
+function NodeWrapper({
+  id,
+  selected,
+  data,
+  children,
   className,
   icon: Icon
-}: { 
-  id: string, 
-  selected: boolean, 
-  data: GraphNodeData, 
-  children?: React.ReactNode, 
+}: {
+  id: string,
+  selected: boolean,
+  data: GraphNodeData,
+  children?: React.ReactNode,
   className: string,
   icon: any
 }) {
-  const { highlightedNodeIds, searchQuery } = useGraphStore();
-  const isHighlighted = highlightedNodeIds.has(id);
-  const isDimmed = searchQuery.length > 0 && !isHighlighted;
-
   return (
-    <div 
+    <div
       className={cn(
         "px-4 py-2 shadow-sm rounded-md border-2 bg-background flex items-center gap-2 transition-all duration-200",
         selected && "border-primary ring-2 ring-primary/20",
-        isDimmed && "opacity-20",
-        isHighlighted && "ring-2 ring-yellow-400 scale-110 z-10",
         className
       )}
       tabIndex={0}

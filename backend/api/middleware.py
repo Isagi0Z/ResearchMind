@@ -1,4 +1,5 @@
 ﻿import binascii
+import time
 from typing import Callable
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -14,25 +15,23 @@ def generate_request_id(method: str, path: str) -> str:
 
 class RequestContextMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
-        # Respect externally supplied deterministic request ID, otherwise generate one
         req_id = request.headers.get("X-Request-ID") or generate_request_id(request.method, request.url.path)
-        
         request.state.request_id = req_id
-        
-        # Log request start
+
+        start = time.monotonic()
         logger.info(f"Request started: {request.method} {request.url.path} (ID: {req_id})")
-        
+
         try:
             response = await call_next(request)
         except Exception as e:
-            # We catch here primarily to log, the exception handler will format it
-            logger.error(f"Request failed: {request.method} {request.url.path} (ID: {req_id})")
+            elapsed = (time.monotonic() - start) * 1000
+            logger.error(f"Request failed after {elapsed:.0f}ms: {request.method} {request.url.path} (ID: {req_id})")
             raise e
-            
-        response.headers["X-Request-ID"] = req_id
-        
-        logger.info(f"Request completed: {request.method} {request.url.path} - Status: {response.status_code} (ID: {req_id})")
-        
+
+        elapsed = (time.monotonic() - start) * 1000
+        response.headers["X-Response-Time-Ms"] = f"{elapsed:.0f}"
+        logger.info(f"Request completed in {elapsed:.0f}ms: {request.method} {request.url.path} - Status: {response.status_code} (ID: {req_id})")
+
         return response
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
@@ -43,6 +42,12 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["X-Request-ID"] = getattr(request.state, "request_id", "unknown")
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+        # Content-Security-Policy: restrict to same-origin by default
+        if request.url.scheme == "https":
+            response.headers["Content-Security-Policy"] = "default-src 'self'"
         return response
 
 class RequestSizeLimitMiddleware(BaseHTTPMiddleware):

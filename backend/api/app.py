@@ -20,7 +20,10 @@ from backend.api.routes import (
     graph,
     documents,
     dashboard,
-    monitoring
+    monitoring,
+    admin,
+    diagnostics,
+    jobs,
 )
 
 def create_app() -> FastAPI:
@@ -63,13 +66,14 @@ def create_app() -> FastAPI:
     
     app.add_middleware(SecurityHeadersMiddleware)
 
-    # CORS
+    cors_origins = settings.cors_origins_list if settings.cors_origins_list else ["*"]
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[str(origin) for origin in settings.CORS_ORIGINS],
-        allow_credentials=True,
+        allow_origins=cors_origins,
+        allow_credentials=settings.CORS_ALLOW_CREDENTIALS,
         allow_methods=["*"],
         allow_headers=["*"],
+        expose_headers=["X-Request-ID"],
     )
 
     # Exception Handlers
@@ -87,6 +91,9 @@ def create_app() -> FastAPI:
     app.include_router(documents.router, prefix=f"{settings.API_V1_STR}/documents", tags=["Documents"])
     app.include_router(dashboard.router, prefix=f"{settings.API_V1_STR}/dashboard", tags=["Dashboard"])
     app.include_router(monitoring.router, prefix=f"{settings.API_V1_STR}/monitoring", tags=["Monitoring"])
+    app.include_router(admin.router, prefix=f"{settings.API_V1_STR}/admin", tags=["Admin Console"])
+    app.include_router(diagnostics.router, prefix=f"{settings.API_V1_STR}", tags=["Diagnostics"])
+    app.include_router(jobs.router, prefix=f"{settings.API_V1_STR}", tags=["Background Jobs"])
 
     return app
 

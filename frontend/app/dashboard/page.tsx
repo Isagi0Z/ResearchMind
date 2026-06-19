@@ -2,6 +2,7 @@ import { CorpusSummaryCards } from "@/features/dashboard/corpus-summary-cards"
 import { RecentDocuments } from "@/features/dashboard/recent-documents"
 import { SystemStatusPanel } from "@/features/dashboard/system-status"
 import { RecentReviews } from "@/features/dashboard/recent-reviews"
+import { JobHistoryTable } from "@/features/jobs/job-history-table"
 
 export default function DashboardPage() {
   return (
@@ -27,6 +28,10 @@ export default function DashboardPage() {
              <RecentReviews />
           </div>
         </div>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-1">
+        <JobHistoryTable />
       </div>
     </div>
   )

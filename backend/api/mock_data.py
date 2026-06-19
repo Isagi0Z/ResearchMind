@@ -1,9 +1,9 @@
 from researchmind.storage.corpus import CorpusManager
 from researchmind.models.ruo import (
     RUODocument, RUOMeta, RUOHeader, RUOQuality, ComponentConfidence,
-    RUOSourceFile, RUOEntity
+    RUOSourceFile, RUOEntity, RUOSection, RUOChunk
 )
-from researchmind.models.enums import DocumentType, ExtractionRoute, StageStatus
+from researchmind.models.enums import DocumentType, ExtractionRoute, StageStatus, CanonicalLabel, ExtractionMethod
 from backend.api.schemas.dashboard import RecentReview
 
 # Deterministic random number generator (LCG)
@@ -90,24 +90,60 @@ def generate_mock_documents():
             for j in range(random_int(5, 20))
         ]
         
+        overall_conf = random_float() * 0.5 + 0.5
         quality = RUOQuality(
             confidence={
-                "components": [],
-                "overall": random_float() * 0.5 + 0.5,
-                "component_weights": {}
+                "components": [{"component": "extraction", "score": overall_conf}],
+                "overall": overall_conf,
+                "component_weights": {"extraction": 1.0}
             },
             evidence_coverage={},
             pipeline_log=[],
             llm_calls=[],
             requires_manual_review=(final_status == "failed"),
             manual_review_reasons=[],
-            overall_confidence=random_float() * 0.5 + 0.5,
+            overall_confidence=overall_conf,
         )
         
+        body = {
+            "sections": [
+                RUOSection(
+                    section_id="sec-intro",
+                    parent_section_id=None,
+                    level=1,
+                    position=0,
+                    original_header="Introduction",
+                    canonical_label=CanonicalLabel.INTRODUCTION,
+                    label_confidence=0.95,
+                    page_start=1,
+                    page_end=2,
+                    content=f"This section introduces {header.title}.",
+                    extraction_method=ExtractionMethod.GROBID,
+                )
+            ],
+            "chunks": [
+                RUOChunk(
+                    chunk_id="chunk-intro-0",
+                    text=f"Introduction paragraph for {header.title}.",
+                    word_count=10,
+                    section_id="sec-intro",
+                    canonical_label=CanonicalLabel.INTRODUCTION,
+                    page_start=1,
+                    page_end=1,
+                    paragraph_index=0,
+                    reading_order=0,
+                    extraction_method=ExtractionMethod.GROBID,
+                    extraction_confidence=0.9,
+                )
+            ],
+            "tables": [],
+            "figures": [],
+            "evidence_ids": [],
+        }
         doc = RUODocument(
             meta=meta,
             header=header,
-            body={"sections": [], "chunks": [], "tables": [], "figures": [], "evidence_ids": []},
+            body=body,
             references=[],
             citations=[],
             entities=entities,

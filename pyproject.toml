@@ -50,6 +50,10 @@ dependencies = [
 
     # Fuzzy matching
     "rapidfuzz>=3.6",
+
+    # Background jobs
+    "celery>=5.4.0",
+    "redis>=5.2.0",
 ]
 
 [project.optional-dependencies]

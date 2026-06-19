@@ -12,9 +12,12 @@ import { ModuleMetrics } from "./module-metrics"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import { useAuthStore } from "@/stores/auth-store"
 
 export function MonitoringDashboard() {
   const { data, isLoading, error } = useMonitoringData()
+
+  const isAdmin = useAuthStore((s) => s.user?.role === "admin")
 
   if (isLoading) {
     return (
@@ -52,6 +55,24 @@ export function MonitoringDashboard() {
 
   if (error) {
     const status = (error as any)?.status
+
+    if (!isAdmin && status === 403) {
+      return (
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Card className="w-full max-w-md border-amber-500/30">
+            <CardContent className="p-8 text-center space-y-4">
+              <div className="w-16 h-16 rounded-full bg-amber-500/10 flex items-center justify-center mx-auto">
+                <svg className="w-8 h-8 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m0 0v2m0-2h2m-2 0H10m9.364-7.364A9 9 0 1112 3a9 9 0 017.364 4.636z" /></svg>
+              </div>
+              <h2 className="text-xl font-bold">Access Restricted</h2>
+              <p className="text-muted-foreground">
+                System monitoring requires administrator privileges.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      )
+    }
 
     if (status === 401) {
       return (

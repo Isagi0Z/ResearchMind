@@ -3,7 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { LayoutDashboard, Database, Activity, Network, FileSearch, Sparkles, Menu, X, CheckCircle, AlertTriangle, XCircle, Moon, Sun, Monitor, LogOut } from "lucide-react"
+import { LayoutDashboard, Database, Activity, Network, FileSearch, Sparkles, Shield, Menu, X, CheckCircle, AlertTriangle, XCircle, Moon, Sun, Monitor, LogOut } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -26,6 +26,7 @@ export function Sidebar() {
     { title: "Query Interface", href: "/query", icon: FileSearch, disabled: false },
     { title: "Review Generator", href: "/reviews", icon: Sparkles, disabled: false },
     { title: "System Monitoring", href: "/monitoring", icon: Activity, disabled: false, adminOnly: true },
+    { title: "Admin Console", href: "/admin", icon: Shield, disabled: false, adminOnly: true },
   ]
 
   const visibleItems = NAV_ITEMS.filter(item => {

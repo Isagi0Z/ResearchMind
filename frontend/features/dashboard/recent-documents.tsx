@@ -32,26 +32,25 @@ export function RecentDocuments() {
         ) : (
           <div className="space-y-3">
             {data.map((doc) => {
-              const authors = doc.header.authors.map(a => a.surname || a.full_name).join(", ")
-              const status = doc.meta.pipeline_stages[doc.meta.pipeline_stages.length - 1] || "failed"
+              const authors = doc.authors ? doc.authors.join(", ") : ""
               
               return (
-                <div key={doc.meta.ruo_id} className="flex flex-col gap-2 p-3 border rounded-lg hover:bg-muted/50 transition-colors">
+                <div key={doc.ruo_id} className="flex flex-col gap-2 p-3 border rounded-lg hover:bg-muted/50 transition-colors">
                   <div className="flex items-start justify-between gap-4">
                     <h4 className="text-sm font-semibold leading-tight line-clamp-2">
-                      {doc.header.title}
+                      {doc.title}
                     </h4>
                     <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0 -mt-1 -mr-1">
                       <ExternalLink className="h-3 w-3" />
                     </Button>
                   </div>
                   <div className="text-xs text-muted-foreground line-clamp-1">
-                    {authors} {doc.header.publication_date ? `(${doc.header.publication_date.substring(0,4)})` : ""}
+                    {authors} {doc.year ? `(${doc.year})` : ""}
                   </div>
                   <div className="flex items-center gap-2 mt-1">
-                    <StatusBadge status={status} className="text-[10px] px-1.5 py-0 h-4" />
-                    {doc.header.venue && (
-                      <span className="text-[10px] text-muted-foreground bg-muted px-1.5 rounded">{doc.header.venue}</span>
+                    <StatusBadge status={doc.status as any} className="text-[10px] px-1.5 py-0 h-4" />
+                    {doc.source && (
+                      <span className="text-[10px] text-muted-foreground bg-muted px-1.5 rounded">{doc.source}</span>
                     )}
                   </div>
                 </div>

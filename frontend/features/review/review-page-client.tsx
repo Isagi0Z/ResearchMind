@@ -7,13 +7,19 @@ import { FindingsPanel } from "@/features/review/findings-panel"
 import { TraceabilityPanel } from "@/features/review/traceability-panel"
 import { ReviewMetadataPanel } from "@/features/review/review-metadata-panel"
 import { ReviewExportPanel } from "@/features/review/review-export-panel"
+import { JobProgressPanel } from "@/features/jobs/job-progress-panel"
 import { useReviewStore } from "@/features/review/review-store"
 
 export function ReviewPageClient() {
-  const { activeReview, generationStage } = useReviewStore()
+  const { activeReview, generationStage, jobId } = useReviewStore()
 
   if (generationStage !== 'completed' && generationStage !== 'idle' && generationStage !== 'failed') {
-    return <ReviewProgressTracker />
+    return (
+      <div className="space-y-6">
+        <ReviewProgressTracker />
+        <JobProgressPanel jobId={jobId} />
+      </div>
+    )
   }
 
   if (!activeReview) {

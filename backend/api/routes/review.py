@@ -1,4 +1,6 @@
-﻿from fastapi import APIRouter, Depends, HTTPException
+﻿import json
+import uuid as uuid_lib
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from typing import Optional, List
@@ -16,8 +18,12 @@ from backend.api.dependencies import (
 )
 from backend.db.session import get_db
 from backend.db.models.review import Review as ReviewModel
+from backend.db.models.job import Job
 from backend.db.models.user import User
 from backend.api.schemas.review import ReviewHistoryResponse
+from backend.api.schemas.jobs import JobSubmitResponse
+from backend.tasks import jobs as task_jobs
+from backend.api.config import settings
 from fastapi import Query as QueryParam
 
 router = APIRouter()
@@ -46,6 +52,30 @@ async def generate_review(
         return {"review_result": result_dump}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/generate-async", response_model=JobSubmitResponse)
+async def generate_review_async(
+    request: ReviewRequest,
+    current_user: Optional[User] = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db),
+):
+    user_id = current_user.id if current_user else uuid_lib.uuid4()
+    job = Job(
+        user_id=user_id,
+        job_type="review_generation",
+        status="queued",
+        progress=0,
+    )
+    db.add(job)
+    await db.commit()
+    await db.refresh(job)
+
+    task_jobs.generate_review.delay(
+        job_id=str(job.id),
+        review_request_json=request.model_dump_json(),
+    )
+
+    return JobSubmitResponse(job_id=str(job.id), status="queued")
 
 @router.post("/validate")
 async def validate_review(

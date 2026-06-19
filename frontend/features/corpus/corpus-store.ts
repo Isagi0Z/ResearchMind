@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 import { CorpusFilters, SortConfig, PaginationState } from '@/types/corpus'
 import { StageStatus } from '@/types/enums'
 
@@ -29,7 +30,9 @@ const initialFilters: CorpusFilters = {
   status: [],
 }
 
-export const useCorpusStore = create<CorpusState>((set) => ({
+export const useCorpusStore = create<CorpusState>()(
+  persist(
+    (set) => ({
   searchQuery: '',
   setSearchQuery: (query) => set({ searchQuery: query, pagination: { pageIndex: 0, pageSize: 1000 } }),
   
@@ -57,4 +60,14 @@ export const useCorpusStore = create<CorpusState>((set) => ({
     }
   })),
   clearSelection: () => set({ selectedRows: {} }),
-}))
+}),
+    {
+      name: 'corpus-store',
+      partialize: (state) => ({
+        searchQuery: state.searchQuery,
+        filters: state.filters,
+        sort: state.sort,
+      }),
+    }
+  )
+)

@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useEffect, useCallback } from "react"
 import { apiClient } from "@/lib/api-client"
+import { useAuthStore } from "@/stores/auth-store"
 
 interface UserProfile {
   id: string
@@ -13,14 +14,12 @@ interface UserProfile {
 }
 
 export function useAuth() {
-  const [user, setUser] = useState<UserProfile | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const { user, isLoading, setUser, setLoading } = useAuthStore()
 
   const fetchUser = useCallback(async () => {
     const tokens = apiClient.getTokens()
     if (!tokens.access) {
       setUser(null)
-      setIsLoading(false)
       return
     }
     try {
@@ -28,14 +27,14 @@ export function useAuth() {
       setUser(profile)
     } catch {
       setUser(null)
-    } finally {
-      setIsLoading(false)
     }
-  }, [])
+  }, [setUser])
 
   useEffect(() => {
-    fetchUser()
-  }, [fetchUser])
+    if (isLoading) {
+      fetchUser()
+    }
+  }, [isLoading, fetchUser])
 
   return {
     user,

@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useCorpusSummary } from "./use-dashboard-data"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ErrorState } from "@/components/shared/error-state"
-import { Database, Network, Users, BookOpen } from "lucide-react"
+import { Database, Network, Users, BookOpen, Activity, AlertTriangle, CheckCircle } from "lucide-react"
 
 export function CorpusSummaryCards() {
   const { data, isLoading, isError, refetch } = useCorpusSummary()
@@ -18,6 +18,9 @@ export function CorpusSummaryCards() {
     { title: "Entity Clusters", value: data?.entityClusters, icon: Users },
     { title: "Graph Nodes", value: data?.graphNodes, icon: Database },
     { title: "Graph Edges", value: data?.graphEdges, icon: Network },
+    { title: "Active Jobs", value: data?.activeJobs, icon: Activity },
+    { title: "Failed Jobs", value: data?.failedJobs, icon: AlertTriangle },
+    { title: "Completed Jobs", value: data?.completedJobs, icon: CheckCircle },
   ]
 
   return (

@@ -23,27 +23,15 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      // OAuth2 URL-encoded form data is required by FastAPI OAuth2PasswordBearer
       const params = new URLSearchParams()
       params.append("username", username)
       params.append("password", password)
 
-      // Directly use fetch for x-www-form-urlencoded
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: params.toString()
-      })
-
-      if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.detail || "Login failed")
+      const data = await apiClient.postForm<{ access_token: string; refresh_token: string }>("/auth/login", params)
+      if (data.access_token && data.refresh_token) {
+        apiClient.setTokens(data.access_token, data.refresh_token)
       }
-
-      const data = await res.json()
-      apiClient.setTokens(data.access_token, data.refresh_token)
       router.push("/dashboard")
-      // Quick reload to update app-shell context
       setTimeout(() => window.location.reload(), 100)
     } catch (err: any) {
       setError(err.message)

@@ -1,8 +1,10 @@
-﻿from fastapi import Depends
+﻿from fastapi import Depends, Request
 from fastapi.security import OAuth2PasswordBearer
 from typing import Optional
 from .exceptions import AuthException
 from .auth.security import decode_access_token
+from backend.api.auth.security import JWT_ISSUER
+from backend.api.auth.cookies import ACCESS_TOKEN_COOKIE
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from backend.db.session import get_db
@@ -17,7 +19,6 @@ from researchmind.query.engine import QueryEngine
 from researchmind.synthesis.orchestrator import ReviewOrchestrator
 from researchmind.synthesis.traceability import TraceabilityVerifier
 from researchmind.storage.corpus import CorpusManager
-from researchmind.storage.document_store import InMemoryDocumentStore
 from backend.api.mock_data import generate_mock_documents
 
 class DummyGraph:
@@ -25,8 +26,7 @@ class DummyGraph:
 
 try:
     _docs = generate_mock_documents()
-    _store = InMemoryDocumentStore()
-    _corpus_manager = CorpusManager.from_documents(_docs, "corpus-1", store=_store)
+    _corpus_manager = CorpusManager.from_documents(_docs, "corpus-1")
 except Exception as e:
     import logging
     logging.warning(f"Failed to initialize mock CorpusManager: {e}")
@@ -54,16 +54,22 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login", auto_error=False)
 
 async def get_current_user_optional(
+    request: Request = None,
     token: Optional[str] = Depends(oauth2_scheme_optional),
     db: AsyncSession = Depends(get_db)
 ) -> Optional[User]:
+    if not token and request:
+        token = request.cookies.get(ACCESS_TOKEN_COOKIE)
     if not token:
         return None
-    
+
     payload = decode_access_token(token)
     if not payload:
         return None
-    
+
+    if payload.get("iss") != JWT_ISSUER:
+        return None
+
     user_id_str = payload.get("sub")
     if not user_id_str:
         return None

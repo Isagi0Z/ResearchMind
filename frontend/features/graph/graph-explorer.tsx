@@ -4,9 +4,16 @@ import { GraphCanvas } from "./graph-canvas"
 import { GraphSearch } from "./graph-search"
 import { GraphSidebar } from "./graph-sidebar"
 import { useGraphData } from "./graph-hooks"
-import { Database, FileText, Network, Layers, Info, Loader2 } from "lucide-react"
+import { useGraphStore } from "./graph-store"
+import { Database, FileText, Network, Layers, Info, ChevronLeft, ChevronRight } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { LoadingState } from "@/components/shared/loading-state"
+import { ErrorState } from "@/components/shared/error-state"
+import { EmptyState } from "@/components/shared/empty-state"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+const PAGE_SIZE = 500
 
-function GraphStats({ nodesCount, edgesCount }: { nodesCount: number, edgesCount: number }) {
+function GraphStats({ nodesCount, edgesCount }: { nodesCount: number; edgesCount: number }) {
   return (
     <div className="absolute bottom-4 left-4 z-10 bg-background/90 backdrop-blur shadow-sm rounded-md border text-xs px-3 py-2 text-muted-foreground flex items-center gap-4">
       <div><span className="font-semibold text-foreground">{nodesCount}</span> Nodes</div>
@@ -33,33 +40,74 @@ function GraphLegend() {
   )
 }
 
+function PaginationBar({ page, totalCount }: { page: number; totalCount: number }) {
+  const setPage = useGraphStore((s) => s.setPage)
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
+
+  return (
+    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 bg-background/90 backdrop-blur shadow-sm rounded-md border text-xs px-3 py-2 text-muted-foreground flex items-center gap-3">
+      <Button variant="ghost" size="icon" className="h-6 w-6" disabled={page <= 0} onClick={() => setPage(page - 1)}>
+        <ChevronLeft className="w-4 h-4" />
+      </Button>
+      <span className="whitespace-nowrap">Page {page + 1} of {totalPages}</span>
+      <Button variant="ghost" size="icon" className="h-6 w-6" disabled={page >= totalPages - 1} onClick={() => setPage(page + 1)}>
+        <ChevronRight className="w-4 h-4" />
+      </Button>
+    </div>
+  )
+}
+
+function TypeFilter() {
+  const { nodeTypeFilter, setNodeTypeFilter } = useGraphStore()
+  return (
+    <Select value={nodeTypeFilter || "all"} onValueChange={(v) => setNodeTypeFilter(v === "all" ? "" : v)}>
+      <SelectTrigger className="w-[140px] h-10 bg-background/95 backdrop-blur shadow-md border text-xs">
+        <SelectValue placeholder="All Types" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="all">All Types</SelectItem>
+        <SelectItem value="document">Documents</SelectItem>
+        <SelectItem value="entity">Entities</SelectItem>
+      </SelectContent>
+    </Select>
+  )
+}
+
 export function GraphExplorer() {
-  const { data, isLoading, error } = useGraphData()
+  const { page, nodeTypeFilter, searchQuery } = useGraphStore()
+  const params: Record<string, unknown> = { offset: page * PAGE_SIZE, limit: PAGE_SIZE }
+  if (nodeTypeFilter) params.nodeType = nodeTypeFilter
+  if (searchQuery) params.search = searchQuery
 
-  if (isLoading) {
-    return (
-      <div className="relative w-full h-[calc(100vh-6rem)] rounded-xl border flex flex-col items-center justify-center bg-muted/20">
-        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground mb-4" />
-        <div className="text-muted-foreground">Loading graph data...</div>
-      </div>
-    )
-  }
+  const { data, isLoading, error, refetch } = useGraphData(params)
 
-  if (error || !data) {
-    return (
-      <div className="relative w-full h-[calc(100vh-6rem)] rounded-xl border flex items-center justify-center bg-muted/20 text-destructive">
-        Failed to load graph data
+  if (isLoading) return <LoadingState />
+
+  if (error) return <ErrorState onRetry={() => refetch()} />
+
+  if (!data || data.nodes.length === 0) return (
+    <div className="relative w-full h-[calc(100vh-6rem)] rounded-xl border overflow-hidden bg-muted/20">
+      <div className="absolute top-4 left-4 z-10 flex gap-2">
+        <GraphSearch />
+        <TypeFilter />
       </div>
-    )
-  }
+      <EmptyState title="No graph data available" description="Try adjusting your search or filter criteria" />
+      <GraphStats nodesCount={0} edgesCount={0} />
+      <GraphLegend />
+    </div>
+  )
 
   return (
     <div className="relative w-full h-[calc(100vh-6rem)] rounded-xl border overflow-hidden bg-muted/20">
-      <GraphSearch data={data} />
+      <div className="absolute top-4 left-4 z-10 flex gap-2">
+        <GraphSearch />
+        <TypeFilter />
+      </div>
       <GraphCanvas data={data} />
       <GraphSidebar graphData={data} />
       <GraphStats nodesCount={data.nodes.length} edgesCount={data.edges.length} />
       <GraphLegend />
+      <PaginationBar page={page} totalCount={data.nodes.length + (nodeTypeFilter ? 0 : (page + 1) * PAGE_SIZE)} />
     </div>
   )
 }

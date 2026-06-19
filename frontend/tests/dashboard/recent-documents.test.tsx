@@ -22,26 +22,26 @@ describe('RecentDocuments', () => {
     expect(screen.getByText('Recent Documents')).toBeInTheDocument()
   })
 
-  it('renders empty/populated state', () => {
+  it('renders populated state with new flat shape', () => {
     const mockData = [
       {
-        meta: { ruo_id: 'doc-1', pipeline_stages: ['extracted'] },
-        header: {
-          title: 'Test Document Title',
-          authors: [{ full_name: 'Author Name' }],
-          publication_date: '2023-01-01',
-          venue: 'Test Venue',
-        }
-      }
+        ruo_id: 'doc-1',
+        title: 'Test Document Title',
+        authors: ['Author Name'],
+        year: 2023,
+        status: 'extracted',
+        entity_count: 5,
+        source: 'Test Venue',
+      },
     ]
-    
+
     vi.mocked(useRecentDocuments).mockReturnValue({
       data: mockData,
       isLoading: false,
     } as any)
 
     render(<RecentDocuments />)
-    
+
     expect(screen.getByText('Recent Documents')).toBeInTheDocument()
     expect(screen.getByText('Test Document Title')).toBeInTheDocument()
     expect(screen.getByText('Author Name (2023)')).toBeInTheDocument()

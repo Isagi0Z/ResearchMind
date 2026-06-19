@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { useCorpusStore } from "./corpus-store"
 import { useDocuments } from "./use-corpus-data"
+import { JobProgressPanel } from "@/features/jobs/job-progress-panel"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Search, Download, Plus, RefreshCw, SlidersHorizontal } from "lucide-react"
@@ -41,6 +42,7 @@ export function CorpusManager() {
   const [localSearch, setLocalSearch] = useState(searchQuery)
   const debouncedSearch = useDebounce(localSearch, 500)
   const [isFiltersOpen, setIsFiltersOpen] = useState(false)
+  const [processingJobId, setProcessingJobId] = useState<string | null>(null)
 
   // Sync debounced search to store
   useEffect(() => {
@@ -123,6 +125,8 @@ export function CorpusManager() {
         </Sheet>
       </div>
 
+      <JobProgressPanel jobId={processingJobId} />
+
       <div className="border rounded-md bg-card flex-1 flex flex-col overflow-hidden min-h-[500px]">
         {isError ? (
           <div className="flex-1 flex items-center justify-center">
@@ -155,16 +159,16 @@ export function CorpusManager() {
                   <TableRow>
                     <TableHead className="w-12 text-center">
                        <input 
-                         type="checkbox" 
-                         className="rounded border-muted-foreground" 
-                         checked={rows.length > 0 && rows.every(d => selectedRows[d.meta.ruo_id])}
-                         onChange={() => {
-                           const allSelected = rows.every(d => selectedRows[d.meta.ruo_id])
-                           const newSelection = { ...selectedRows }
-                           rows.forEach(d => {
-                             if (allSelected) delete newSelection[d.meta.ruo_id]
-                             else newSelection[d.meta.ruo_id] = true
-                           })
+                          type="checkbox" 
+                          className="rounded border-muted-foreground" 
+                          checked={rows.length > 0 && rows.every(d => selectedRows[d.ruo_id])}
+                          onChange={() => {
+                            const allSelected = rows.every(d => selectedRows[d.ruo_id])
+                            const newSelection = { ...selectedRows }
+                            rows.forEach(d => {
+                              if (allSelected) delete newSelection[d.ruo_id]
+                              else newSelection[d.ruo_id] = true
+                            })
                            useCorpusStore.getState().setSelectedRows(newSelection)
                          }}
                        />
@@ -184,12 +188,11 @@ export function CorpusManager() {
                   )}
                   {virtualItems.map((virtualRow) => {
                     const doc = rows[virtualRow.index]
-                    const status = doc.meta.pipeline_stages[doc.meta.pipeline_stages.length - 1] || "failed"
-                    const authors = doc.header.authors.map(a => a.surname || a.full_name).join(", ")
+                    const authors = doc.authors ? doc.authors.join(", ") : ""
                     
                     return (
                       <TableRow 
-                        key={doc.meta.ruo_id} 
+                        key={doc.ruo_id} 
                         className="hover:bg-muted/50 cursor-pointer"
                         data-index={virtualRow.index}
                         ref={virtualizer.measureElement}
@@ -198,24 +201,24 @@ export function CorpusManager() {
                           <input 
                             type="checkbox" 
                             className="rounded border-muted-foreground" 
-                            checked={!!selectedRows[doc.meta.ruo_id]}
-                            onChange={() => toggleRowSelection(doc.meta.ruo_id)}
+                            checked={!!selectedRows[doc.ruo_id]}
+                            onChange={() => toggleRowSelection(doc.ruo_id)}
                           />
                         </TableCell>
-                        <TableCell className="font-medium max-w-[300px] truncate" title={doc.header.title}>
-                          {doc.header.title}
+                        <TableCell className="font-medium max-w-[300px] truncate" title={doc.title}>
+                          {doc.title}
                         </TableCell>
                         <TableCell className="hidden md:table-cell max-w-[200px] truncate text-muted-foreground" title={authors}>
                           {authors}
                         </TableCell>
                         <TableCell className="text-center text-muted-foreground">
-                          {doc.header.publication_date?.substring(0, 4) || "-"}
+                          {doc.year ?? "-"}
                         </TableCell>
                         <TableCell className="text-center text-muted-foreground">
-                          {doc.entities.length}
+                          {doc.entity_count}
                         </TableCell>
                         <TableCell>
-                          <StatusBadge status={status} />
+                          <StatusBadge status={doc.status as any} />
                         </TableCell>
                       </TableRow>
                     )

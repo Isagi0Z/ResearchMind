@@ -1,10 +1,5 @@
-/** Default request timeout in milliseconds (30 seconds). */
 const API_TIMEOUT_MS = 30_000;
 
-/**
- * Resolve the API base URL from environment configuration.
- * Fails clearly at call-time if NEXT_PUBLIC_API_URL is not set.
- */
 function getBaseUrl(): string {
   const url = process.env.NEXT_PUBLIC_API_URL;
   if (!url) {
@@ -13,7 +8,7 @@ function getBaseUrl(): string {
       'NEXT_PUBLIC_API_URL is not configured. Set it in .env.local or your environment.'
     );
   }
-  return url;
+  return url.replace(/\/+$/, '');
 }
 
 export class ApiError extends Error {
@@ -23,19 +18,21 @@ export class ApiError extends Error {
   }
 }
 
-/**
- * Sanitize error detail from the backend.
- * For 5xx responses, suppress raw detail to avoid leaking stack traces.
- * For 4xx responses, preserve the validation detail for developer feedback.
- */
-function sanitizeErrorMessage(status: number, detail: unknown, fallback: string): string {
+const ERROR_MESSAGES: Record<number, string> = {
+  401: 'Your session has expired. Please log in again.',
+  403: 'You do not have permission to perform this action.',
+  404: 'The requested resource was not found.',
+  429: 'Too many requests. Please wait a moment and try again.',
+};
+
+function getErrorMessage(status: number, detail: unknown, fallback: string): string {
   if (status >= 500) {
     return 'An internal server error occurred. Please try again later.';
   }
   if (typeof detail === 'string' && detail.length > 0) {
     return detail;
   }
-  return fallback;
+  return ERROR_MESSAGES[status] || fallback;
 }
 
 function getTokens() {
@@ -83,12 +80,13 @@ async function handleFetchWithAuth(
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
-  
+
   let res: Response;
   try {
     res = await fetch(`${getBaseUrl()}${url}`, {
       ...options,
       headers,
+      credentials: 'include',
       signal: controller.signal,
     });
   } catch (err: unknown) {
@@ -103,10 +101,6 @@ async function handleFetchWithAuth(
 
   if (res.status === 401 && !isRetry && !url.includes('/auth/login') && !url.includes('/auth/refresh')) {
     const { refresh } = getTokens();
-    if (!refresh) {
-      clearTokens();
-      throw new ApiError(401, 'Unauthorized');
-    }
 
     if (!isRefreshing) {
       isRefreshing = true;
@@ -114,18 +108,21 @@ async function handleFetchWithAuth(
         const refreshRes = await fetch(`${getBaseUrl()}/auth/refresh`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ refresh_token: refresh }),
+          credentials: 'include',
+          body: refresh ? JSON.stringify({ refresh_token: refresh }) : '{}',
         });
-        
+
         if (!refreshRes.ok) {
           throw new Error('Refresh failed');
         }
-        
+
         const data = await refreshRes.json();
-        setTokens(data.access_token, data.refresh_token);
+        if (data.access_token && data.refresh_token) {
+          setTokens(data.access_token, data.refresh_token);
+        }
         isRefreshing = false;
         onRefreshed(data.access_token);
-      } catch (err) {
+      } catch {
         isRefreshing = false;
         clearTokens();
         if (typeof window !== 'undefined') window.location.href = '/login';
@@ -145,11 +142,11 @@ async function handleFetchWithAuth(
     let detail: unknown = res.statusText;
     try {
       const errData = await res.json();
-      detail = errData.detail ?? detail;
+      detail = errData.detail ?? errData.error?.message ?? detail;
     } catch {
-      // Non-JSON error body ?" keep statusText
+      // Non-JSON error body — use statusText
     }
-    throw new ApiError(res.status, sanitizeErrorMessage(res.status, detail, res.statusText));
+    throw new ApiError(res.status, getErrorMessage(res.status, detail, res.statusText));
   }
 
   return res;
@@ -162,15 +159,34 @@ export const apiClient = {
   },
 
   async post<T>(url: string, data: unknown): Promise<T> {
-    const res = await handleFetchWithAuth(url, { 
-      method: 'POST', 
+    const res = await handleFetchWithAuth(url, {
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
+      body: JSON.stringify(data),
+    });
+    return res.json() as Promise<T>;
+  },
+
+  async patch<T, B>(url: string, data: B): Promise<T> {
+    const res = await handleFetchWithAuth(url, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    return res.json() as Promise<T>;
+  },
+
+  async postForm<T>(url: string, body: URLSearchParams): Promise<T> {
+    const res = await handleFetchWithAuth(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: body.toString(),
+      credentials: 'include',
     });
     return res.json() as Promise<T>;
   },
 
   setTokens,
   clearTokens,
-  getTokens
+  getTokens,
 };

@@ -20,6 +20,10 @@ interface ReviewState {
   
   selectedSectionId: string | null
   setSelectedSectionId: (id: string | null) => void
+
+  // Async job tracking
+  jobId: string | null
+  setJobId: (id: string | null) => void
 }
 
 export const useReviewStore = create<ReviewState>((set) => ({
@@ -41,5 +45,8 @@ export const useReviewStore = create<ReviewState>((set) => ({
   setSelectedFindingId: (id) => set({ selectedFindingId: id }),
   
   selectedSectionId: null,
-  setSelectedSectionId: (id) => set({ selectedSectionId: id })
+  setSelectedSectionId: (id) => set({ selectedSectionId: id }),
+
+  jobId: null,
+  setJobId: (id) => set({ jobId: id })
 }))

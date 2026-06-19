@@ -132,10 +132,10 @@ def test_monitoring_time_range_default(client):
 # --- W6: Graph Node Detail Tests ---
 
 def test_graph_node_detail_found(client):
-    response = client.get("/api/v1/graph/node/node-0")
+    response = client.get("/api/v1/graph/node/doc-0")
     assert response.status_code == 200
     data = response.json()
-    assert data["id"] == "node-0"
+    assert data["id"] == "doc-0"
 
 def test_graph_node_detail_not_found(client):
     response = client.get("/api/v1/graph/node/nonexistent")
@@ -218,7 +218,7 @@ def test_rate_limit_not_exceeded(client):
         assert response.status_code == 200
 
 def test_graph_node_determinism(client):
-    r1 = client.get("/api/v1/graph/node/node-10")
-    r2 = client.get("/api/v1/graph/node/node-10")
+    r1 = client.get("/api/v1/graph/node/doc-10")
+    r2 = client.get("/api/v1/graph/node/doc-10")
     assert r1.status_code == 200
     assert r1.json() == r2.json()

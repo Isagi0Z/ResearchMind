@@ -1,5 +1,5 @@
 import { apiClient } from "@/lib/api-client";
-import { RUODocument } from "@/types/document";
+import { DocumentListItem } from "@/types/document-list-item";
 
 export interface GetDocumentsParams {
   pageIndex: number;
@@ -20,15 +20,14 @@ export interface PaginatedResponse<T> {
   total: number;
 }
 
-export async function getDocuments(params: GetDocumentsParams): Promise<PaginatedResponse<RUODocument>> {
+export async function getDocuments(params: GetDocumentsParams): Promise<PaginatedResponse<DocumentListItem>> {
   const queryParams = new URLSearchParams({
     pageIndex: params.pageIndex.toString(),
     pageSize: params.pageSize.toString(),
   });
-  
-  return await apiClient.get<PaginatedResponse<RUODocument>>(`/api/v1/documents?${queryParams.toString()}`);
-}
+  if (params.searchQuery) queryParams.set("searchQuery", params.searchQuery);
+  if (params.sortBy) queryParams.set("sortBy", params.sortBy);
+  if (params.sortDirection) queryParams.set("sortDirection", params.sortDirection);
 
-export async function getDocument(id: string): Promise<RUODocument> {
-  return await apiClient.get<RUODocument>(`/api/v1/documents/${id}`);
+  return await apiClient.get<PaginatedResponse<DocumentListItem>>(`/api/v1/documents?${queryParams.toString()}`);
 }

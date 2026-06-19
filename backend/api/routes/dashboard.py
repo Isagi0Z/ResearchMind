@@ -8,6 +8,7 @@ from researchmind.storage.corpus import CorpusManager
 from backend.db.session import get_db
 from backend.db.models.document import Document
 from backend.db.models.review import Review
+from backend.db.models.job import Job
 from backend.api.mock_data import get_mock_recent_reviews
 
 router = APIRouter()
@@ -34,11 +35,25 @@ async def get_dashboard_summary(
     except Exception:
         pass
 
+    job_counts = {"active": 0, "failed": 0, "completed": 0}
+    try:
+        active = await db.execute(select(func.count(Job.id)).where(Job.status == "running"))
+        job_counts["active"] = active.scalar() or 0
+        failed = await db.execute(select(func.count(Job.id)).where(Job.status == "failed"))
+        job_counts["failed"] = failed.scalar() or 0
+        completed = await db.execute(select(func.count(Job.id)).where(Job.status == "completed"))
+        job_counts["completed"] = completed.scalar() or 0
+    except Exception:
+        pass
+
     return CorpusSummary(
         totalDocuments=doc_count or 1000,
         entityClusters=entity_clusters,
         graphNodes=89000,
-        graphEdges=215000
+        graphEdges=215000,
+        activeJobs=job_counts["active"],
+        failedJobs=job_counts["failed"],
+        completedJobs=job_counts["completed"],
     )
 
 @router.get("/recent", response_model=List[RecentReview])
