@@ -16,7 +16,7 @@ dependencies = [
     "lxml>=5.0",
 
     # NLP
-    "spacy>=3.7",
+    "spacy>=3.7,<3.8",
     "nltk>=3.8",
 
     # OCR
